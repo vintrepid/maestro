@@ -127,6 +127,31 @@ h3 {
   @apply text-xl font-semibold mb-2;
 }
 
+/* Page descriptions */
+p.description {
+  @apply text-base-content/70 text-sm;
+}
+
+/* Table code cells */
+table code {
+  @apply text-xs;
+}
+
+/* Table data cells with line numbers */
+table .line-number {
+  @apply text-xs font-mono;
+}
+
+/* Truncated content */
+.truncated {
+  @apply block max-w-md truncate;
+}
+
+/* Empty state text */
+.empty-state {
+  @apply text-base-content/40 text-xs italic;
+}
+
 /* Page Section Wrapper */
 .page-section {
   @apply container mx-auto px-6 py-8 max-w-7xl;

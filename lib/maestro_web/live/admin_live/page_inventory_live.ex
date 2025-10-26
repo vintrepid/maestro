@@ -79,73 +79,69 @@ defmodule MaestroWeb.AdminLive.PageInventoryLive do
     ~H"""
     <Layouts.app flash={@flash}>
       <div>
-        <div class="mb-6">
+        <div>
           <h1>Page Inventory</h1>
-          <p class="text-base-content/70 text-sm">
+          <p class="description">
             Search for HTML tags across all pages to identify repeated patterns for extraction to components or global CSS.
           </p>
         </div>
 
-        <div class="card bg-base-100 shadow-xl">
+        <div class="card">
           <div class="card-body">
-            <div class="mb-4">
-              <form phx-change="change_search_tag" phx-submit="change_search_tag" class="form-control">
-                <label class="label">
-                  <span class="label-text">Search for HTML tag:</span>
-                </label>
-                <input 
-                  type="text" 
-                  name="tag" 
-                  class="input input-bordered input-sm w-32"
-                  placeholder="h1"
-                  value={@search_tag}
-                  phx-debounce="300"
-                />
-              </form>
-            </div>
+            <form phx-change="change_search_tag" phx-submit="change_search_tag" class="form-control">
+              <label class="label">
+                <span class="label-text">Search for HTML tag:</span>
+              </label>
+              <input 
+                type="text" 
+                name="tag" 
+                class="input input-sm"
+                placeholder="h1"
+                value={@search_tag}
+                phx-debounce="300"
+              />
+            </form>
             
-            <div class="overflow-x-auto">
-              <table class="table table-sm table-zebra">
-                <thead>
+            <table class="table table-zebra">
+              <thead>
+                <tr>
+                  <th>Route</th>
+                  <th>Line</th>
+                  <th>Tag</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <%= for page <- @pages do %>
                   <tr>
-                    <th>Route</th>
-                    <th>Line</th>
-                    <th>Tag</th>
-                    <th>Status</th>
+                    <td>
+                      <%= if page.route do %>
+                        <code>{page.route}</code>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= if page.line_number do %>
+                        <span class="line-number">{page.line_number}</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= if page.tag_html do %>
+                        <code class="truncated">{page.tag_html}</code>
+                      <% else %>
+                        <span class="empty-state">No {@search_tag}</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= if page.tag_html do %>
+                        <span class="badge badge-success">✓</span>
+                      <% else %>
+                        <span class="badge badge-warning">Missing</span>
+                      <% end %>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  <%= for page <- @pages do %>
-                    <tr>
-                      <td>
-                        <%= if page.route do %>
-                          <code class="text-xs">{page.route}</code>
-                        <% end %>
-                      </td>
-                      <td>
-                        <%= if page.line_number do %>
-                          <span class="text-xs font-mono">{page.line_number}</span>
-                        <% end %>
-                      </td>
-                      <td>
-                        <%= if page.tag_html do %>
-                          <code class="text-xs block max-w-md truncate">{page.tag_html}</code>
-                        <% else %>
-                          <span class="text-base-content/40 text-xs italic">No {@search_tag}</span>
-                        <% end %>
-                      </td>
-                      <td>
-                        <%= if page.tag_html do %>
-                          <span class="badge badge-sm badge-success">✓</span>
-                        <% else %>
-                          <span class="badge badge-sm badge-warning">Missing</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
-            </div>
+                <% end %>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
