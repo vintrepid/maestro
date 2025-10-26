@@ -8,7 +8,7 @@ defmodule MaestroWeb.DashboardLive do
   def mount(_params, _session, socket) do
     socket =
       socket
-      |> assign(:page_title, "Maestro Dashboard")
+      |> assign(:page_title, "Projects")
       |> assign(:data_provider, {__MODULE__, :list_projects, []})
 
     {:ok, socket}
@@ -56,26 +56,15 @@ defmodule MaestroWeb.DashboardLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
-      <div class="container mx-auto px-4 py-8 max-w-7xl">
-        <div class="mb-8 text-center">
-          <h1 class="text-4xl font-bold mb-2">
-            🎼 Maestro
-          </h1>
-          <p class="text-lg opacity-70">
-            Development Project Orchestration
-          </p>
-        </div>
-
-        <div class="card bg-base-200 shadow-xl">
-          <div class="card-body p-0">
-            <.live_table
-              fields={fields()}
-              filters={filters()}
-              options={@options}
-              streams={@streams}
-              table_options={table_options()}
-            />
-          </div>
+      <div class="card bg-base-200">
+        <div class="card-body p-0">
+          <.live_table
+            fields={fields()}
+            filters={filters()}
+            options={@options}
+            streams={@streams}
+            table_options={table_options()}
+          />
         </div>
       </div>
     </Layouts.app>
