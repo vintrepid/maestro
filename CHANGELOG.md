@@ -221,56 +221,45 @@ Library is production-ready. Calvin can test and share analysis JSON.
 
 ## 2024-10-27 - Cleanup Analysis Page & Layout
 
-**Goal:** Apply the same CSS cleanup process to tailwind_analysis_live.ex and layouts.ex
+**Goal:** Apply CSS cleanup using DaisyUI components properly
 
 **Branch:** feature/cleanup-analysis-page
 
 **Status:** In Progress 🚧
 
-**Plan:**
-1. ✅ Run analysis on tailwind_analysis_live.ex (before)
-2. ✅ Identify repeated patterns (text-right: 14x, font-mono text-xs: 3x, etc.)
-3. ✅ Extract to semantic classes in app.css
-4. ✅ Update tailwind_analysis_live.ex to use semantic classes
-5. ✅ Run analysis (after) and compare
-6. ✅ Verify visual design unchanged
-7. [ ] Clean up layouts.ex - extract to semantic classes
-8. [ ] Run analysis on layouts (after)
-9. [ ] Compare before/after for both files
+**Approach Change:**
+Initially extracted analysis-specific classes to app.css, but realized this violated our philosophy:
+- **DaisyUI for Components** - Use DaisyUI semantic classes
+- **Tailwind for Layout** - Use Tailwind utilities for layout
+- **Custom Components for Patterns** - Extract to Phoenix components, not CSS
 
-**Progress - tailwind_analysis_live.ex:**
+**Final Approach - Pure DaisyUI:**
 
-**Before:**
+**Before (original):**
 - Unique classes: 200
 - Total occurrences: 509
 
-**After:**
-- Unique classes: 201 (+1 semantic class added)
-- Total occurrences: 477 (-32, 6.3% reduction)
+**After (pure DaisyUI):**
+- Unique classes: 199 (-1)
+- Total occurrences: 512 (+3)
 
-**Changes Made:**
-1. Created semantic analysis page classes in app.css:
-   - `.analysis-header`, `.analysis-header-controls` (layout)
-   - `.stats-grid`, `.analysis-grid` (grids)
-   - `.analysis-table-cell-right`, `.analysis-table-cell-mono` (table cells)
-   - `.analysis-table-cell-right-mono`, `.analysis-table-cell-right-bold` (combined styles)
-   - `.code-inline` (inline code display)
-   - `.text-muted`, `.text-muted-sm`, `.text-muted-xs` (text utilities)
+**Changes:**
+1. ❌ Removed custom analysis-* classes from app.css
+2. ✅ Used DaisyUI table modifiers: `table-zebra` on all tables
+3. ✅ Kept inline utilities for layout (`text-right`, `font-mono text-xs`)
+4. ✅ Used DaisyUI semantic components: `stats`, `card`, `badge`
 
-2. Replaced repeated patterns:
-   - `text-right` (14 instances) → `analysis-table-cell-right`
-   - `font-mono text-xs` (3 instances) → `analysis-table-cell-mono`
-   - `text-right font-mono` (2 instances) → `analysis-table-cell-right-mono`
-   - `font-semibold text-right` (2 instances) → `analysis-table-cell-right-bold`
-   - `flex gap-6 justify-between items-start mb-6` → `analysis-header`
-   - `stats stats-vertical lg:stats-horizontal shadow mb-6 w-full` → `stats-grid`
-   - `grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6` → `analysis-grid`
+**Key Learning:**
+- Don't create custom CSS classes for page-specific patterns
+- Use DaisyUI components as-is (they're already semantic)
+- Use Tailwind utilities inline for simple styling
+- Only extract to Phoenix components for reusable UI patterns
 
-3. Verification:
-   - ✅ Browser test passed - all semantic classes applied
-   - ✅ Visual design unchanged
-   - ✅ 40 right-aligned cells, 56 mono font cells, 50 code inline elements
-   - ✅ More maintainable with semantic names
+**Result:**
+- ✅ Cleaner CSS (no page-specific classes)
+- ✅ Better DaisyUI usage (table-zebra for stripes)
+- ✅ More maintainable (following framework conventions)
+- ✅ Visual design unchanged
 
-**Next:** Clean up layouts.ex
+**Next:** Consider extracting reusable table patterns to Phoenix components if needed across multiple pages
 
