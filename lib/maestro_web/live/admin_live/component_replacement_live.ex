@@ -168,6 +168,32 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
     |> assign(:current_pattern, pattern_data)
   end
 
+  defp transform_html(html, %{name: "section_card"}) do
+    try do
+      {:ok, doc} = Floki.parse_fragment(html)
+      
+      transformed = transform_section_card(doc)
+      
+      result = render_component_html(transformed)
+      {result, nil}
+    rescue
+      e -> {"", Exception.message(e)}
+    end
+  end
+
+  defp transform_html(html, %{name: "stats_grid"}) do
+    try do
+      {:ok, doc} = Floki.parse_fragment(html)
+      
+      transformed = transform_stats_grid(doc)
+      
+      result = render_component_html(transformed)
+      {result, nil}
+    rescue
+      e -> {"", Exception.message(e)}
+    end
+  end
+
   defp transform_html(html, %{pattern: pattern, replacement: replacement} = pattern_data)
        when is_binary(pattern) and is_binary(replacement) do
     try do
@@ -189,7 +215,99 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
     end
   end
 
+  # Custom renderer for Phoenix components
+  defp render_component_html(doc) do
+    doc
+    |> Enum.map(&render_node/1)
+    |> Enum.join("")
+  end
+  
+  defp render_node({:component, name, attrs, children}) do
+    attrs_str = case attrs do
+      [] -> ""
+      attrs -> " " <> Enum.map_join(attrs, " ", fn {k, v} -> ~s(#{k}="#{v}") end)
+    end
+    
+    children_html = Enum.map_join(children, "", &render_node/1)
+    "<.#{name}#{attrs_str}>\n  #{String.replace(children_html, "\n", "\n  ")}\n</.#{name}>"
+  end
+  
+  defp render_node({tag, attrs, children}) when is_binary(tag) do
+    attrs_str = case attrs do
+      [] -> ""
+      attrs -> " " <> Enum.map_join(attrs, " ", fn {k, v} -> ~s(#{k}="#{v}") end)
+    end
+    
+    children_html = Enum.map_join(children, "", &render_node/1)
+    
+    if children_html == "" do
+      "<#{tag}#{attrs_str} />"
+    else
+      "<#{tag}#{attrs_str}>#{children_html}</#{tag}>"
+    end
+  end
+  
+  defp render_node(text) when is_binary(text), do: text
+  defp render_node({:comment, comment}), do: "<!--#{comment}-->"
+
   defp transform_html(_html, _), do: {"", nil}
+
+  # Transform card divs to section_card component
+  defp transform_section_card(doc) do
+    Floki.traverse_and_update(doc, fn
+      {"div", attrs, children} = node ->
+        class = Floki.attribute([node], "class") |> List.first()
+        
+        if class && String.contains?(class, "card bg-base-100 shadow-xl") do
+          # Extract extra classes (anything beyond the base pattern)
+          extra_classes = class
+            |> String.replace("card bg-base-100 shadow-xl", "")
+            |> String.trim()
+          
+          # Find and unwrap card-body
+          inner_content = case children do
+            [{"div", inner_attrs, inner_children}] ->
+              inner_class = Floki.attribute([{"div", inner_attrs, inner_children}], "class") |> List.first()
+              if inner_class == "card-body" do
+                inner_children
+              else
+                children
+              end
+            _ -> children
+          end
+          
+          # Build component call
+          component_attrs = if extra_classes != "", do: [{"class", extra_classes}], else: []
+          {:component, "section_card", component_attrs, inner_content}
+        else
+          node
+        end
+        
+      node -> node
+    end)
+  end
+
+  # Transform stats divs to stats_grid component  
+  defp transform_stats_grid(doc) do
+    Floki.traverse_and_update(doc, fn
+      {"div", attrs, children} = node ->
+        class = Floki.attribute([node], "class") |> List.first()
+        
+        if class && String.contains?(class, "stats stats-vertical lg:stats-horizontal") do
+          # Extract extra classes
+          base_pattern = ~r/stats\s+stats-vertical\s+lg:stats-horizontal\s+shadow\s*/
+          extra_classes = String.replace(class, base_pattern, "") |> String.trim()
+          
+          # Build component call
+          component_attrs = if extra_classes != "", do: [{"class", extra_classes}], else: []
+          {:component, "stats_grid", component_attrs, children}
+        else
+          node
+        end
+        
+      node -> node
+    end)
+  end
 
   @impl true
   def render(assigns) do
