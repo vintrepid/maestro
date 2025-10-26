@@ -49,6 +49,7 @@ defmodule MaestroWeb.Layouts do
         <li class="menu-title">Tools</li>
         <li><a href="/admin/tailwind-analysis">Tailwind Analysis</a></li>
         <li><a href="/admin/page-inventory">Page Inventory</a></li>
+        <li><a href="/admin/component-replacement">Component Replacement</a></li>
         <li class="menu-title">Theme</li>
         <li>
           <button phx-click={set_theme("light")}>

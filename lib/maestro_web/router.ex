@@ -29,6 +29,7 @@ defmodule MaestroWeb.Router do
       live "/", DashboardLive, :index
       live "/admin/tailwind-analysis", AdminLive.TailwindAnalysisLive, :index
       live "/admin/page-inventory", AdminLive.PageInventoryLive, :index
+      live "/admin/component-replacement", AdminLive.ComponentReplacementLive, :index
     end
   end
 
