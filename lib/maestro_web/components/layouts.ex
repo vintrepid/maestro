@@ -48,6 +48,7 @@ defmodule MaestroWeb.Layouts do
       <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52">
         <li class="menu-title">Tools</li>
         <li><a href="/admin/tailwind-analysis">Tailwind Analysis</a></li>
+        <li><a href="/admin/page-inventory">Page Inventory</a></li>
         <li class="menu-title">Theme</li>
         <li>
           <button phx-click={set_theme("light")}>
