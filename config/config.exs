@@ -65,7 +65,7 @@ config :spark,
 config :maestro,
   ecto_repos: [Maestro.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [Maestro.Accounts]
+  ash_domains: [Maestro.Accounts, Maestro.Ops]
 
 # Configures the endpoint
 config :maestro, MaestroWeb.Endpoint,

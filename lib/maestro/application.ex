@@ -17,9 +17,7 @@ defmodule Maestro.Application do
          Application.fetch_env!(:maestro, Oban)
        )},
       {Phoenix.PubSub, name: Maestro.PubSub},
-      # Start a worker by calling: Maestro.Worker.start_link(arg)
-      # {Maestro.Worker, arg},
-      # Start to serve requests, typically the last entry
+      Maestro.Ops.ProjectMonitor,
       MaestroWeb.Endpoint,
       {AshAuthentication.Supervisor, [otp_app: :maestro]}
     ]
