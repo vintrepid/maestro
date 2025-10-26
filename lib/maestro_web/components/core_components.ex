@@ -517,4 +517,36 @@ defmodule MaestroWeb.CoreComponents do
     </code>
     """
   end
+
+
+  @doc """
+  Renders a simple HTML table with DaisyUI styling defaults.
+
+  Use this for custom table markup where you control the structure.
+  For data tables with columns/rows, use `table/1` instead.
+
+  Applies: table, table-sm, table-zebra, table-pin-rows.
+
+  ## Examples
+
+      <.simple_table>
+        <thead>
+          <tr><th>Name</th><th>Email</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>John</td><td>john@example.com</td></tr>
+        </tbody>
+      </.simple_table>
+  """
+  attr :class, :string, default: nil
+  attr :rest, :global
+  slot :inner_block, required: true
+
+  def simple_table(assigns) do
+    ~H"""
+    <table class={["table table-sm table-zebra table-pin-rows", @class]} {@rest}>
+      {render_slot(@inner_block)}
+    </table>
+    """
+  end
 end

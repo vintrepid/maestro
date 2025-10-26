@@ -214,7 +214,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
           <div class="card-body">
             <h2 class="card-title">Analysis History</h2>
             <div class="overflow-x-auto">
-              <table class="table table-sm table-zebra table-pin-rows">
+              <.simple_table>
                 <thead>
                   <tr>
                     <th>Timestamp</th>
@@ -286,7 +286,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                     </tr>
                   <% end %>
                 </tbody>
-              </table>
+              </.simple_table>
             </div>
           </div>
         </div>
@@ -322,7 +322,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
             <div class="card-body">
               <h2 class="card-title">Top 20 Most Used Classes</h2>
               <div class="overflow-x-auto">
-                <table class="table table-sm table-zebra table-pin-rows">
+                <.simple_table>
                   <thead>
                     <tr>
                       <th>Class</th>
@@ -345,7 +345,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                       </tr>
                     <% end %>
                   </tbody>
-                </table>
+                </.simple_table>
               </div>
             </div>
           </div>
@@ -372,7 +372,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
           <div class="card-body">
             <h2 class="card-title">Top Files by Class Usage</h2>
             <div class="overflow-x-auto">
-              <table class="table table-sm table-zebra table-pin-rows">
+              <.simple_table>
                 <thead>
                   <tr>
                     <th>File</th>
@@ -393,7 +393,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                     </tr>
                   <% end %>
                 </tbody>
-              </table>
+              </.simple_table>
             </div>
           </div>
         </div>
