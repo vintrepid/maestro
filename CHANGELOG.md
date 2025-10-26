@@ -157,3 +157,23 @@ Changing approach to create a shared Hex package + centralized hub:
 
 **Ready for Calvin:**
 Library is production-ready. Calvin can test and share analysis JSON.
+
+---
+
+## 2024-10-27 - Styling & UX Improvements
+
+**Goal:** Improve the UI/UX of the Tailwind analysis page based on comparison with Calvin, and enhance admin navigation.
+
+**Tasks:**
+- [ ] Improve h1 styling (Calvin has better design)
+- [ ] Fix timestamp cutoff in Analysis run picker
+- [ ] Add page inventory section (shows which pages use which classes)
+- [ ] Add delete button for analysis runs
+- [ ] Move theme picker to dedicated admin settings page
+- [ ] Create admin navigation menu
+- [ ] Improve overall spacing and padding
+
+**Branch:** feature/styling-improvements
+
+**Status:** In Progress 🚧
+
