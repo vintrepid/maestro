@@ -469,4 +469,52 @@ defmodule MaestroWeb.CoreComponents do
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
+
+  @doc """
+  Renders a card container with consistent styling.
+  """
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+  
+  def card(assigns) do
+    ~H"""
+    <div class={["card bg-base-100 shadow-xl", @class]}>
+      <div class="card-body">
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a stat card for displaying metrics.
+  """
+  attr :title, :string, required: true
+  attr :value, :string, required: true
+  attr :description, :string, default: nil
+  attr :color, :string, default: nil
+  
+  def stat_card(assigns) do
+    ~H"""
+    <div class="stat">
+      <div class="stat-title">{@title}</div>
+      <div class={["stat-value", @color && "text-#{@color}"]}>{@value}</div>
+      <div :if={@description} class="stat-desc">{@description}</div>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders inline code with monospace font.
+  """
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+  
+  def code(assigns) do
+    ~H"""
+    <code class={["font-mono text-xs bg-base-200 px-2 py-1 rounded", @class]}>
+      {render_slot(@inner_block)}
+    </code>
+    """
+  end
 end

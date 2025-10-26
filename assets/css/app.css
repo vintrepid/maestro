@@ -8,6 +8,14 @@
 @source "../js";
 @source "../../lib/maestro_web";
 
+/* Fix for LiveTable CSS - Tailwind v4 compatibility */
+/* Override ring-opacity-5 with ring-black/5 syntax */
+.live-table-dropdown-menu,
+.live-table-select-dropdown,
+.live-table-actions-menu {
+  @apply ring-1 ring-black/5 dark:ring-gray-700/50;
+}
+
 /* A Tailwind plugin that makes "hero-#{ICON}" classes available.
    The heroicons installation itself is managed by your mix.exs */
 @plugin "../vendor/heroicons";
@@ -105,3 +113,28 @@
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
 /* This file is for your main application CSS */
+
+/* Tailwind Analysis Page Improvements */
+.analysis-page h1 {
+  @apply text-4xl font-bold text-primary mb-8;
+}
+
+.analysis-page h2.card-title {
+  @apply text-2xl font-semibold mb-4;
+}
+
+.analysis-page .stats {
+  @apply shadow-2xl border border-base-300;
+}
+
+.analysis-page .card {
+  @apply hover:shadow-2xl transition-shadow duration-200;
+}
+
+.analysis-page table th {
+  @apply bg-base-200 font-semibold;
+}
+
+.analysis-page .badge {
+  @apply font-semibold;
+}

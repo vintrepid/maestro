@@ -34,10 +34,45 @@ This is a web application written using the Phoenix web framework.
 - If you override the default input classes (`<.input class="myclass px-2 py-1 rounded-lg">)`) class with your own values, no default classes are inherited, so your
 custom classes must fully style the input
 
-### JS and CSS guidelines
+### CSS and Styling Guidelines
 
-- **Use Tailwind CSS classes and custom CSS rules** to create polished, responsive, and visually stunning interfaces.
-- Tailwindcss v4 **no longer needs a tailwind.config.js** and uses a new import syntax in `app.css`:
+**Philosophy: DaisyUI for Components, Tailwind for Layout, Custom Components for Patterns**
+
+1. **Use DaisyUI for semantic UI components**
+   - Tables, buttons, forms, cards, modals, badges
+   - Benefits: Consistency, theme support, less code
+   - Example: `<button class="btn btn-primary">` instead of custom utilities
+
+2. **Use Tailwind for layout and spacing**
+   - Flexbox, grid, spacing, positioning
+   - Keep these in templates when they're one-off adjustments
+   - Example: `<div class="flex items-center gap-4">`
+
+3. **Extract repeated patterns to components**
+   - If you see the same utility combination 3+ times, extract it
+   - Create Phoenix components in `components/` directory
+   - Example: `<.page_header>` instead of repeated heading markup
+
+4. **Use app.css for application-wide styles**
+   - Global typography, link styles, base element styling
+   - NOT for component-specific styles (use Phoenix components instead)
+   - Example: Default `h1`, `a`, `code` tag styling
+
+5. **Use css_linter to identify duplication**
+   - Run `mix css_linter.analyze --strategy tailwind`
+   - High usage counts indicate extraction opportunities
+   - Goal: Reduce unique class count, increase reusability
+
+**What to Extract:**
+- ✅ Repeated utility combinations (e.g., `flex items-center gap-4` used 10+ times)
+- ✅ Card layouts with consistent structure
+- ✅ Form field wrappers
+- ✅ Section headers with consistent styling
+- ❌ One-off spacing adjustments
+- ❌ DaisyUI component classes (already extracted)
+- ❌ Simple layout utilities (flex, grid)
+
+**Tailwind v4 Setup:**
 
       @import "tailwindcss" source(none);
       @source "../css";

@@ -41,6 +41,7 @@ defmodule Maestro.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:css_linter, path: "../forks/css_linter"},
       {:fun_with_flags, "~> 1.11"},
       {:fun_with_flags_ui, "~> 1.0"},
       {:live_table, github: "vintrepid/live_table", branch: "master"},
