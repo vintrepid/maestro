@@ -160,6 +160,39 @@ Library is production-ready. Calvin can test and share analysis JSON.
 
 ---
 
+## 2024-10-27 - Styling & UX Improvements
+
+**Goal:** Improve the UI/UX of the Tailwind analysis page based on comparison with Calvin, and enhance admin navigation.
+
+**Tasks:**
+- [ ] Improve h1 styling (Calvin has better design)
+- [ ] Fix timestamp cutoff in Analysis run picker
+- [✅] Improve h1 styling (Calvin has better design)
+- [✅] Fix timestamp cutoff in Analysis run picker
+- [ ] Add page inventory section (shows which pages use which classes)
+- [✅] Add delete button for analysis runs
+- [✅] Move theme picker to dedicated admin settings page
+- [✅] Create admin navigation menu
+- [✅] Improve overall spacing and padding
+
+**Branch:** feature/styling-improvements
+
+**Status:** Complete ✅
+
+**Accomplished:**
+- Added global typography styles (h1, h2, h3) to app.css
+- Created .page-section wrapper class for consistent padding
+- Simplified tailwind analysis page markup
+- Fixed timestamp picker width and improved date format readability
+- Added delete button with trash icon for analysis runs
+- Implemented delete_run event handler with confirmation
+- Created admin dropdown menu in navbar
+- Moved theme selector into admin dropdown
+- Added Tailwind Analysis link to admin menu
+
+
+---
+
 ## 2024-10-27 - Simplify Analysis Feature
 
 **Goal:** Simplify the Tailwind analysis feature to focus on core functionality.

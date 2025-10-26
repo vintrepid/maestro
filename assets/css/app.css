@@ -114,27 +114,21 @@
 
 /* This file is for your main application CSS */
 
-/* Tailwind Analysis Page Improvements */
-.analysis-page h1 {
-  @apply text-4xl font-bold text-primary mb-8;
+/* Global Typography */
+h1 {
+  @apply text-3xl font-bold mb-4;
 }
 
-.analysis-page h2.card-title {
-  @apply text-2xl font-semibold mb-4;
+h2 {
+  @apply text-2xl font-semibold mb-3;
 }
 
-.analysis-page .stats {
-  @apply shadow-2xl border border-base-300;
+h3 {
+  @apply text-xl font-semibold mb-2;
 }
 
-.analysis-page .card {
-  @apply hover:shadow-2xl transition-shadow duration-200;
+/* Page Section Wrapper */
+.page-section {
+  @apply container mx-auto px-6 py-8 max-w-7xl;
 }
 
-.analysis-page table th {
-  @apply bg-base-200 font-semibold;
-}
-
-.analysis-page .badge {
-  @apply font-semibold;
-}

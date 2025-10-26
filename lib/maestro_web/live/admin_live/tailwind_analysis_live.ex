@@ -4,6 +4,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
 
   import Ecto.Query
   alias Maestro.Analysis.TailwindClassUsage
+  alias Maestro.Repo
 
   def repo, do: Maestro.Repo
 
@@ -13,7 +14,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
     selected_timestamp = List.first(timestamps)
     analysis_summary = TailwindClassUsage.analysis_summary()
     projects = TailwindClassUsage.available_projects()
-    selected_project = List.first(projects)
+    selected_project = "all"
     
     socket =
       socket
@@ -33,9 +34,10 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   end
 
   defp assign_summary_stats(socket, analyzed_at, project_name) do
-    summary = TailwindClassUsage.summary_stats(analyzed_at, project_name)
-    category_stats = TailwindClassUsage.category_stats(analyzed_at, project_name)
-    file_stats = TailwindClassUsage.file_stats(analyzed_at, project_name)
+    project_filter = if project_name == "all", do: nil, else: project_name
+    summary = TailwindClassUsage.summary_stats(analyzed_at, project_filter)
+    category_stats = TailwindClassUsage.category_stats(analyzed_at, project_filter)
+    file_stats = TailwindClassUsage.file_stats(analyzed_at, project_filter)
     
     total_unique = length(summary)
     total_occurrences = Enum.sum(Enum.map(summary, & &1.total_occurrences))
@@ -136,11 +138,11 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
     <Layouts.app
       flash={@flash}
     >
-      <div class="container mx-auto p-8 max-w-7xl analysis-page">
-        <div class="flex gap-6 justify-between items-center mb-12">
+      <div class="page-section">
+        <div class="flex gap-6 justify-between items-center mb-8">
           <div>
-            <h1 class="text-4xl font-bold text-primary">Tailwind Class Analysis</h1>
-            <p class="text-base-content/70 mt-2">Analyze and optimize CSS class usage across projects</p>
+            <h1>Tailwind Class Analysis</h1>
+            <p class="text-base-content/70">Analyze and optimize CSS class usage across projects</p>
           </div>
           
           <div class="flex gap-4 items-center">
@@ -153,33 +155,15 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                   class="select select-bordered select-sm"
                   name="project"
                 >
+                  <option value="all" selected={@selected_project == "all"}>
+                    All Projects
+                  </option>
                   <%= for project <- @available_projects do %>
                     <option 
                       value={project}
                       selected={project == @selected_project}
                     >
                       {project}
-                    </option>
-                  <% end %>
-                </select>
-              </form>
-            <% end %>
-            
-            <%= if @available_timestamps != [] do %>
-              <form phx-change="select_timestamp" class="form-control">
-                <label class="label">
-                  <span class="label-text">Analysis Run:</span>
-                </label>
-                <select 
-                  class="select select-bordered select-sm"
-                  name="timestamp"
-                >
-                  <%= for timestamp <- @available_timestamps do %>
-                    <option 
-                      value={DateTime.to_iso8601(timestamp)}
-                      selected={timestamp == @selected_timestamp}
-                    >
-                      {Calendar.strftime(timestamp, "%Y-%m-%d %H:%M:%S UTC")}
                     </option>
                   <% end %>
                 </select>
@@ -234,20 +218,30 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                 <thead>
                   <tr>
                     <th>Timestamp</th>
+                    <th>Project</th>
                     <th>Description</th>
                     <th class="text-right">Unique Classes</th>
                     <th class="text-right">Total Uses</th>
                     <th class="text-right">Avg/Class</th>
                     <th class="text-right">Change</th>
+                    <th class="text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   <%= for {run, index} <- Enum.with_index(@analysis_summary) do %>
-                    <tr class="hover">
+                    <tr 
+                      class="hover cursor-pointer"
+                      phx-click="select_run"
+                      phx-value-timestamp={DateTime.to_iso8601(run.analyzed_at)}
+                      phx-value-project={run.project_name}
+                    >
                       <td>
                         <span class="font-mono text-xs">
-                          {Calendar.strftime(run.analyzed_at, "%Y-%m-%d %H:%M")}
+                          {Calendar.strftime(run.analyzed_at, "%b %d, %I:%M %p")}
                         </span>
+                      </td>
+                      <td>
+                        <span class="badge badge-sm badge-primary">{run.project_name}</span>
                       </td>
                       <td>
                         <%= if run.description do %>
@@ -278,6 +272,16 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                         <% else %>
                           <span class="badge badge-sm badge-ghost">Baseline</span>
                         <% end %>
+                      </td>
+                      <td class="text-right">
+                        <button 
+                          phx-click="delete_run"
+                          phx-value-timestamp={DateTime.to_iso8601(run.analyzed_at)}
+                          class="btn btn-ghost btn-xs text-error"
+                          data-confirm="Delete this analysis run?"
+                        >
+                          <.icon name="hero-trash" class="w-4 h-4" />
+                        </button>
                       </td>
                     </tr>
                   <% end %>
@@ -410,6 +414,38 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
             />
           </div>
         </div>
+
+        <div class="card bg-base-100 shadow-xl mt-6">
+          <div class="card-body">
+            <h2 class="card-title">Page Inventory</h2>
+            <p class="text-sm text-base-content/70 mb-4">
+              LiveView pages in this project and their routes.
+            </p>
+            <div class="overflow-x-auto">
+              <table class="table table-sm table-zebra">
+                <thead>
+                  <tr>
+                    <th>Route</th>
+                    <th>LiveView</th>
+                    <th>File</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code class="text-xs">/</code></td>
+                    <td>ProjectsLive</td>
+                    <td><span class="text-xs font-mono">lib/maestro_web/live/projects_live.ex</span></td>
+                  </tr>
+                  <tr>
+                    <td><code class="text-xs">/admin/tailwind-analysis</code></td>
+                    <td>TailwindAnalysisLive</td>
+                    <td><span class="text-xs font-mono">lib/maestro_web/live/admin_live/tailwind_analysis_live.ex</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </Layouts.app>
     """
@@ -434,6 +470,19 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   end
 
   @impl true
+  def handle_event("select_run", %{"timestamp" => timestamp_str, "project" => project_name}, socket) do
+    {:ok, timestamp, _} = DateTime.from_iso8601(timestamp_str)
+    
+    socket =
+      socket
+      |> assign(:selected_timestamp, timestamp)
+      |> assign(:selected_project, project_name)
+      |> assign_summary_stats(timestamp, project_name)
+    
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("select_project", %{"project" => project_name}, socket) do
     socket =
       socket
@@ -446,6 +495,29 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   @impl true
   def handle_event("toggle_run_form", _, socket) do
     {:noreply, assign(socket, :show_run_form, !socket.assigns.show_run_form)}
+  end
+
+  @impl true
+  def handle_event("delete_run", %{"timestamp" => timestamp_str}, socket) do
+    {:ok, timestamp, _} = DateTime.from_iso8601(timestamp_str)
+    
+    {count, _} = Repo.delete_all(
+      from c in TailwindClassUsage,
+      where: c.analyzed_at == ^timestamp
+    )
+    
+    timestamps = TailwindClassUsage.available_timestamps()
+    selected_timestamp = List.first(timestamps) || socket.assigns.selected_timestamp
+    
+    socket =
+      socket
+      |> assign(:available_timestamps, timestamps)
+      |> assign(:selected_timestamp, selected_timestamp)
+      |> assign(:analysis_summary, TailwindClassUsage.analysis_summary())
+      |> assign_summary_stats(selected_timestamp, socket.assigns.selected_project)
+      |> put_flash(:info, "Deleted #{count} records from analysis run")
+    
+    {:noreply, socket}
   end
 
   @impl true
