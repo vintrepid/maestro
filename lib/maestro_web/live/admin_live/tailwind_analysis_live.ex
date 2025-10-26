@@ -414,6 +414,38 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
             />
           </div>
         </div>
+
+        <div class="card bg-base-100 shadow-xl mt-6">
+          <div class="card-body">
+            <h2 class="card-title">Page Inventory</h2>
+            <p class="text-sm text-base-content/70 mb-4">
+              LiveView pages in this project and their routes.
+            </p>
+            <div class="overflow-x-auto">
+              <table class="table table-sm table-zebra">
+                <thead>
+                  <tr>
+                    <th>Route</th>
+                    <th>LiveView</th>
+                    <th>File</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code class="text-xs">/</code></td>
+                    <td>ProjectsLive</td>
+                    <td><span class="text-xs font-mono">lib/maestro_web/live/projects_live.ex</span></td>
+                  </tr>
+                  <tr>
+                    <td><code class="text-xs">/admin/tailwind-analysis</code></td>
+                    <td>TailwindAnalysisLive</td>
+                    <td><span class="text-xs font-mono">lib/maestro_web/live/admin_live/tailwind_analysis_live.ex</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </Layouts.app>
     """
