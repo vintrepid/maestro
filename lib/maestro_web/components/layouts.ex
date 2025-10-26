@@ -24,7 +24,7 @@ defmodule MaestroWeb.Layouts do
             <a href="/" class="btn btn-ghost text-xl">🎼 Maestro</a>
           </div>
           <div class="flex-none">
-            <.theme_selector />
+            <.admin_menu />
           </div>
         </div>
 
@@ -35,6 +35,37 @@ defmodule MaestroWeb.Layouts do
     </div>
 
     <.flash_group flash={@flash} />
+    """
+  end
+
+  def admin_menu(assigns) do
+    ~H"""
+    <div class="dropdown dropdown-end">
+      <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
+        <.icon name="hero-cog-6-tooth" class="w-5 h-5" />
+        Admin
+      </div>
+      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52">
+        <li class="menu-title">Tools</li>
+        <li><a href="/admin/tailwind-analysis">Tailwind Analysis</a></li>
+        <li class="menu-title">Theme</li>
+        <li>
+          <button phx-click={set_theme("light")}>
+            ☀️ Light
+          </button>
+        </li>
+        <li>
+          <button phx-click={set_theme("dark")}>
+            🌙 Dark
+          </button>
+        </li>
+        <li>
+          <button phx-click={set_theme("both")}>
+            ✨ Both
+          </button>
+        </li>
+      </ul>
+    </div>
     """
   end
 
