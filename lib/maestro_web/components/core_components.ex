@@ -630,4 +630,37 @@ defmodule MaestroWeb.CoreComponents do
     </div>
     """
   end
+
+  @doc """
+  Renders a simple card with automatic styling for h2 and content.
+
+  The h2 inside automatically gets card-title styling.
+  Content is wrapped with overflow handling.
+
+  ## Examples
+
+      <.simple_card>
+        <h2>Top Files by Class Usage</h2>
+        <.simple_table>
+          ...
+        </.simple_table>
+      </.simple_card>
+
+      <.simple_card class="mb-6">
+        <h2>Analysis History</h2>
+        <p>Some content</p>
+      </.simple_card>
+  """
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  def simple_card(assigns) do
+    ~H"""
+    <div class={["card bg-base-100 shadow-xl", @class]}>
+      <div class="card-body simple-card-body">
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
 end
