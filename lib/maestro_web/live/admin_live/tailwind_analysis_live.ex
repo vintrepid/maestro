@@ -14,7 +14,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
     selected_timestamp = List.first(timestamps)
     analysis_summary = TailwindClassUsage.analysis_summary()
     projects = TailwindClassUsage.available_projects()
-    selected_project = List.first(projects)
+    selected_project = "all"
     
     socket =
       socket
@@ -34,9 +34,10 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   end
 
   defp assign_summary_stats(socket, analyzed_at, project_name) do
-    summary = TailwindClassUsage.summary_stats(analyzed_at, project_name)
-    category_stats = TailwindClassUsage.category_stats(analyzed_at, project_name)
-    file_stats = TailwindClassUsage.file_stats(analyzed_at, project_name)
+    project_filter = if project_name == "all", do: nil, else: project_name
+    summary = TailwindClassUsage.summary_stats(analyzed_at, project_filter)
+    category_stats = TailwindClassUsage.category_stats(analyzed_at, project_filter)
+    file_stats = TailwindClassUsage.file_stats(analyzed_at, project_filter)
     
     total_unique = length(summary)
     total_occurrences = Enum.sum(Enum.map(summary, & &1.total_occurrences))
@@ -154,33 +155,15 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                   class="select select-bordered select-sm"
                   name="project"
                 >
+                  <option value="all" selected={@selected_project == "all"}>
+                    All Projects
+                  </option>
                   <%= for project <- @available_projects do %>
                     <option 
                       value={project}
                       selected={project == @selected_project}
                     >
                       {project}
-                    </option>
-                  <% end %>
-                </select>
-              </form>
-            <% end %>
-            
-            <%= if @available_timestamps != [] do %>
-              <form phx-change="select_timestamp" class="form-control">
-                <label class="label">
-                  <span class="label-text">Analysis Run:</span>
-                </label>
-                <select 
-                  class="select select-bordered select-sm w-64"
-                  name="timestamp"
-                >
-                  <%= for timestamp <- @available_timestamps do %>
-                    <option 
-                      value={DateTime.to_iso8601(timestamp)}
-                      selected={timestamp == @selected_timestamp}
-                    >
-                      {Calendar.strftime(timestamp, "%b %d, %Y %I:%M %p UTC")}
                     </option>
                   <% end %>
                 </select>
@@ -235,6 +218,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                 <thead>
                   <tr>
                     <th>Timestamp</th>
+                    <th>Project</th>
                     <th>Description</th>
                     <th class="text-right">Unique Classes</th>
                     <th class="text-right">Total Uses</th>
@@ -245,11 +229,19 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                 </thead>
                 <tbody>
                   <%= for {run, index} <- Enum.with_index(@analysis_summary) do %>
-                    <tr class="hover">
+                    <tr 
+                      class="hover cursor-pointer"
+                      phx-click="select_run"
+                      phx-value-timestamp={DateTime.to_iso8601(run.analyzed_at)}
+                      phx-value-project={run.project_name}
+                    >
                       <td>
                         <span class="font-mono text-xs">
-                          {Calendar.strftime(run.analyzed_at, "%Y-%m-%d %H:%M")}
+                          {Calendar.strftime(run.analyzed_at, "%b %d, %I:%M %p")}
                         </span>
+                      </td>
+                      <td>
+                        <span class="badge badge-sm badge-primary">{run.project_name}</span>
                       </td>
                       <td>
                         <%= if run.description do %>
@@ -441,6 +433,19 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
       socket
       |> assign(:selected_timestamp, timestamp)
       |> assign_summary_stats(timestamp, socket.assigns.selected_project)
+    
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("select_run", %{"timestamp" => timestamp_str, "project" => project_name}, socket) do
+    {:ok, timestamp, _} = DateTime.from_iso8601(timestamp_str)
+    
+    socket =
+      socket
+      |> assign(:selected_timestamp, timestamp)
+      |> assign(:selected_project, project_name)
+      |> assign_summary_stats(timestamp, project_name)
     
     {:noreply, socket}
   end

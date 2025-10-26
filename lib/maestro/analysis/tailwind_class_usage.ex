@@ -105,14 +105,15 @@ defmodule Maestro.Analysis.TailwindClassUsage do
 
   def analysis_summary(repo \\ Maestro.Repo) do
     query = from c in __MODULE__,
-      group_by: c.analyzed_at,
+      group_by: [c.analyzed_at, c.project_name],
       select: %{
         analyzed_at: c.analyzed_at,
+        project_name: c.project_name,
         description: fragment("MAX(?)", c.description),
         unique_classes: fragment("COUNT(DISTINCT ?)", c.class_name),
         total_occurrences: count(c.id)
       },
-      order_by: [desc: c.analyzed_at]
+      order_by: [desc: c.analyzed_at, asc: c.project_name]
 
     repo.all(query)
   end
