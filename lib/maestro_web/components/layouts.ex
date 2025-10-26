@@ -23,6 +23,9 @@ defmodule MaestroWeb.Layouts do
           <div class="flex-1">
             <a href="/" class="btn btn-ghost text-xl">🎼 Maestro</a>
           </div>
+          <div class="flex-none">
+            <.theme_selector />
+          </div>
         </div>
 
         <main class="container mx-auto p-4">
@@ -33,6 +36,35 @@ defmodule MaestroWeb.Layouts do
 
     <.flash_group flash={@flash} />
     """
+  end
+
+  def theme_selector(assigns) do
+    ~H"""
+    <div class="join">
+      <button
+        class="btn btn-sm join-item"
+        phx-click={set_theme("light")}
+      >
+        ☀️ Light
+      </button>
+      <button
+        class="btn btn-sm join-item"
+        phx-click={set_theme("dark")}
+      >
+        🌙 Dark
+      </button>
+      <button
+        class="btn btn-sm join-item"
+        phx-click={set_theme("both")}
+      >
+        ✨ Both
+      </button>
+    </div>
+    """
+  end
+
+  defp set_theme(theme) do
+    JS.push("set_theme", value: %{theme: theme})
   end
 
   @doc """

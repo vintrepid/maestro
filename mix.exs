@@ -41,6 +41,8 @@ defmodule Maestro.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:fun_with_flags, "~> 1.11"},
+      {:fun_with_flags_ui, "~> 1.0"},
       {:live_table, github: "vintrepid/live_table", branch: "master"},
       {:ex_money_sql, "~> 1.0"},
       {:ex_cldr, "~> 2.0"},

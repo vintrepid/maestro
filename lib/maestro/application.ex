@@ -10,6 +10,7 @@ defmodule Maestro.Application do
     children = [
       MaestroWeb.Telemetry,
       Maestro.Repo,
+      FunWithFlags.Supervisor,
       {DNSCluster, query: Application.get_env(:maestro, :dns_cluster_query) || :ignore},
       {Oban,
        AshOban.config(

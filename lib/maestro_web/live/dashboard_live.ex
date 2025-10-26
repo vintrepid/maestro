@@ -6,12 +6,41 @@ defmodule MaestroWeb.DashboardLive do
 
   @impl true
   def mount(_params, _session, socket) do
+    theme = FunWithFlags.enabled?(:dark_theme) && FunWithFlags.enabled?(:light_theme)
+      |> case do
+        true -> "both"
+        false -> if FunWithFlags.enabled?(:dark_theme), do: "dark", else: "light"
+      end
+
     socket =
       socket
       |> assign(:page_title, "Projects")
       |> assign(:data_provider, {__MODULE__, :list_projects, []})
+      |> assign(:theme, theme)
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("set_theme", %{"theme" => theme}, socket) do
+    case theme do
+      "light" ->
+        FunWithFlags.enable(:light_theme)
+        FunWithFlags.disable(:dark_theme)
+
+      "dark" ->
+        FunWithFlags.enable(:dark_theme)
+        FunWithFlags.disable(:light_theme)
+
+      "both" ->
+        FunWithFlags.enable(:light_theme)
+        FunWithFlags.enable(:dark_theme)
+    end
+
+    {:noreply,
+     socket
+     |> assign(:theme, theme)
+     |> push_event("theme-changed", %{theme: theme})}
   end
 
   def list_projects do
