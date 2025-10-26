@@ -4,6 +4,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
 
   import Ecto.Query
   alias Maestro.Analysis.TailwindClassUsage
+  alias Maestro.Repo
 
   def repo, do: Maestro.Repo
 
