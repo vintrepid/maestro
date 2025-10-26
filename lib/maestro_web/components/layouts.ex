@@ -43,7 +43,6 @@ defmodule MaestroWeb.Layouts do
     <div class="dropdown dropdown-end">
       <div tabindex="0" role="button" class="admin-menu-button">
         <.icon name="hero-cog-6-tooth" class="admin-menu-icon" />
-        Admin
       </div>
       <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52">
         <li class="menu-title">Tools</li>
