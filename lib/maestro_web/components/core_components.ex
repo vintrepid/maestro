@@ -549,4 +549,85 @@ defmodule MaestroWeb.CoreComponents do
     </table>
     """
   end
+
+  @doc """
+  Renders a page header with title and action buttons.
+
+  ## Examples
+
+      <.page_header>
+        <:title>
+          <h1>Page Title</h1>
+          <p class="text-base-content/70 text-sm">Description</p>
+        </:title>
+        <:actions>
+          <button class="btn btn-primary">Action</button>
+        </:actions>
+      </.page_header>
+  """
+  attr :class, :string, default: nil
+  slot :title, required: true
+  slot :actions
+
+  def page_header(assigns) do
+    ~H"""
+    <div class={["flex gap-6 justify-between items-start mb-6", @class]}>
+      <div>{render_slot(@title)}</div>
+      <div :if={@actions != []} class="flex gap-4 items-center">
+        {render_slot(@actions)}
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a section card with consistent styling.
+
+  ## Examples
+
+      <.section_card>
+        <h2 class="card-title">Title</h2>
+        <p>Content</p>
+      </.section_card>
+
+      <.section_card class="lg:col-span-2">
+        ...
+      </.section_card>
+  """
+  attr :class, :string, default: nil
+  attr :rest, :global
+  slot :inner_block, required: true
+
+  def section_card(assigns) do
+    ~H"""
+    <div class={["card bg-base-100 shadow-xl", @class]} {@rest}>
+      <div class="card-body">
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a stats grid with responsive layout.
+
+  ## Examples
+
+      <.stats_grid>
+        <div class="stat">
+          <div class="stat-title">Title</div>
+          <div class="stat-value">Value</div>
+        </div>
+      </.stats_grid>
+  """
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  def stats_grid(assigns) do
+    ~H"""
+    <div class={["stats stats-vertical lg:stats-horizontal shadow mb-6 w-full", @class]}>
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
 end
