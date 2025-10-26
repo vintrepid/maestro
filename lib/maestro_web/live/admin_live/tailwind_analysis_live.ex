@@ -138,21 +138,21 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
     <Layouts.app
       flash={@flash}
     >
-      <div class="page-section">
-        <div class="flex gap-6 justify-between items-center mb-8">
+      <div class="container mx-auto px-4 py-6 max-w-7xl">
+        <div class="flex gap-6 justify-between items-start mb-6">
           <div>
-            <h1>Tailwind Class Analysis</h1>
-            <p class="text-base-content/70">Analyze and optimize CSS class usage across projects</p>
+            <h1 class="text-2xl font-bold mb-1">Tailwind Class Analysis</h1>
+            <p class="text-base-content/70 text-sm">Analyze and optimize CSS class usage across projects</p>
           </div>
           
           <div class="flex gap-4 items-center">
             <%= if @available_projects != [] do %>
               <form phx-change="select_project" class="form-control">
-                <label class="label">
-                  <span class="label-text">Project:</span>
+                <label class="label py-0 pb-1">
+                  <span class="label-text text-xs">Project:</span>
                 </label>
                 <select 
-                  class="select select-bordered select-sm"
+                  class="select select-bordered"
                   name="project"
                 >
                   <option value="all" selected={@selected_project == "all"}>
@@ -171,7 +171,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
             <% end %>
             
             <button 
-              class="btn btn-primary btn-sm"
+              class="btn btn-primary"
               phx-click="toggle_run_form"
             >
               <.icon name="hero-play" class="w-4 h-4" />
