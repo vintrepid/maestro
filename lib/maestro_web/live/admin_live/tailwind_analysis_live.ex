@@ -81,7 +81,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   defp render_class_name(class_name) do
     assigns = %{class_name: class_name}
     ~H"""
-    <code class="code-inline">{@class_name}</code>
+    <code class="py-1 px-2 text-sm rounded bg-base-200">{@class_name}</code>
     """
   end
 
@@ -105,7 +105,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
     short_path = String.replace_prefix(file_path, "lib/", "")
     assigns = %{file_path: short_path}
     ~H"""
-    <span class="analysis-table-cell-mono">{@file_path}</span>
+    <span class="font-mono text-sm">{@file_path}</span>
     """
   end
 
@@ -117,7 +117,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
     
     assigns = %{context: truncated}
     ~H"""
-    <span class="text-muted-xs">{@context}</span>
+    <span class="text-xs text-base-content/70">{@context}</span>
     """
   end
 
@@ -139,13 +139,13 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
       flash={@flash}
     >
       <div>
-        <div class="analysis-header">
+        <div class="flex gap-6 justify-between items-start mb-6">
           <div>
             <h1>Tailwind Class Analysis</h1>
-            <p class="text-muted-sm">Analyze and optimize CSS class usage across projects</p>
+            <p class="text-base-content/70 text-sm">Analyze and optimize CSS class usage across projects</p>
           </div>
           
-          <div class="analysis-header-controls">
+          <div class="flex gap-4 items-center">
             <%= if @available_projects != [] do %>
               <form phx-change="select_project" class="form-control">
                 <label class="label py-0 pb-1">
@@ -214,17 +214,17 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
           <div class="card-body">
             <h2 class="card-title">Analysis History</h2>
             <div class="overflow-x-auto">
-              <table class="table table-sm">
+              <table class="table table-sm table-zebra">
                 <thead>
                   <tr>
                     <th>Timestamp</th>
                     <th>Project</th>
                     <th>Description</th>
-                    <th class="analysis-table-cell-right">Unique Classes</th>
-                    <th class="analysis-table-cell-right">Total Uses</th>
-                    <th class="analysis-table-cell-right">Avg/Class</th>
-                    <th class="analysis-table-cell-right">Change</th>
-                    <th class="analysis-table-cell-right">Actions</th>
+                    <th class="text-right">Unique Classes</th>
+                    <th class="text-right">Total Uses</th>
+                    <th class="text-right">Avg/Class</th>
+                    <th class="text-right">Change</th>
+                    <th class="text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -236,7 +236,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                       phx-value-project={run.project_name}
                     >
                       <td>
-                        <span class="analysis-table-cell-mono">
+                        <span class="font-mono text-xs">
                           {Calendar.strftime(run.analyzed_at, "%b %d, %I:%M %p")}
                         </span>
                       </td>
@@ -250,16 +250,16 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                           <span class="text-base-content/40 italic">No description</span>
                         <% end %>
                       </td>
-                      <td class="analysis-table-cell-right-mono">{run.unique_classes}</td>
-                      <td class="analysis-table-cell-right-bold">{run.total_occurrences}</td>
-                      <td class="analysis-table-cell-right-mono">
+                      <td class="text-right font-mono">{run.unique_classes}</td>
+                      <td class="text-right font-mono font-semibold">{run.total_occurrences}</td>
+                      <td class="text-right font-mono">
                         <%= if run.unique_classes > 0 do %>
                           {Float.round(run.total_occurrences / run.unique_classes, 1)}
                         <% else %>
                           0.0
                         <% end %>
                       </td>
-                      <td class="analysis-table-cell-right">
+                      <td class="text-right">
                         <%= if index < length(@analysis_summary) - 1 do %>
                           <% prev = Enum.at(@analysis_summary, index + 1) %>
                           <% change = run.total_occurrences - prev.total_occurrences %>
@@ -273,7 +273,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                           <span class="badge badge-sm badge-ghost">Baseline</span>
                         <% end %>
                       </td>
-                      <td class="analysis-table-cell-right">
+                      <td class="text-right">
                         <button 
                           phx-click="delete_run"
                           phx-value-timestamp={DateTime.to_iso8601(run.analyzed_at)}
@@ -291,7 +291,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
           </div>
         </div>
 
-        <div class="stats-grid">
+        <div class="stats stats-vertical lg:stats-horizontal shadow mb-6 w-full">
           <div class="stat">
             <div class="stat-title">Total Unique Classes</div>
             <div class="stat-value text-primary">{@total_unique}</div>
@@ -317,18 +317,18 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
           </div>
         </div>
 
-        <div class="analysis-grid">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div class="card bg-base-100 shadow-xl lg:col-span-2">
             <div class="card-body">
               <h2 class="card-title">Top 20 Most Used Classes</h2>
               <div class="overflow-x-auto">
-                <table class="table table-sm">
+                <table class="table table-sm table-zebra">
                   <thead>
                     <tr>
                       <th>Class</th>
                       <th>Category</th>
-                      <th class="analysis-table-cell-right">Count</th>
-                      <th class="analysis-table-cell-right">Files</th>
+                      <th class="text-right">Count</th>
+                      <th class="text-right">Files</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -340,8 +340,8 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                             {List.first(stat.category) || "unknown"}
                           </span>
                         </td>
-                        <td class="analysis-table-cell-right-bold">{stat.total_occurrences}</td>
-                        <td class="analysis-table-cell-right">{stat.file_count}</td>
+                        <td class="text-right font-semibold">{stat.total_occurrences}</td>
+                        <td class="text-right">{stat.file_count}</td>
                       </tr>
                     <% end %>
                   </tbody>
@@ -359,7 +359,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                     <span class="font-medium">{stat.category}</span>
                     <div class="text-right">
                       <div class="font-bold">{stat.total_occurrences}</div>
-                      <div class="text-muted-xs">{stat.unique_classes} unique</div>
+                      <div class="text-xs text-base-content/70">{stat.unique_classes} unique</div>
                     </div>
                   </div>
                 <% end %>
@@ -372,24 +372,24 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
           <div class="card-body">
             <h2 class="card-title">Top Files by Class Usage</h2>
             <div class="overflow-x-auto">
-              <table class="table table-sm">
+              <table class="table table-sm table-zebra">
                 <thead>
                   <tr>
                     <th>File</th>
-                    <th class="analysis-table-cell-right">Unique Classes</th>
-                    <th class="analysis-table-cell-right">Total Uses</th>
+                    <th class="text-right">Unique Classes</th>
+                    <th class="text-right">Total Uses</th>
                   </tr>
                 </thead>
                 <tbody>
                   <%= for stat <- Enum.take(@file_stats, 15) do %>
                     <tr class="hover">
                       <td>
-                        <span class="analysis-table-cell-mono">
+                        <span class="font-mono text-xs">
                           {String.replace_prefix(stat.file_path, "lib/", "")}
                         </span>
                       </td>
-                      <td class="analysis-table-cell-right">{stat.unique_classes}</td>
-                      <td class="analysis-table-cell-right-bold">{stat.total_occurrences}</td>
+                      <td class="text-right">{stat.unique_classes}</td>
+                      <td class="text-right font-semibold">{stat.total_occurrences}</td>
                     </tr>
                   <% end %>
                 </tbody>
@@ -401,7 +401,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
             <h2 class="card-title">All Class Usage</h2>
-            <p class="text-muted-sm mb-4">
+            <p class="text-sm text-base-content/70 mb-4">
               Click on a row in "Top 20" above to filter by that class, or use the search/filters below.
             </p>
             <.live_table
