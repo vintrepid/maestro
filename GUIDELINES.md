@@ -1,65 +1,78 @@
 # Agent Guidelines - Project Initialization
 
-## Initialization Protocol
+## Quick Start (Use This Every Session)
 
-**IMPORTANT: Every time the user says "Hi" or starts a conversation, you MUST:**
+**When user says "Hi", do these 4 steps:**
 
-1. **Read this file first** (GUIDELINES.md in project root)
-2. **Read all agent guidelines** from the symlinked agents directory:
-   - `agents/GUIDELINES.md` - Main workflow and general development guidelines
-   - `agents/project-specific/{project}/` - Project-specific business domain knowledge
-   - `agents/AGENT_CHAT.md` - Read recent session logs from other agents
-3. **Read project-specific guidelines**:
-   - `AGENTS.md` - Phoenix/LiveView framework usage rules (already loaded in system prompt)
-   - Project-specific docs in agents/project-specific/
-4. **Read library usage rules**:
-   - Check `deps/*/usage-rules.md` and `deps/*/usage_rules.md` for all libraries
-   - Key libraries: ash, ash_phoenix, ash_postgres, live_table, igniter, ash_authentication
-   - Our forks: `~/dev/forks/live_table/usage_rules.md`, `~/dev/forks/css_linter/README.md`
-5. **Check recent activity**:
-   - Run `git log --oneline -10` to see recent commits
-   - Check `CHANGELOG.md` for ongoing work
-6. **Leave a check-in message** in `agents/AGENT_CHAT.md` with:
-   - Project name and timestamp
-   - What you plan to work on
-   - Current branch (if working on features)
-7. **Acknowledge** that you have read and will follow ALL these guidelines
+1. **Check context** (2 commands):
+   ```bash
+   git branch --show-current
+   tail -50 agents/AGENT_CHAT.md
+   ```
 
-### How to Read the Guidelines
+2. **Read current task** (1 command):
+   ```bash
+   head -100 CHANGELOG.md
+   ```
 
-Use shell commands to read the symlinked files:
+3. **Quick check-in** (1 sentence in AGENT_CHAT.md):
+   ```
+   ## [Project] Agent - [timestamp]
+   Session start on branch [name]. Ready to work on [task from CHANGELOG].
+   ```
 
-```bash
-cat agents/GUIDELINES.md
-cat agents/project-specific/{project}/*.md
-cat agents/AGENT_CHAT.md
-```
+4. **Acknowledge**: "Ready! Current branch: X, working on: Y"
 
-## After Reading All Guidelines
+**That's it. ~4 tool calls, <5% of session budget.**
 
-You must provide a brief acknowledgment that includes:
-- ✓ Confirmation you've read agents/GUIDELINES.md (main workflow)
-- ✓ Confirmation you've read project-specific documentation
-- ✓ Confirmation you've read AGENTS.md (Phoenix framework rules)
-- ✓ Confirmation you've read agents/AGENT_CHAT.md (session logs)
-- ✓ Confirmation you've read library usage rules (especially our forks: live_table, css_linter)
-- ✓ A summary of the key workflow requirements (git branches, commits, testing)
-- ✓ A summary of project-specific patterns
+---
 
-## Why This Matters
+## Reference Documentation (Read On-Demand Only)
 
-These guidelines contain:
-- **Workflow standards** - How to work with git, branches, commits
-- **Framework patterns** - Phoenix, LiveView, Ash usage rules
-- **Library usage rules** - Correct usage of ash, live_table, css_linter, and other dependencies
-- **Business logic** - Project-specific domain knowledge
-- **Testing requirements** - When and how to run tests
-- **Common pitfalls** - Lessons learned from previous work
-- **Cross-session coordination** - What other agents have been working on
+The following docs exist but should ONLY be read when you need specific information:
+
+### Workflow & Patterns
+- `agents/GUIDELINES.md` - Git workflow, data migrations, verification steps
+- `agents/project-specific/{project}/*.md` - Project domain knowledge
+- Framework patterns already in system prompt (Phoenix, LiveView, Ash, Ecto)
+
+### Library Usage Rules
+- `deps/*/usage-rules.md` - Correct usage of dependencies
+- `~/dev/forks/live_table/usage_rules.md` - Our LiveTable fork
+- `~/dev/forks/css_linter/README.md` - Our CSS Linter fork
+
+### When to Read Reference Docs
+- **Git workflow questions** → Read agents/GUIDELINES.md (Git Workflow section)
+- **Data import issues** → Read agents/GUIDELINES.md (Data Import section)
+- **Project domain questions** → Read agents/project-specific/{project}/
+- **Library-specific errors** → Read relevant usage-rules.md
+- **Testing requirements** → Read agents/GUIDELINES.md (Testing section)
+
+---
+
+## Essential Workflow Rules (Always Follow)
+
+### Git
+- **Always work on feature branches**, never on master/main
+- Frequent commits with clear messages
+- Push branches for review, **never delete without approval**
+- Never merge without user approval
+
+### Verification
+- Run `mix precommit` before marking work complete (if available)
+- Test changes appropriately (code tests, UI verification)
+- Take 1-2 fix attempts, then ask user if stuck
+
+### Communication
+- Keep responses concise (1-3 sentences when possible)
+- No unnecessary preamble or postamble
+- Ask when requirements unclear, proceed when clear
+
+---
 
 ## Usage Rules Already Loaded
 
-The following are already in your system prompt:
+These are in your system prompt, don't read again:
 - Phoenix v1.8 guidelines
 - LiveView patterns and streams
 - Elixir best practices
@@ -67,6 +80,12 @@ The following are already in your system prompt:
 - HEEx template syntax
 - Form handling patterns
 
-## DO NOT PROCEED WITHOUT READING
+---
 
-If you haven't read all the guidelines files listed above, **STOP** and read them now before responding to any request.
+## Old Initialization Protocol (Deprecated)
+
+~~Read all guidelines, all library docs, all project docs every session~~
+
+**Why this was bad:** Burned 15+ tool calls and 16% of session budget on initialization.
+
+**New approach:** Quick context check (4 calls), read reference docs only when needed.
