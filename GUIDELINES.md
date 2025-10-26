@@ -12,14 +12,18 @@
 3. **Read project-specific guidelines**:
    - `AGENTS.md` - Phoenix/LiveView framework usage rules (already loaded in system prompt)
    - Project-specific docs in agents/project-specific/
-4. **Check recent activity**:
+4. **Read library usage rules**:
+   - Check `deps/*/usage-rules.md` and `deps/*/usage_rules.md` for all libraries
+   - Key libraries: ash, ash_phoenix, ash_postgres, live_table, igniter, ash_authentication
+   - Our forks: `~/dev/forks/live_table/usage_rules.md`, `~/dev/forks/css_linter/README.md`
+5. **Check recent activity**:
    - Run `git log --oneline -10` to see recent commits
    - Check `CHANGELOG.md` for ongoing work
-5. **Leave a check-in message** in `agents/AGENT_CHAT.md` with:
+6. **Leave a check-in message** in `agents/AGENT_CHAT.md` with:
    - Project name and timestamp
    - What you plan to work on
    - Current branch (if working on features)
-6. **Acknowledge** that you have read and will follow ALL these guidelines
+7. **Acknowledge** that you have read and will follow ALL these guidelines
 
 ### How to Read the Guidelines
 
@@ -38,6 +42,7 @@ You must provide a brief acknowledgment that includes:
 - ✓ Confirmation you've read project-specific documentation
 - ✓ Confirmation you've read AGENTS.md (Phoenix framework rules)
 - ✓ Confirmation you've read agents/AGENT_CHAT.md (session logs)
+- ✓ Confirmation you've read library usage rules (especially our forks: live_table, css_linter)
 - ✓ A summary of the key workflow requirements (git branches, commits, testing)
 - ✓ A summary of project-specific patterns
 
@@ -46,6 +51,7 @@ You must provide a brief acknowledgment that includes:
 These guidelines contain:
 - **Workflow standards** - How to work with git, branches, commits
 - **Framework patterns** - Phoenix, LiveView, Ash usage rules
+- **Library usage rules** - Correct usage of ash, live_table, css_linter, and other dependencies
 - **Business logic** - Project-specific domain knowledge
 - **Testing requirements** - When and how to run tests
 - **Common pitfalls** - Lessons learned from previous work
