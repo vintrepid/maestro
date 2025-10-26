@@ -216,3 +216,23 @@ Library is production-ready. Calvin can test and share analysis JSON.
 - Improved main layout padding (px-4 py-2 with max-w-7xl)
 - Global h1 now matches Calvin (text-2xl mb-2)
 
+
+---
+
+## 2024-10-27 - Cleanup Analysis Page & Layout
+
+**Goal:** Apply the same CSS cleanup process to tailwind_analysis_live.ex and layouts.ex
+
+**Branch:** feature/cleanup-analysis-page
+
+**Status:** In Progress 🚧
+
+**Plan:**
+1. Run analysis on tailwind_analysis_live.ex (before)
+2. Run analysis on layouts.ex (before)
+3. Clean up analysis page - extract to semantic classes
+4. Run analysis on analysis page (after)
+5. Clean up layouts - extract to semantic classes
+6. Run analysis on layouts (after)
+7. Compare before/after for both files
+
