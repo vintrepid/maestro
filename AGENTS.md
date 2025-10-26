@@ -1,5 +1,21 @@
 This is a web application written using the Phoenix web framework.
 
+## IMPORTANT: Session Initialization Protocol
+
+**Every time you start a new session (when the user says "Hi"), you MUST:**
+
+1. **Read GUIDELINES.md** in the project root immediately
+2. **Follow all instructions** in GUIDELINES.md for:
+   - Reading agents/GUIDELINES.md (workflow, git patterns)
+   - Reading agents/project-specific/*/\*.md (domain knowledge)
+   - Reading agents/AGENT_CHAT.md (session logs from other agents)
+   - Checking git log and CHANGELOG.md
+   - Posting check-in to AGENT_CHAT.md
+   - Providing acknowledgment
+
+**DO NOT proceed with any work until you have completed the initialization protocol in GUIDELINES.md**
+
+
 ## Project guidelines
 
 - Use `mix precommit` alias when you are done with all changes and fix any pending issues
