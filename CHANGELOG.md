@@ -27,12 +27,22 @@ All notable work on the Maestro project orchestration hub is documented here.
 - Visual dashboard with project cards
 
 **Tasks:**
-- [ ] Create Projects Ash resource
-- [ ] Build dashboard LiveView
-- [ ] Add project status checking
-- [ ] Style with world-class UI design
-- [ ] Test functionality
+- [x] Create Projects Ash resource
+- [x] Build dashboard LiveView
+- [x] Add project status checking
+- [x] Style with world-class UI design
+- [x] Test functionality
 
 **Branch:** feature/orchestration-dashboard
 
-**Status:** In progress
+**Status:** Complete ✅
+
+**Accomplished:**
+- Created Ops domain with Project resource (name, slug, ports, status, URLs)
+- Built beautiful dashboard with gradient design and project cards
+- Implemented ProjectMonitor GenServer for real-time status checking
+- Status updates every 10s by checking TCP ports
+- LiveView refreshes every 5s to show updated statuses
+- Seeded 6 projects: Ready, Calvin, SanJuan, new_project, Maestro, np
+- Dashboard shows running projects in green, stopped in red
+- Working links to web apps, debuggers, and GitHub repos
