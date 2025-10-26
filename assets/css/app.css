@@ -132,6 +132,21 @@ p.description {
   @apply text-base-content/70 text-sm;
 }
 
+/* Page header spacing */
+.page-header {
+  @apply mb-6;
+}
+
+/* Search form spacing */
+.search-form {
+  @apply mb-4;
+}
+
+/* Search input */
+.search-input {
+  @apply w-32;
+}
+
 /* Table code cells */
 table code {
   @apply text-xs;

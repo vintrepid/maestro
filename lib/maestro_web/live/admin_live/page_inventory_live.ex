@@ -79,30 +79,30 @@ defmodule MaestroWeb.AdminLive.PageInventoryLive do
     ~H"""
     <Layouts.app flash={@flash}>
       <div>
-        <div>
+        <div class="page-header">
           <h1>Page Inventory</h1>
           <p class="description">
             Search for HTML tags across all pages to identify repeated patterns for extraction to components or global CSS.
           </p>
         </div>
 
-        <div class="card">
+        <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
-            <form phx-change="change_search_tag" phx-submit="change_search_tag" class="form-control">
+            <form phx-change="change_search_tag" phx-submit="change_search_tag" class="form-control search-form">
               <label class="label">
                 <span class="label-text">Search for HTML tag:</span>
               </label>
               <input 
                 type="text" 
                 name="tag" 
-                class="input input-sm"
+                class="input input-bordered input-sm search-input"
                 placeholder="h1"
                 value={@search_tag}
                 phx-debounce="300"
               />
             </form>
             
-            <table class="table table-zebra">
+            <table class="table table-sm table-zebra">
               <thead>
                 <tr>
                   <th>Route</th>
@@ -133,9 +133,9 @@ defmodule MaestroWeb.AdminLive.PageInventoryLive do
                     </td>
                     <td>
                       <%= if page.tag_html do %>
-                        <span class="badge badge-success">✓</span>
+                        <span class="badge badge-sm badge-success">✓</span>
                       <% else %>
-                        <span class="badge badge-warning">Missing</span>
+                        <span class="badge badge-sm badge-warning">Missing</span>
                       <% end %>
                     </td>
                   </tr>
