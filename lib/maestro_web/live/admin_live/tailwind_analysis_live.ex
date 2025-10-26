@@ -210,9 +210,10 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
           </.card>
         <% end %>
 
-        <.simple_card class="mb-6">
-          <h2>Analysis History</h2>
-          <div>
+        <div class="card bg-base-100 shadow-xl mb-6">
+          <div class="card-body">
+            <h2 class="card-title">Analysis History</h2>
+            <div class="overflow-x-auto">
               <.simple_table>
                 <thead>
                   <tr>
@@ -286,8 +287,9 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                   <% end %>
                 </tbody>
               </.simple_table>
+            </div>
           </div>
-        </.simple_card>
+        </div>
 
         <div class="stats stats-vertical lg:stats-horizontal shadow mb-6 w-full">
           <div class="stat">
@@ -312,12 +314,14 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
               <% end %>
             </div>
             <div class="stat-desc">Occurrences</div>
-        </.simple_card>
+          </div>
+        </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <.simple_card class="lg:col-span-2">
-            <h2>Top 20 Most Used Classes</h2>
-            <div>
+          <div class="card bg-base-100 shadow-xl lg:col-span-2">
+            <div class="card-body">
+              <h2 class="card-title">Top 20 Most Used Classes</h2>
+              <div class="overflow-x-auto">
                 <.simple_table>
                   <thead>
                     <tr>
@@ -342,11 +346,13 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                     <% end %>
                   </tbody>
                 </.simple_table>
+              </div>
+            </div>
           </div>
-        </.simple_card>
 
-          <.simple_card>
-          <h2>By Category</h2>
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+              <h2 class="card-title">By Category</h2>
               <div class="space-y-2">
                 <%= for stat <- @category_stats do %>
                   <div class="flex justify-between items-center p-2 rounded hover:bg-base-200">
@@ -362,9 +368,10 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
           </div>
         </div>
 
-        <.simple_card class="mb-6">
-          <h2>Top Files by Class Usage</h2>
-          <div>
+        <div class="card bg-base-100 shadow-xl mb-6">
+          <div class="card-body">
+            <h2 class="card-title">Top Files by Class Usage</h2>
+            <div class="overflow-x-auto">
               <.simple_table>
                 <thead>
                   <tr>
@@ -387,11 +394,13 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
                   <% end %>
                 </tbody>
               </.simple_table>
+            </div>
           </div>
-        </.simple_card>
+        </div>
 
-        <.simple_card>
-          <h2>All Class Usage</h2>
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title">All Class Usage</h2>
             <p class="text-sm text-base-content/70 mb-4">
               Click on a row in "Top 20" above to filter by that class, or use the search/filters below.
             </p>
