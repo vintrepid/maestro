@@ -26,7 +26,8 @@ defmodule MaestroWeb.Router do
     pipe_through :browser
 
     ash_authentication_live_session :authenticated_routes do
-      live "/", DashboardLive, :index
+      live "/", DashboardLive, :projects
+      live "/projects", DashboardLive, :projects
       live "/admin/tailwind-analysis", AdminLive.TailwindAnalysisLive, :index
       live "/admin/page-inventory", AdminLive.PageInventoryLive, :index
       live "/admin/component-replacement", AdminLive.ComponentReplacementLive, :index
