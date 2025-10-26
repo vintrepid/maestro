@@ -263,3 +263,46 @@ Initially extracted analysis-specific classes to app.css, but realized this viol
 
 **Next:** Consider extracting reusable table patterns to Phoenix components if needed across multiple pages
 
+
+---
+
+## 2024-10-27 - Class Combination Analysis
+
+**Goal:** Identify most common class combinations across entire project
+
+**Method:** Analyzed all class attributes, sorted classes alphabetically within each, grouped and counted
+
+**Results:**
+- **Total class attributes:** 203
+- **Unique combinations:** 123
+- **Single-use combos:** 90 (73%) - Healthy!
+- **Used 3+ times:** 20 (16%) - Extraction candidates
+
+**Top Patterns Found:**
+
+HIGH VALUE (4+ uses):
+1. **Icon sizing** - h-4 w-4 (3x), h-6 w-6 (3x), with hover effects (4x)
+2. **Nav item** - 11-class combo used 4x (biggest opportunity!)
+3. **Fieldset** - fieldset mb-2 (4x)
+
+MEDIUM VALUE (3 uses):
+4. **Card pattern** - bg-base-100 card shadow-xl (3x) → Already created section_card!
+5. **Form labels** - label mb-1 (3x)
+6. **Muted text** - text-base-content/70 text-sm (3x)
+
+**Components Created:**
+- ✅ simple_table (applied)
+- ✅ section_card (ready to use)
+- ✅ page_header (ready to use)
+- ✅ stats_grid (ready to use)
+
+**Recommendations for Future:**
+1. Use section_card component where "bg-base-100 card shadow-xl" appears
+2. Consider nav_item component for navigation (11 classes!)
+3. Consider icon component with size variants
+4. Project is well-optimized overall (73% single-use is healthy)
+
+**Key Insight:**
+Most duplication is in navigation/menu patterns and icons. 
+The analysis confirms our component extraction strategy was correct! 🎯
+
