@@ -149,11 +149,11 @@ p.description {
 
 /* Layout Components */
 .navbar-brand {
-  @apply flex-1;
+  flex: 1 1 0%;
 }
 
 .navbar-actions {
-  @apply flex-none;
+  flex: none;
 }
 
 .brand-link {
