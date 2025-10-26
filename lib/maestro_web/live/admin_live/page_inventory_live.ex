@@ -78,9 +78,9 @@ defmodule MaestroWeb.AdminLive.PageInventoryLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
-      <div class="container mx-auto px-4 py-6 max-w-7xl">
+      <div>
         <div class="mb-6">
-          <h1 class="text-2xl font-bold mb-1">Page Inventory</h1>
+          <h1>Page Inventory</h1>
           <p class="text-base-content/70 text-sm">
             Search for HTML tags across all pages to identify repeated patterns for extraction to components or global CSS.
           </p>

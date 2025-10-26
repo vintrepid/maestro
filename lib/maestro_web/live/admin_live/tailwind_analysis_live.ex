@@ -138,10 +138,10 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
     <Layouts.app
       flash={@flash}
     >
-      <div class="container mx-auto px-4 py-6 max-w-7xl">
+      <div>
         <div class="flex gap-6 justify-between items-start mb-6">
           <div>
-            <h1 class="text-2xl font-bold mb-1">Tailwind Class Analysis</h1>
+            <h1>Tailwind Class Analysis</h1>
             <p class="text-base-content/70 text-sm">Analyze and optimize CSS class usage across projects</p>
           </div>
           

@@ -28,7 +28,7 @@ defmodule MaestroWeb.Layouts do
           </div>
         </div>
 
-        <main class="container mx-auto p-4">
+        <main class="container mx-auto px-4 py-2 max-w-7xl">
           {render_slot(@inner_block)}
         </main>
       </div>
