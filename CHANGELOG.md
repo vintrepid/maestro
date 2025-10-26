@@ -306,3 +306,60 @@ MEDIUM VALUE (3 uses):
 Most duplication is in navigation/menu patterns and icons. 
 The analysis confirms our component extraction strategy was correct! 🎯
 
+
+---
+
+## TODO: Next Session - Fix the Automated Component Replacement Tool
+
+**Priority:** HIGH - Need this for Calvin (much bigger app)
+
+**Problem:**
+- Automated sed/perl/regex replacements keep breaking HTML structure
+- Ambiguous closing tags cause mismatched replacements
+- Manual editing is too slow for large codebases
+
+**What Failed:**
+1. Perl regex with nested capture groups - broke tag matching
+2. Sed with line ranges - couldn't handle variable closing tag positions
+3. Simple string replacement - ambiguous patterns (multiple `</div></div>`)
+
+**Why It's Critical:**
+- Calvin is a much bigger app than Maestro
+- Can't manually edit 50+ card instances
+- Need reliable automation for `simple_card` component application
+
+**Success Criteria:**
+- Tool can reliably replace card HTML without breaking structure
+- Handles nested tags correctly
+- Verifies syntax after each replacement
+- Can process entire project or single file
+- Provides rollback on error
+
+**Approach Ideas:**
+1. **AST-based replacement** - Parse HEEx to AST, modify, regenerate
+2. **Phoenix formatter integration** - Use existing parser
+3. **Template-based with verification** - Replace, compile, rollback on error
+4. **Interactive mode** - Show each replacement, ask for confirmation
+5. **Igniter-based transformation** - Use Igniter's code modification tools
+
+**Test Case:**
+The 5 cards in `lib/maestro_web/live/admin_live/tailwind_analysis_live.ex`
+- Known patterns
+- Already have manual guide
+- Can verify expected output (67 unique, 144 total)
+
+**Deliverable:**
+A working tool that can:
+```bash
+mix components.replace simple_card lib/maestro_web/live/admin_live/
+# or
+mix components.replace --interactive simple_card **/*.ex
+```
+
+**Blocked Work:**
+- Calvin CSS cleanup (much larger scope)
+- Applying other components (page_header, section_card, stats_grid)
+- Future component extractions
+
+---
+
