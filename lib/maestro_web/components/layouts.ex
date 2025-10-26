@@ -20,10 +20,10 @@ defmodule MaestroWeb.Layouts do
       <input id="main-drawer" type="checkbox" class="drawer-toggle" />
       <div class="drawer-content">
         <div class="navbar bg-base-200">
-          <div class="flex-1">
-            <a href="/" class="btn btn-ghost text-xl">🎼 Maestro</a>
+          <div class="navbar-brand">
+            <a href="/" class="brand-link">🎼 Maestro</a>
           </div>
-          <div class="flex-none">
+          <div class="navbar-actions">
             <.admin_menu />
           </div>
         </div>
@@ -41,8 +41,8 @@ defmodule MaestroWeb.Layouts do
   def admin_menu(assigns) do
     ~H"""
     <div class="dropdown dropdown-end">
-      <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
-        <.icon name="hero-cog-6-tooth" class="w-5 h-5" />
+      <div tabindex="0" role="button" class="admin-menu-button">
+        <.icon name="hero-cog-6-tooth" class="admin-menu-icon" />
         Admin
       </div>
       <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52">
@@ -120,7 +120,7 @@ defmodule MaestroWeb.Layouts do
         hidden
       >
         {gettext("Attempting to reconnect")}
-        <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
+        <.icon name="hero-arrow-path" class="flash-spinner" />
       </.flash>
 
       <.flash
@@ -132,7 +132,7 @@ defmodule MaestroWeb.Layouts do
         hidden
       >
         {gettext("Attempting to reconnect")}
-        <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
+        <.icon name="hero-arrow-path" class="flash-spinner" />
       </.flash>
     </div>
     """

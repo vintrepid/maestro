@@ -147,6 +147,33 @@ p.description {
   @apply w-32;
 }
 
+/* Layout Components */
+.navbar-brand {
+  @apply flex-1;
+}
+
+.navbar-actions {
+  @apply flex-none;
+}
+
+.brand-link {
+  @apply btn btn-ghost text-xl;
+}
+
+/* Admin Menu */
+.admin-menu-button {
+  @apply btn btn-ghost btn-sm;
+}
+
+.admin-menu-icon {
+  @apply w-5 h-5;
+}
+
+/* Flash Messages */
+.flash-spinner {
+  @apply ml-1 size-3 motion-safe:animate-spin;
+}
+
 /* Table code cells */
 table code {
   @apply text-xs;
