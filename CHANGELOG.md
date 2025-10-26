@@ -46,3 +46,27 @@ All notable work on the Maestro project orchestration hub is documented here.
 - Seeded 6 projects: Ready, Calvin, SanJuan, new_project, Maestro, np
 - Dashboard shows running projects in green, stopped in red
 - Working links to web apps, debuggers, and GitHub repos
+
+---
+
+## 2024-10-26 - Convert to LiveTable
+
+**Goal:** Replace custom table implementation with LiveTable component from our fork.
+
+**Branch:** feature/live-table-dashboard
+
+**Status:** Complete ✅
+
+**Accomplished:**
+- Installed live_table dependency from vintrepid/live_table fork (master branch)
+- Configured LiveTable with Repo and PubSub
+- Integrated JavaScript hooks and CSS from live_table
+- Created Ecto query function for direct table access (bypassing Ash for LiveTable compatibility)
+- Implemented LiveTable.LiveResource behavior properly
+- Defined fields with proper sortable flags (all fields must have sortable key)
+- Dashboard now uses DaisyUI-styled LiveTable with:
+  - Sortable columns (Project, Status, Web Port)
+  - Searchable project names
+  - Pinned header and zebra striping
+  - 25 items per page pagination
+- All 6 projects display correctly with real-time status from ProjectMonitor

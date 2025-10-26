@@ -41,10 +41,11 @@ defmodule Maestro.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:live_table, github: "vintrepid/live_table", branch: "master"},
       {:ex_money_sql, "~> 1.0"},
       {:ex_cldr, "~> 2.0"},
       {:picosat_elixir, "~> 0.2"},
-      {:sourceror, "~> 1.8", only: [:dev, :test]},
+      {:sourceror, "~> 1.8"},
       {:oban, "~> 2.0"},
       {:usage_rules, "~> 0.1", only: [:dev]},
       {:ash_cloak, "~> 0.1"},
@@ -63,7 +64,7 @@ defmodule Maestro.MixProject do
       {:ash_postgres, "~> 2.0"},
       {:ash_phoenix, "~> 2.0"},
       {:ash, "~> 3.0"},
-      {:igniter, "~> 0.6", only: [:dev, :test]},
+      {:igniter, "~> 0.6"},
       {:phoenix, "~> 1.8.1"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},

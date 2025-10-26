@@ -31,6 +31,10 @@ config :ash,
   known_types: [AshMoney.Types.Money],
   custom_types: [money: AshMoney.Types.Money]
 
+config :live_table,
+  repo: Maestro.Repo,
+  pubsub: Maestro.PubSub
+
 config :spark,
   formatter: [
     remove_parens?: true,
