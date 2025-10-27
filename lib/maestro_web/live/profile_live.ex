@@ -7,14 +7,37 @@ defmodule MaestroWeb.ProfileLive do
       user = socket.assigns.current_user
       form = AshPhoenix.Form.for_update(user, :update_profile, domain: Maestro.Accounts)
 
+      agents_path = Path.join([File.cwd!(), "agents"])
+      agents_tree = if File.exists?(agents_path) do
+        build_directory_tree(agents_path)
+      else
+        []
+      end
+
       {:ok,
        socket
        |> assign(:page_title, "Edit Profile")
        |> assign(:user, user)
-       |> assign(:form, to_form(form))}
+       |> assign(:form, to_form(form))
+       |> assign(:agents_tree, agents_tree)}
     else
       {:ok, push_navigate(socket, to: ~p"/sign-in")}
     end
+  end
+
+  defp build_directory_tree(path) do
+    File.ls!(path)
+    |> Enum.reject(&String.starts_with?(&1, "."))
+    |> Enum.sort()
+    |> Enum.map(fn item ->
+      item_path = Path.join(path, item)
+      if File.dir?(item_path) do
+        children = build_directory_tree(item_path)
+        %{name: item, type: :directory, children: children}
+      else
+        %{name: item, type: :file}
+      end
+    end)
   end
 
   @impl true
@@ -43,7 +66,21 @@ defmodule MaestroWeb.ProfileLive do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="min-h-screen bg-gradient-to-br from-base-200 to-base-300 py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl mx-auto">
+        <div class="max-w-2xl mx-auto space-y-6">
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+              <h2 class="card-title text-2xl font-bold mb-4">
+                <.icon name="hero-folder-open" class="w-6 h-6 text-primary" />
+                Agents Directory
+              </h2>
+              <div class="space-y-1">
+                <%= for item <- @agents_tree do %>
+                  <.tree_item item={item} level={0} />
+                <% end %>
+              </div>
+            </div>
+          </div>
+
           <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
               <h2 class="card-title text-3xl font-bold mb-6">
@@ -123,6 +160,30 @@ defmodule MaestroWeb.ProfileLive do
         </div>
       </div>
     </Layouts.app>
+    """
+  end
+
+  attr :item, :map, required: true
+  attr :level, :integer, default: 0
+
+  defp tree_item(assigns) do
+    ~H"""
+    <div style={"padding-left: #{@level * 1.5}rem"}>
+      <%= if @item.type == :directory do %>
+        <div class="flex items-center gap-2 py-1">
+          <.icon name="hero-folder" class="w-5 h-5 text-warning" />
+          <span class="font-semibold text-warning">{@item.name}/</span>
+        </div>
+        <%= for child <- @item.children do %>
+          <.tree_item item={child} level={@level + 1} />
+        <% end %>
+      <% else %>
+        <div class="flex items-center gap-2 py-1">
+          <.icon name="hero-document-text" class="w-4 h-4 text-base-content/60" />
+          <span class="text-sm">{@item.name}</span>
+        </div>
+      <% end %>
+    </div>
     """
   end
 end
