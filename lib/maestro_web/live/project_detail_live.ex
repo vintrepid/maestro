@@ -18,10 +18,41 @@ defmodule MaestroWeb.ProjectDetailLive do
 
   @impl true
   def handle_event("reorder_startup", %{"items" => items, "project" => project}, socket) do
-    IO.puts("Reordering startup for project: #{project}")
-    IO.inspect(items, label: "New order")
+    paths = Enum.map(items, & &1["path"])
     
-    {:noreply, socket}
+    startup_file = Path.join([File.cwd!(), "agents", "startup", "#{String.upcase(project)}.md"])
+    
+    if File.exists?(startup_file) do
+      write_custom_startup_order(startup_file, paths, project)
+      {:noreply, socket |> put_flash(:info, "Startup order saved!")}
+    else
+      {:noreply, socket |> put_flash(:error, "Startup file not found")}
+    end
+  end
+  
+  defp write_custom_startup_order(file_path, paths, project) do
+    content = File.read!(file_path)
+    
+    custom_order_section = """
+    ## Custom Startup Order
+    
+    This project uses a custom startup sequence:
+    
+    """
+    
+    custom_order_section = custom_order_section <> Enum.map_join(paths, "\n", fn path ->
+      "#{Enum.find_index(paths, &(&1 == path)) + 1}. `#{path}`"
+    end)
+    
+    custom_order_section = custom_order_section <> "\n\n---\n\n"
+    
+    updated_content = if String.contains?(content, "## Custom Startup Order") do
+      Regex.replace(~r/## Custom Startup Order.*?---\n\n/s, content, custom_order_section)
+    else
+      custom_order_section <> content
+    end
+    
+    File.write!(file_path, updated_content)
   end
 
   @impl true
