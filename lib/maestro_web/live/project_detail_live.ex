@@ -53,6 +53,10 @@ defmodule MaestroWeb.ProjectDetailLive do
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-1 order-first">
+            <MaestroWeb.Components.GuidelinesViewer.guidelines_viewer project={@project.slug} />
+          </div>
+
           <div class="lg:col-span-2">
             <div class="card bg-base-100 shadow-xl mb-6">
               <div class="card-body">
@@ -119,10 +123,6 @@ defmodule MaestroWeb.ProjectDetailLive do
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="lg:col-span-1">
-            <MaestroWeb.Components.GuidelinesViewer.guidelines_viewer project={@project.slug} />
           </div>
         </div>
 
