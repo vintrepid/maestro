@@ -5,18 +5,12 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
 
   def guidelines_viewer(assigns) do
     assigns = assign(assigns, :project_guidelines, get_project_guidelines())
-    assigns = assign(assigns, :usage_rules, get_usage_rules())
     assigns = assign(assigns, :agents_tree, get_agents_tree())
 
     ~H"""
     <.card class={@class}>
       <div class="text-xs font-bold text-primary">📋 Project Guidelines (Maestro)</div>
       <%= for item <- @project_guidelines do %>
-        <.file_item item={item} />
-      <% end %>
-
-      <div class="text-xs font-bold text-success mt-3">📚 Usage Rules (Tools & Packages)</div>
-      <%= for item <- @usage_rules do %>
         <.file_item item={item} />
       <% end %>
 
@@ -89,10 +83,6 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
       String.contains?(name, "(project root)") ->
         String.replace(name, " (project root)", "")
 
-      String.contains?(name, "(usage_rules)") ->
-        tool = name |> String.replace(" (usage_rules)", "")
-        "agents/usage_rules/#{tool}.md"
-
       String.ends_with?(name, ".md") ->
         "agents/project-specific/maestro/#{name}"
 
@@ -123,22 +113,6 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
     end
 
     root_items ++ maestro_items
-  end
-
-  defp get_usage_rules do
-    usage_rules_path = Path.join([File.cwd!(), "agents", "usage_rules"])
-    if File.exists?(usage_rules_path) do
-      File.ls!(usage_rules_path)
-      |> Enum.reject(&(&1 == "README.md"))
-      |> Enum.reject(&String.starts_with?(&1, "."))
-      |> Enum.sort()
-      |> Enum.map(fn file ->
-        tool_name = String.replace(file, ".md", "")
-        %{name: "#{tool_name} (usage_rules)", type: :file, checked: false}
-      end)
-    else
-      []
-    end
   end
 
   defp get_agents_tree do
