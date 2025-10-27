@@ -184,6 +184,15 @@ defmodule MaestroWeb.ProfileLive do
   end
 
   @impl true
+  def handle_event("open_file", %{"path" => path}, socket) do
+    File.cwd!()
+    |> Path.join(path)
+    |> open_in_editor()
+    
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("save", %{"form" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
       {:ok, user} ->
@@ -357,12 +366,34 @@ defmodule MaestroWeb.ProfileLive do
 
   defp simple_item(assigns) do
     ~H"""
-    <div class="flex items-center gap-1.5 py-0.5">
+    <div class="flex items-center gap-1.5 py-0.5 hover:bg-base-200 rounded px-1 cursor-pointer"
+         phx-click="open_file"
+         phx-value-path={get_file_path(@item.name)}>
       <input type="checkbox" checked={@item.checked} class="checkbox checkbox-xs" />
       <.icon name="hero-document-text" class="w-3 h-3 text-base-content/60" />
       <span class="text-xs">{@item.name}</span>
     </div>
     """
+  end
+
+  defp get_file_path(name) do
+    cond do
+      String.contains?(name, "(project root)") ->
+        String.replace(name, " (project root)", "")
+      String.contains?(name, "(our fork)") ->
+        [fork_name, file] = name |> String.replace(" (our fork)", "") |> String.split("/")
+        "../forks/#{fork_name}/#{file}"
+      String.contains?(name, "/usage-rules.md") ->
+        "deps/#{name}"
+      String.ends_with?(name, ".md") ->
+        "agents/project-specific/maestro/#{name}"
+      true ->
+        "agents/#{name}"
+    end
+  end
+
+  defp open_in_editor(file_path) do
+    System.cmd("open", ["-a", "VSCodium", file_path], stderr_to_stdout: true)
   end
 
   attr :item, :map, required: true
