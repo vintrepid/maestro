@@ -13,9 +13,11 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
     <.card class={@class}>
       <div class="text-xs font-bold text-primary mb-2">🚀 Agent Startup Sequence</div>
       <div class="text-xs text-base-content/70 mb-3">Read in this order each session:</div>
-      <%= for {item, index} <- Enum.with_index(@startup_sequence, 1) do %>
-        <.startup_item item={item} index={index} />
-      <% end %>
+      <div id="startup-sequence" phx-hook="SortableHook" data-project={project}>
+        <%= for {item, index} <- Enum.with_index(@startup_sequence, 1) do %>
+          <.startup_item item={item} index={index} />
+        <% end %>
+      </div>
 
       <div class="text-xs font-bold text-accent mt-4 mb-2">📂 All Documentation</div>
       <%= for item <- @agents_tree do %>
@@ -31,10 +33,14 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
   defp startup_item(assigns) do
     ~H"""
     <div
-      class="flex items-start gap-2 py-1.5 hover:bg-base-200 rounded px-2 cursor-pointer mb-1"
+      class="flex items-start gap-2 py-1.5 hover:bg-base-200 rounded px-2 cursor-move mb-1"
+      data-path={@item.path}
       phx-click="open_file"
       phx-value-path={@item.path}
     >
+      <div class="drag-handle cursor-move">
+        <.icon name="hero-bars-3" class="w-4 h-4 text-base-content/40" />
+      </div>
       <input type="checkbox" checked class="checkbox checkbox-xs mt-0.5" />
       <div class="badge badge-primary badge-sm mt-0.5">{@index}</div>
       <div class="flex-1">

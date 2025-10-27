@@ -17,6 +17,14 @@ defmodule MaestroWeb.ProjectDetailLive do
   end
 
   @impl true
+  def handle_event("reorder_startup", %{"items" => items, "project" => project}, socket) do
+    IO.puts("Reordering startup for project: #{project}")
+    IO.inspect(items, label: "New order")
+    
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("open_in_vscodium", _params, socket) do
     project = socket.assigns.project
     user = socket.assigns.current_user

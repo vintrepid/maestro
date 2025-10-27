@@ -25,12 +25,30 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/maestro"
 import TableHooks from "../../deps/live_table/priv/static/live-table.js"
 import topbar from "../vendor/topbar"
+import Sortable from "sortablejs"
+
+const SortableHook = {
+  mounted() {
+    const sortable = new Sortable(this.el, {
+      animation: 150,
+      ghostClass: 'opacity-50',
+      handle: '.drag-handle',
+      onEnd: (evt) => {
+        const items = Array.from(this.el.children).map((child, index) => ({
+          path: child.dataset.path,
+          index: index
+        }));
+        this.pushEvent("reorder_startup", {items: items, project: this.el.dataset.project});
+      }
+    });
+  }
+};
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, ...TableHooks},
+  hooks: {...colocatedHooks, ...TableHooks, SortableHook},
 })
 
 window.addEventListener("phx:theme-changed", (e) => {
@@ -90,4 +108,3 @@ if (process.env.NODE_ENV === "development") {
     window.liveReloader = reloader
   })
 }
-
