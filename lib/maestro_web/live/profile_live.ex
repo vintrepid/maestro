@@ -203,7 +203,9 @@ defmodule MaestroWeb.ProfileLive do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="min-h-screen bg-gradient-to-br from-base-200 to-base-300 py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl mx-auto space-y-6">
+        <div class="max-w-7xl mx-auto">
+          <div class="grid grid-cols-2 gap-6">
+            <div class="space-y-6">
           <div class="card bg-base-100 shadow-xl">
             <div class="card-body py-4">
               <div class="flex items-center gap-2 mb-2">
@@ -264,8 +266,12 @@ defmodule MaestroWeb.ProfileLive do
               </div>
             </div>
           </div>
+            </div>
+            <div>
+            </div>
+          </div>
 
-          <div class="card bg-base-100 shadow-xl">
+          <div class="card bg-base-100 shadow-xl mt-6">
             <div class="card-body">
               <h2 class="card-title text-3xl font-bold mb-6">
                 <.icon name="hero-user-circle" class="w-8 h-8 text-primary" />
