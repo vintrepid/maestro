@@ -140,8 +140,8 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
         description: "Git workflow, data migrations, verification"
       },
       %{
-        name: "agents/ELIXIR.md",
-        path: "agents/ELIXIR.md",
+        name: "agents/LIVEVIEW.md",
+        path: "agents/LIVEVIEW.md",
         description: "Elixir/Phoenix/LiveView technical patterns"
       },
       %{

@@ -13,7 +13,7 @@ For Maestro: Read `agents/startup/MAESTRO.md`
 ## Framework Guidelines
 
 For Elixir, Phoenix, and LiveView technical patterns, see:
-- **agents/ELIXIR.md** - Complete Elixir/Phoenix/LiveView guidelines
+- **agents/LIVEVIEW.md** - Complete Elixir/Phoenix/LiveView guidelines
 
 ## Project-Specific Guidelines
 
@@ -40,5 +40,5 @@ See `agents/DAISYUI.md` for complete patterns.
 
 ---
 
-*For complete technical guidelines, see agents/ELIXIR.md*
+*For complete technical guidelines, see agents/LIVEVIEW.md*
 *For workflow and git patterns, see agents/GUIDELINES.md*
