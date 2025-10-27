@@ -35,7 +35,7 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
       phx-click="open_file"
       phx-value-path={@item.path}
     >
-      <input type="checkbox" class="checkbox checkbox-xs mt-0.5" />
+      <input type="checkbox" checked class="checkbox checkbox-xs mt-0.5" />
       <div class="badge badge-primary badge-sm mt-0.5">{@index}</div>
       <div class="flex-1">
         <div class="flex items-center gap-2">
