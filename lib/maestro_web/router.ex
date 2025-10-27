@@ -5,6 +5,8 @@ defmodule MaestroWeb.Router do
   use AshAuthentication.Phoenix.Router
 
   import AshAuthentication.Plug.Helpers
+  
+  alias CssLinterWeb.Live.AnalysisLive, as: CssAnalysisLive
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -31,7 +33,7 @@ defmodule MaestroWeb.Router do
       live "/projects", DashboardLive, :projects
       live "/projects/:slug", ProjectDetailLive, :show
       live "/profile", ProfileLive, :edit
-      live "/admin/css-analysis", Elixir.CssLinterWeb.Live.AnalysisLive, :index
+      live "/admin/css-analysis", CssAnalysisLive, :index
       live "/admin/page-inventory", AdminLive.PageInventoryLive, :index
       live "/admin/component-replacement", AdminLive.ComponentReplacementLive, :index
     end
