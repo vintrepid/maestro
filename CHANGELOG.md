@@ -388,3 +388,42 @@ mix components.replace --interactive simple_card **/*.ex
 
 **Status:** In Progress 🚧
 
+
+---
+
+## 2024-10-27 - Git Status Display & Guidelines Viewer
+
+**Goal:** Add git branch status to navbar and create guidelines viewer widget for tracking agent documentation reading.
+
+**Branch:** feature/display-git-branch
+
+**Accomplished:**
+- [x] Created GitWidget component with git status functionality
+- [x] Created GuidelinesViewer component for displaying documentation tree
+- [x] Added file opening functionality (open files in VSCodium)
+- [x] Moved git status to navbar as compact dropdown
+- [x] Refactored to use DaisyUI navbar-start/navbar-end pattern
+- [x] Made widgets self-contained (fetch their own data)
+- [x] Centralized file opening in helper module
+- [x] Created core_components for reusable card/section patterns
+- [x] Rebuilt profile page following DaisyUI-first guidelines
+- [x] Read all key guidelines (GUIDELINES.md, DAISYUI.md, CSS_CLEANUP_GUIDELINES.md)
+- [x] Created GUIDELINE_USAGE_TRACKER.md for session tracking
+
+**Components Created:**
+- `lib/maestro_web/components/git_widget.ex` - Git status display
+- `lib/maestro_web/components/guidelines_viewer.ex` - Documentation tree viewer
+- `lib/maestro_web/live/helpers/file_opener.ex` - File opening helper
+
+**Key Learnings:**
+- DaisyUI semantic classes (navbar-start, navbar-end) eliminate need for custom CSS
+- Self-contained components that fetch their own data are more reusable
+- Guideline tracking via tracker file in git is better than UI-only state
+
+**Status:** Complete ✅
+
+**Next Steps:**
+- Consider adding database persistence for guideline tracking if needed
+- Test file opening functionality across different file types
+- Add more comprehensive git operations (branch switching, etc.)
+
