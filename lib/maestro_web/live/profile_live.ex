@@ -10,6 +10,7 @@ defmodule MaestroWeb.ProfileLive do
       project_guidelines = get_project_guidelines()
       package_usage_rules = get_package_usage_rules()
       agents_tree = get_agents_tree()
+      current_branch = get_current_branch()
 
       {:ok,
        socket
@@ -18,7 +19,8 @@ defmodule MaestroWeb.ProfileLive do
        |> assign(:form, to_form(form))
        |> assign(:project_guidelines, project_guidelines)
        |> assign(:package_usage_rules, package_usage_rules)
-       |> assign(:agents_tree, agents_tree)}
+       |> assign(:agents_tree, agents_tree)
+       |> assign(:current_branch, current_branch)}
     else
       {:ok, push_navigate(socket, to: ~p"/sign-in")}
     end
@@ -74,6 +76,13 @@ defmodule MaestroWeb.ProfileLive do
     end
   end
 
+  defp get_current_branch do
+    case System.cmd("git", ["branch", "--show-current"], stderr_to_stdout: true) do
+      {branch, 0} -> String.trim(branch)
+      _ -> "unknown"
+    end
+  end
+
   defp build_directory_tree(path) do
     File.ls!(path)
     |> Enum.reject(&String.starts_with?(&1, "."))
@@ -118,6 +127,10 @@ defmodule MaestroWeb.ProfileLive do
         <div class="max-w-2xl mx-auto space-y-6">
           <div class="card bg-base-100 shadow-xl">
             <div class="card-body py-4">
+              <div class="flex items-center gap-2 mb-2 pb-2 border-b border-base-300">
+                <.icon name="hero-code-bracket" class="w-4 h-4 text-info" />
+                <span class="text-xs font-mono text-info">git: {@current_branch}</span>
+              </div>
               <div class="space-y-0.5">
                 <div class="text-xs font-bold text-primary mb-1">📋 Project Guidelines (Maestro)</div>
                 <%= for item <- @project_guidelines do %>
