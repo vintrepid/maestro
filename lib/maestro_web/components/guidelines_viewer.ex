@@ -126,81 +126,32 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
   end
 
   defp get_startup_sequence(project) do
-    startup_file = Path.join([File.cwd!(), "agents", "startup", "#{String.upcase(project)}.md"])
+    startup_file = Path.join([File.cwd!(), "agents", "startup", "STARTUP.md"])
     
     if File.exists?(startup_file) do
       content = File.read!(startup_file)
-      parse_custom_order(content, project)
+      parse_startup_file(content)
     else
-      default_startup_sequence(project)
+      []
     end
   end
   
-  defp parse_custom_order(content, project) do
-    if String.contains?(content, "## Custom Startup Order") do
-      content
-      |> String.split("\n")
-      |> Enum.filter(&String.match?(&1, ~r/^\d+\. `/))
-      |> Enum.map(fn line ->
-        path = line |> String.replace(~r/^\d+\. `/, "") |> String.replace("`", "")
-        %{
-          name: path,
-          path: path,
-          description: get_description_for_path(path)
-        }
-      end)
-    else
-      default_startup_sequence(project)
-    end
-  end
-  
-  defp get_description_for_path(path) do
-    cond do
-      path == "AGENTS.md" -> "Project overview and initialization"
-      path == "GUIDELINES.md" -> "Git workflow and general guidelines"
-      path == "agents/GUIDELINES.md" -> "Git workflow, data migrations, verification"
-      path == "agents/LIVEVIEW.md" -> "Elixir/Phoenix/LiveView technical patterns"
-      path == "agents/DAISYUI.md" -> "DaisyUI component usage and patterns"
-      String.contains?(path, "startup/STARTUP.md") -> "Core startup instructions"
-      String.contains?(path, "startup/") and String.ends_with?(path, ".md") -> "Project-specific startup checklist"
-      true -> "Documentation file"
-    end
-  end
-  
-  defp default_startup_sequence(project) do
+  defp parse_startup_file(content) do
+    lines = String.split(content, "\n")
     
-    [
+    lines
+    |> Enum.with_index()
+    |> Enum.filter(fn {line, _idx} ->
+      String.match?(line, ~r/^\d+\.\s+`[^`]+`\s+-/)
+    end)
+    |> Enum.map(fn {line, _idx} ->
+      [_, path, description] = Regex.run(~r/^\d+\.\s+`([^`]+)`\s+-\s+(.+)$/, line)
       %{
-        name: "AGENTS.md",
-        path: "AGENTS.md",
-        description: "Start here - project overview and initialization"
-      },
-      %{
-        name: "agents/startup/STARTUP.md",
-        path: "agents/startup/STARTUP.md",
-        description: "Core startup instructions for all projects"
-      },
-      %{
-        name: "agents/startup/#{String.upcase(project)}.md",
-        path: "agents/startup/#{String.upcase(project)}.md",
-        description: "Project-specific startup checklist"
-      },
-      %{
-        name: "agents/GUIDELINES.md",
-        path: "agents/GUIDELINES.md",
-        description: "Git workflow, data migrations, verification"
-      },
-      %{
-        name: "agents/LIVEVIEW.md",
-        path: "agents/LIVEVIEW.md",
-        description: "Elixir/Phoenix/LiveView technical patterns"
-      },
-      %{
-        name: "agents/DAISYUI.md",
-        path: "agents/DAISYUI.md",
-        description: "DaisyUI component usage and patterns"
+        name: path,
+        path: path,
+        description: String.trim(description)
       }
-    ]
+    end)
   end
 
   defp get_project_name do
