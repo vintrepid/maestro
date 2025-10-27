@@ -30,7 +30,7 @@ defmodule MaestroWeb.ProfileLive do
       File.ls!(project_path)
       |> Enum.reject(&String.starts_with?(&1, "."))
       |> Enum.sort()
-      |> Enum.map(&%{name: &1, type: :file, checked: false})
+      |> Enum.map(&%{name: &1, type: :file, checked: true})
     else
       []
     end
@@ -43,7 +43,7 @@ defmodule MaestroWeb.ProfileLive do
       |> Enum.map(fn dep ->
         usage_rules = Path.join([deps_path, dep, "usage-rules.md"])
         if File.exists?(usage_rules) do
-          %{name: "#{dep}/usage-rules.md", type: :file, checked: false}
+          %{name: "#{dep}/usage-rules.md", type: :file, checked: true}
         end
       end)
       |> Enum.reject(&is_nil/1)
