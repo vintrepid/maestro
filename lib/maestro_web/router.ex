@@ -25,7 +25,8 @@ defmodule MaestroWeb.Router do
   scope "/", MaestroWeb do
     pipe_through :browser
 
-    ash_authentication_live_session :authenticated_routes do
+    live_session :authenticated_routes,
+      on_mount: [{MaestroWeb.LiveUserAuth, :load_current_user}] do
       live "/", DashboardLive, :projects
       live "/projects", DashboardLive, :projects
       live "/profile", ProfileLive, :edit

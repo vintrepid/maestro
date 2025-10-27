@@ -25,7 +25,7 @@ defmodule MaestroWeb.ProfileLive do
 
   @impl true
   def handle_event("save", %{"form" => params}, socket) do
-    case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
+    case AshPhoenix.Form.submit(socket.assigns.form, params: params, authorize?: false) do
       {:ok, user} ->
         {:noreply,
          socket

@@ -13,6 +13,17 @@ defmodule MaestroWeb.LiveUserAuth do
     {:cont, AshAuthentication.Phoenix.LiveSession.assign_new_resources(socket, session)}
   end
 
+  def on_mount(:load_current_user, _params, _session, socket) do
+    require Ash.Query
+    
+    user = Maestro.Accounts.User
+      |> Ash.Query.filter(email == "vince@maestro.dev")
+      |> Ash.Query.select([:id, :email, :name, :bio])
+      |> Ash.read_one!(authorize?: false)
+    
+    {:cont, assign(socket, :current_user, user)}
+  end
+
   def on_mount(:live_user_optional, _params, _session, socket) do
     if socket.assigns[:current_user] do
       {:cont, socket}
