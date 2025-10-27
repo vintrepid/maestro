@@ -5,10 +5,10 @@
 **When you start a new session, read the startup instructions:**
 
 1. Check which project you're working on
-2. Read `agents/startup/{PROJECT}.md` for that project's startup checklist
+2. Read `agents/startup/STARTUP.md` for the startup checklist
 3. Follow the instructions in that file
 
-For Maestro: Read `agents/startup/MAESTRO.md`
+For Maestro: Read `agents/startup/STARTUP.md`
 
 ## Framework Guidelines
 

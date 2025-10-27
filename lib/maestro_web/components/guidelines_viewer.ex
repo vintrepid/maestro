@@ -126,13 +126,20 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
   end
 
   defp get_startup_sequence(project) do
+    agents_md = %{
+      name: "AGENTS.md",
+      path: "AGENTS.md",
+      description: "Start here - points to startup instructions"
+    }
+    
     startup_file = Path.join([File.cwd!(), "agents", "startup", "STARTUP.md"])
     
     if File.exists?(startup_file) do
       content = File.read!(startup_file)
-      parse_startup_file(content)
+      startup_items = parse_startup_file(content)
+      [agents_md | startup_items]
     else
-      []
+      [agents_md]
     end
   end
   
