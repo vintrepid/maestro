@@ -126,6 +126,48 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
   end
 
   defp get_startup_sequence(project) do
+    startup_file = Path.join([File.cwd!(), "agents", "startup", "#{String.upcase(project)}.md"])
+    
+    if File.exists?(startup_file) do
+      content = File.read!(startup_file)
+      parse_custom_order(content, project)
+    else
+      default_startup_sequence(project)
+    end
+  end
+  
+  defp parse_custom_order(content, project) do
+    if String.contains?(content, "## Custom Startup Order") do
+      content
+      |> String.split("\n")
+      |> Enum.filter(&String.match?(&1, ~r/^\d+\. `/))
+      |> Enum.map(fn line ->
+        path = line |> String.replace(~r/^\d+\. `/, "") |> String.replace("`", "")
+        %{
+          name: path,
+          path: path,
+          description: get_description_for_path(path)
+        }
+      end)
+    else
+      default_startup_sequence(project)
+    end
+  end
+  
+  defp get_description_for_path(path) do
+    cond do
+      path == "AGENTS.md" -> "Project overview and initialization"
+      path == "GUIDELINES.md" -> "Git workflow and general guidelines"
+      path == "agents/GUIDELINES.md" -> "Git workflow, data migrations, verification"
+      path == "agents/LIVEVIEW.md" -> "Elixir/Phoenix/LiveView technical patterns"
+      path == "agents/DAISYUI.md" -> "DaisyUI component usage and patterns"
+      String.contains?(path, "startup/STARTUP.md") -> "Core startup instructions"
+      String.contains?(path, "startup/") and String.ends_with?(path, ".md") -> "Project-specific startup checklist"
+      true -> "Documentation file"
+    end
+  end
+  
+  defp default_startup_sequence(project) do
     
     [
       %{

@@ -23,7 +23,6 @@ defmodule MaestroWeb.ProjectDetailLive do
     {:noreply, socket}
   end
 
-  @impl true
   def handle_event("reorder_startup", %{"items" => items, "project" => project}, socket) do
     paths = Enum.map(items, & &1["path"])
     
@@ -62,7 +61,6 @@ defmodule MaestroWeb.ProjectDetailLive do
     File.write!(file_path, updated_content)
   end
 
-  @impl true
   def handle_event("open_in_vscodium", _params, socket) do
     project = socket.assigns.project
     user = socket.assigns.current_user
