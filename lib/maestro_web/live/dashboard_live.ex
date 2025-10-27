@@ -84,7 +84,7 @@ defmodule MaestroWeb.DashboardLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} current_user={assigns[:current_user]}>
       <div class="card bg-base-200">
         <div class="card-body p-0">
           <.live_table

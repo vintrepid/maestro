@@ -40,6 +40,10 @@ defmodule Maestro.Accounts.User do
   actions do
     defaults [:read]
 
+    update :update_profile do
+      accept [:name, :bio]
+    end
+
     read :get_by_subject do
       description "Get a user by the subject claim in a JWT"
       argument :subject, :string, allow_nil?: false
@@ -94,6 +98,19 @@ defmodule Maestro.Accounts.User do
       allow_nil? false
       public? true
     end
+
+    attribute :name, :string do
+      allow_nil? true
+      public? true
+    end
+
+    attribute :bio, :string do
+      allow_nil? true
+      public? true
+    end
+
+    create_timestamp :inserted_at
+    update_timestamp :updated_at
   end
 
   identities do

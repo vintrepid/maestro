@@ -12,6 +12,7 @@ defmodule MaestroWeb.Layouts do
   """
   attr :flash, :map, required: true
   attr :current_scope, :map, default: nil
+  attr :current_user, :map, default: nil
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -24,6 +25,7 @@ defmodule MaestroWeb.Layouts do
             <a href="/" class="brand-link">🎼 Maestro</a>
           </div>
           <div class="navbar-actions">
+            <.user_menu current_user={@current_user} />
             <.admin_menu />
           </div>
         </div>
@@ -67,6 +69,39 @@ defmodule MaestroWeb.Layouts do
         </li>
       </ul>
     </div>
+    """
+  end
+
+  attr :current_user, :map, default: nil
+
+  def user_menu(assigns) do
+    ~H"""
+    <%= if @current_user do %>
+      <div class="dropdown dropdown-end mr-2">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+          <div class="w-10 rounded-full bg-primary text-primary-content flex items-center justify-center">
+            <%= if @current_user.name do %>
+              <span class="text-lg font-semibold">
+                {String.first(@current_user.name) |> String.upcase()}
+              </span>
+            <% else %>
+              <.icon name="hero-user" class="w-6 h-6" />
+            <% end %>
+          </div>
+        </div>
+        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52">
+          <li class="menu-title">
+            <span class="truncate">{@current_user.email}</span>
+          </li>
+          <li><a href="/profile"><.icon name="hero-user" class="w-4 h-4" /> Profile</a></li>
+          <li><a href="/sign-out"><.icon name="hero-arrow-right-on-rectangle" class="w-4 h-4" /> Sign Out</a></li>
+        </ul>
+      </div>
+    <% else %>
+      <a href="/sign-in" class="btn btn-ghost btn-sm mr-2">
+        Sign In
+      </a>
+    <% end %>
     """
   end
 
