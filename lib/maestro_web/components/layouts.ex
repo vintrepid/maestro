@@ -21,10 +21,11 @@ defmodule MaestroWeb.Layouts do
       <input id="main-drawer" type="checkbox" class="drawer-toggle" />
       <div class="drawer-content">
         <div class="navbar bg-base-200">
-          <div class="navbar-brand">
-            <a href="/" class="brand-link">🎼 Maestro</a>
+          <div class="navbar-start">
+            <a href="/" class="btn btn-ghost text-xl">🎼 Maestro</a>
           </div>
-          <div class="navbar-actions">
+          <div class="navbar-end gap-2">
+            <.git_dropdown />
             <.user_menu current_user={@current_user} />
             <.admin_menu />
           </div>
@@ -37,6 +38,52 @@ defmodule MaestroWeb.Layouts do
     </div>
 
     <.flash_group flash={@flash} />
+    """
+  end
+
+  def git_dropdown(assigns) do
+    assigns = assign(assigns, :current_branch, MaestroWeb.Components.GitWidget.get_current_branch())
+    assigns = assign(assigns, :commits_ahead, MaestroWeb.Components.GitWidget.get_commits_ahead_of_master())
+    assigns = assign(assigns, :commits_behind, MaestroWeb.Components.GitWidget.get_commits_behind_master())
+    assigns = assign(assigns, :other_branches, MaestroWeb.Components.GitWidget.get_other_branches_ahead())
+
+    ~H"""
+    <div class="dropdown dropdown-end">
+      <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
+        <.icon name="hero-code-bracket" class="w-4 h-4" />
+        <span class="font-mono text-xs">{@current_branch}</span>
+        <%= if @commits_ahead do %>
+          <span class="badge badge-xs badge-warning">+{@commits_ahead}</span>
+        <% end %>
+        <%= if @commits_behind do %>
+          <span class="badge badge-xs badge-error">-{@commits_behind}</span>
+        <% end %>
+      </div>
+      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-64">
+        <li class="menu-title">Current Branch</li>
+        <li class="px-4 py-2">
+          <span class="font-mono text-sm">{@current_branch}</span>
+        </li>
+        <%= if @other_branches != [] do %>
+          <li class="menu-title mt-2">Other Branches</li>
+          <%= for {branch, ahead, behind} <- @other_branches do %>
+            <li>
+              <div class="flex items-center justify-between">
+                <span class="font-mono text-xs">{branch}</span>
+                <div class="flex gap-1">
+                  <%= if ahead do %>
+                    <span class="badge badge-xs badge-warning">+{ahead}</span>
+                  <% end %>
+                  <%= if behind do %>
+                    <span class="badge badge-xs badge-error">-{behind}</span>
+                  <% end %>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        <% end %>
+      </ul>
+    </div>
     """
   end
 

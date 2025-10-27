@@ -147,18 +147,7 @@ p.description {
   @apply w-32;
 }
 
-/* Layout Components */
-.navbar-brand {
-  flex: 1 1 0%;
-}
-
-.navbar-actions {
-  flex: none;
-}
-
-.brand-link {
-  @apply btn btn-ghost text-xl;
-}
+/* Layout Components - Using DaisyUI navbar */
 
 /* Admin Menu */
 .admin-menu-button {
