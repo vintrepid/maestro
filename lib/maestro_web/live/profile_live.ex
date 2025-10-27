@@ -11,6 +11,7 @@ defmodule MaestroWeb.ProfileLive do
       package_usage_rules = get_package_usage_rules()
       agents_tree = get_agents_tree()
       current_branch = get_current_branch()
+      commits_ahead = get_commits_ahead_of_master()
 
       {:ok,
        socket
@@ -20,7 +21,8 @@ defmodule MaestroWeb.ProfileLive do
        |> assign(:project_guidelines, project_guidelines)
        |> assign(:package_usage_rules, package_usage_rules)
        |> assign(:agents_tree, agents_tree)
-       |> assign(:current_branch, current_branch)}
+       |> assign(:current_branch, current_branch)
+       |> assign(:commits_ahead, commits_ahead)}
     else
       {:ok, push_navigate(socket, to: ~p"/sign-in")}
     end
@@ -83,6 +85,15 @@ defmodule MaestroWeb.ProfileLive do
     end
   end
 
+  defp get_commits_ahead_of_master do
+    case System.cmd("git", ["rev-list", "--count", "master..HEAD"], stderr_to_stdout: true) do
+      {count, 0} -> 
+        count_int = String.trim(count) |> String.to_integer()
+        if count_int > 0, do: count_int, else: nil
+      _ -> nil
+    end
+  end
+
   defp build_directory_tree(path) do
     File.ls!(path)
     |> Enum.reject(&String.starts_with?(&1, "."))
@@ -129,7 +140,12 @@ defmodule MaestroWeb.ProfileLive do
             <div class="card-body py-4">
               <div class="flex items-center gap-2 mb-2 pb-2 border-b border-base-300">
                 <.icon name="hero-code-bracket" class="w-4 h-4 text-info" />
-                <span class="text-xs font-mono text-info">git: {@current_branch}</span>
+                <span class="text-xs font-mono text-info">
+                  git: {@current_branch}
+                  <%= if @commits_ahead do %>
+                    <span class="badge badge-xs badge-warning ml-1">+{@commits_ahead}</span>
+                  <% end %>
+                </span>
               </div>
               <div class="space-y-0.5">
                 <div class="text-xs font-bold text-primary mb-1">📋 Project Guidelines (Maestro)</div>
