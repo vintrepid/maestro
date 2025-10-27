@@ -1,6 +1,9 @@
 defmodule MaestroWeb.ProfileLive do
   use MaestroWeb, :live_view
 
+  alias MaestroWeb.Components.GitWidget
+  alias MaestroWeb.Components.GuidelinesViewer
+
   @impl true
   def mount(_params, _session, socket) do
     if socket.assigns[:current_user] do
@@ -215,66 +218,19 @@ defmodule MaestroWeb.ProfileLive do
         <div class="max-w-7xl mx-auto">
           <div class="grid grid-cols-2 gap-6">
             <div class="space-y-6">
-          <div class="card bg-base-100 shadow-xl">
-            <div class="card-body py-4">
-              <div class="flex items-center gap-2 mb-2">
-                <.icon name="hero-code-bracket" class="w-4 h-4 text-info" />
-                <span class="text-xs font-mono text-info">
-                  git: {@current_branch}
-                  <%= if @commits_ahead do %>
-                    <span class="badge badge-xs badge-warning ml-1">+{@commits_ahead}</span>
-                  <% end %>
-                  <%= if @commits_behind do %>
-                    <span class="badge badge-xs badge-error ml-1">-{@commits_behind}</span>
-                  <% end %>
-                </span>
-              </div>
-              <%= if @other_branches != [] do %>
-                <div>
-                  <div class="text-xs text-base-content/60 mb-1">Other branches:</div>
-                  <div class="flex flex-wrap gap-1">
-                    <%= for {branch, ahead, behind} <- @other_branches do %>
-                      <div class="badge badge-sm badge-ghost gap-1">
-                        <span class="font-mono">{branch}</span>
-                        <%= if ahead do %>
-                          <span class="badge badge-xs badge-warning">+{ahead}</span>
-                        <% end %>
-                        <%= if behind do %>
-                          <span class="badge badge-xs badge-error">-{behind}</span>
-                        <% end %>
-                      </div>
-                    <% end %>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          </div>
+              <GitWidget.git_widget
+                current_branch={@current_branch}
+                commits_ahead={@commits_ahead}
+                commits_behind={@commits_behind}
+                other_branches={@other_branches}
+              />
 
-          <div class="card bg-base-100 shadow-xl">
-            <div class="card-body py-4">
-              <div class="space-y-0.5">
-                <div class="text-xs font-bold text-primary mb-1">📋 Project Guidelines (Maestro)</div>
-                <%= for item <- @project_guidelines do %>
-                  <.simple_item item={item} />
-                <% end %>
-
-                <div class="text-xs font-bold text-success mt-3 mb-1">🔧 Our Forks</div>
-                <%= for item <- @fork_usage_rules do %>
-                  <.simple_item item={item} />
-                <% end %>
-
-                <div class="text-xs font-bold text-secondary mt-3 mb-1">📦 Package Usage Rules</div>
-                <%= for item <- @package_usage_rules do %>
-                  <.simple_item item={item} />
-                <% end %>
-
-                <div class="text-xs font-bold text-accent mt-3 mb-1">📂 Agents Directory</div>
-                <%= for item <- @agents_tree do %>
-                  <.tree_item item={item} level={0} />
-                <% end %>
-              </div>
-            </div>
-          </div>
+              <GuidelinesViewer.guidelines_viewer
+                project_guidelines={@project_guidelines}
+                fork_usage_rules={@fork_usage_rules}
+                package_usage_rules={@package_usage_rules}
+                agents_tree={@agents_tree}
+              />
             </div>
             <div>
             </div>
@@ -364,61 +320,7 @@ defmodule MaestroWeb.ProfileLive do
 
   attr :item, :map, required: true
 
-  defp simple_item(assigns) do
-    ~H"""
-    <div class="flex items-center gap-1.5 py-0.5 hover:bg-base-200 rounded px-1 cursor-pointer"
-         phx-click="open_file"
-         phx-value-path={get_file_path(@item.name)}>
-      <input type="checkbox" checked={@item.checked} class="checkbox checkbox-xs" />
-      <.icon name="hero-document-text" class="w-3 h-3 text-base-content/60" />
-      <span class="text-xs">{@item.name}</span>
-    </div>
-    """
-  end
-
-  defp get_file_path(name) do
-    cond do
-      String.contains?(name, "(project root)") ->
-        String.replace(name, " (project root)", "")
-      String.contains?(name, "(our fork)") ->
-        [fork_name, file] = name |> String.replace(" (our fork)", "") |> String.split("/")
-        "../forks/#{fork_name}/#{file}"
-      String.contains?(name, "/usage-rules.md") ->
-        "deps/#{name}"
-      String.ends_with?(name, ".md") ->
-        "agents/project-specific/maestro/#{name}"
-      true ->
-        "agents/#{name}"
-    end
-  end
-
   defp open_in_editor(file_path) do
     System.cmd("open", ["-a", "VSCodium", file_path], stderr_to_stdout: true)
-  end
-
-  attr :item, :map, required: true
-  attr :level, :integer, default: 0
-
-  defp tree_item(assigns) do
-    ~H"""
-    <div style={"padding-left: #{@level * 1}rem"}>
-      <%= if @item.type == :directory do %>
-        <div class="flex items-center gap-1.5 py-0.5">
-          <input type="checkbox" checked class="checkbox checkbox-xs" />
-          <.icon name="hero-folder" class="w-4 h-4 text-warning" />
-          <span class="text-xs font-semibold text-warning">{@item.name}/</span>
-        </div>
-        <%= for child <- @item.children do %>
-          <.tree_item item={child} level={@level + 1} />
-        <% end %>
-      <% else %>
-        <div class="flex items-center gap-1.5 py-0.5">
-          <input type="checkbox" checked class="checkbox checkbox-xs" />
-          <.icon name="hero-document-text" class="w-3 h-3 text-base-content/60" />
-          <span class="text-xs">{@item.name}</span>
-        </div>
-      <% end %>
-    </div>
-    """
   end
 end
