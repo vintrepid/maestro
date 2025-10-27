@@ -41,6 +41,7 @@ defmodule Maestro.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:maestro_tool, path: "../forks/maestro_tool", only: [:dev]},
       {:css_linter, path: "../forks/css_linter"},
       {:fun_with_flags, "~> 1.11"},
       {:fun_with_flags_ui, "~> 1.0"},
