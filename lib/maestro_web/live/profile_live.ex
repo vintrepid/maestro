@@ -73,12 +73,6 @@ defmodule MaestroWeb.ProfileLive do
 
                 <.input field={@form[:bio]} label="Bio" type="textarea" rows="4" />
 
-                <.input field={@form[:editor_command]} label="Editor Command" type="text" 
-                  placeholder="code (for VSCodium/VSCode)" />
-                <p class="text-sm text-base-content/60 mt-1">
-                  Command to open projects. Use 'code' for VSCodium, 'cursor' for Cursor, etc.
-                </p>
-
                 <div class="divider"></div>
 
                 <div class="flex gap-2 justify-end">

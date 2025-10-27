@@ -19,6 +19,7 @@ defmodule MaestroWeb.Live.Helpers.FileOpener do
   Opens a file in the configured editor.
   
   The path can be relative (will be resolved from project root) or absolute.
+  Editor command is configured in config/config.exs as :editor_command.
   """
   def open_file(path) when is_binary(path) do
     file_path = if Path.type(path) == :absolute do
@@ -27,12 +28,11 @@ defmodule MaestroWeb.Live.Helpers.FileOpener do
       Path.join(File.cwd!(), path)
     end
     
-    open_in_editor(file_path)
+    editor_command = Application.get_env(:maestro, :editor_command, "codium")
+    open_in_editor(file_path, editor_command)
   end
 
-  defp open_in_editor(file_path) do
-    # Use VSCodium as the default editor
-    # The open command on macOS requires the app name without flags
-    System.cmd("open", ["-a", "VSCodium", file_path], stderr_to_stdout: true)
+  defp open_in_editor(file_path, editor_command) do
+    System.cmd(editor_command, [file_path], stderr_to_stdout: true)
   end
 end
