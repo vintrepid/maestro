@@ -1,3 +1,18 @@
+## 2025-01-27 - Integrate CSS Linter
+
+**Goal:** Integrate css_linter from ~/dev/forks/css_linter into Maestro to analyze and improve CSS class usage across all projects.
+
+**Tasks:**
+- [ ] Add css_linter dependency to mix.exs
+- [ ] Create UI for viewing CSS analysis results
+- [ ] Add mix task integration
+- [ ] Document usage in README
+- [ ] Test on Maestro codebase
+
+**Branch:** feature/css-linter
+
+---
+
 # Maestro Changelog
 
 All notable work on the Maestro project orchestration hub is documented here.
