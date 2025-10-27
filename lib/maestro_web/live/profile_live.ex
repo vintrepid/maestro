@@ -13,6 +13,7 @@ defmodule MaestroWeb.ProfileLive do
       agents_tree = get_agents_tree()
       current_branch = get_current_branch()
       commits_ahead = get_commits_ahead_of_master()
+      other_branches = get_other_branches_ahead()
 
       {:ok,
        socket
@@ -24,7 +25,8 @@ defmodule MaestroWeb.ProfileLive do
        |> assign(:package_usage_rules, package_usage_rules)
        |> assign(:agents_tree, agents_tree)
        |> assign(:current_branch, current_branch)
-       |> assign(:commits_ahead, commits_ahead)}
+       |> assign(:commits_ahead, commits_ahead)
+       |> assign(:other_branches, other_branches)}
     else
       {:ok, push_navigate(socket, to: ~p"/sign-in")}
     end
@@ -111,6 +113,31 @@ defmodule MaestroWeb.ProfileLive do
     end
   end
 
+  defp get_other_branches_ahead do
+    current_branch = get_current_branch()
+    
+    case System.cmd("git", ["branch"], stderr_to_stdout: true) do
+      {branches_output, 0} ->
+        branches_output
+        |> String.split("\n")
+        |> Enum.map(&String.trim/1)
+        |> Enum.reject(&(&1 == ""))
+        |> Enum.map(&String.replace_prefix(&1, "* ", ""))
+        |> Enum.reject(&(&1 == current_branch))
+        |> Enum.map(fn branch ->
+          case System.cmd("git", ["rev-list", "--count", "master..#{branch}"], stderr_to_stdout: true) do
+            {count, 0} ->
+              count_int = String.trim(count) |> String.to_integer()
+              if count_int > 0, do: {branch, count_int}, else: nil
+            _ -> nil
+          end
+        end)
+        |> Enum.reject(&is_nil/1)
+        |> Enum.sort_by(fn {_branch, count} -> -count end)
+      _ -> []
+    end
+  end
+
   defp build_directory_tree(path) do
     File.ls!(path)
     |> Enum.reject(&String.starts_with?(&1, "."))
@@ -164,6 +191,19 @@ defmodule MaestroWeb.ProfileLive do
                   <% end %>
                 </span>
               </div>
+              <%= if @other_branches != [] do %>
+                <div class="mb-2 pb-2 border-b border-base-300">
+                  <div class="text-xs text-base-content/60 mb-1">Other branches ahead:</div>
+                  <div class="flex flex-wrap gap-1">
+                    <%= for {branch, count} <- @other_branches do %>
+                      <div class="badge badge-sm badge-ghost gap-1">
+                        <span class="font-mono">{branch}</span>
+                        <span class="badge badge-xs badge-warning">+{count}</span>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
               <div class="space-y-0.5">
                 <div class="text-xs font-bold text-primary mb-1">📋 Project Guidelines (Maestro)</div>
                 <%= for item <- @project_guidelines do %>
