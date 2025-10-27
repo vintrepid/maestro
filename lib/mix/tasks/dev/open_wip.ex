@@ -64,8 +64,9 @@ defmodule Mix.Tasks.Dev.OpenWip do
     staged = get_staged_files()
     unstaged = get_unstaged_files()
     untracked = get_untracked_files()
+    branch_files = get_branch_files()
     
-    (staged ++ unstaged ++ untracked)
+    (staged ++ unstaged ++ untracked ++ branch_files)
     |> Enum.uniq()
     |> Enum.filter(&File.exists?/1)
   end
@@ -92,6 +93,16 @@ defmodule Mix.Tasks.Dev.OpenWip do
 
   defp get_untracked_files do
     case System.cmd("git", ["ls-files", "--others", "--exclude-standard"], stderr_to_stdout: true) do
+      {output, 0} -> 
+        output
+        |> String.split("\n", trim: true)
+        |> Enum.map(&String.trim/1)
+      _ -> []
+    end
+  end
+
+  defp get_branch_files do
+    case System.cmd("git", ["diff", "--name-only", "master..HEAD"], stderr_to_stdout: true) do
       {output, 0} -> 
         output
         |> String.split("\n", trim: true)
