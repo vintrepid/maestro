@@ -171,6 +171,7 @@ defmodule MaestroWeb.ProfileLive do
     <div style={"padding-left: #{@level * 1.5}rem"}>
       <%= if @item.type == :directory do %>
         <div class="flex items-center gap-2 py-1">
+          <input type="checkbox" checked class="checkbox checkbox-sm" />
           <.icon name="hero-folder" class="w-5 h-5 text-warning" />
           <span class="font-semibold text-warning">{@item.name}/</span>
         </div>
@@ -179,6 +180,7 @@ defmodule MaestroWeb.ProfileLive do
         <% end %>
       <% else %>
         <div class="flex items-center gap-2 py-1">
+          <input type="checkbox" checked class="checkbox checkbox-sm" />
           <.icon name="hero-document-text" class="w-4 h-4 text-base-content/60" />
           <span class="text-sm">{@item.name}</span>
         </div>
