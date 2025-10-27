@@ -29,6 +29,7 @@ defmodule MaestroWeb.Router do
       on_mount: [{MaestroWeb.LiveUserAuth, :load_current_user}] do
       live "/", DashboardLive, :projects
       live "/projects", DashboardLive, :projects
+      live "/projects/:slug", ProjectDetailLive, :show
       live "/profile", ProfileLive, :edit
       live "/admin/tailwind-analysis", AdminLive.TailwindAnalysisLive, :index
       live "/admin/page-inventory", AdminLive.PageInventoryLive, :index

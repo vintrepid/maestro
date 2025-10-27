@@ -101,6 +101,12 @@ defmodule Maestro.Accounts.User do
       allow_nil? true
       public? true
     end
+
+    attribute :editor_command, :string do
+      allow_nil? true
+      public? true
+      default "code"
+    end
   end
 
   identities do
