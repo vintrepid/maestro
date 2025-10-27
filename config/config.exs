@@ -77,6 +77,10 @@ config :maestro,
   editor_command: "codium",
   current_app: "Maestro"
 
+config :css_linter,
+  repo: Maestro.Repo,
+  app_name: "Maestro"
+
 # Configures the endpoint
 config :maestro, MaestroWeb.Endpoint,
   url: [host: "localhost"],
