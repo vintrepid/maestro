@@ -27,7 +27,7 @@ defmodule MaestroWeb.Router do
 
     live_session :authenticated_routes,
       on_mount: [{MaestroWeb.LiveUserAuth, :load_current_user}] do
-      live "/", DashboardLive, :projects
+      live "/", HomeLive, :index
       live "/projects", DashboardLive, :projects
       live "/projects/:slug", ProjectDetailLive, :show
       live "/profile", ProfileLive, :edit

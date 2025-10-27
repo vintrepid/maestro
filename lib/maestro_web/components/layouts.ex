@@ -24,6 +24,14 @@ defmodule MaestroWeb.Layouts do
           <div class="navbar-start">
             <a href="/" class="btn btn-ghost text-xl">🎼 Maestro</a>
           </div>
+          <div class="navbar-center">
+            <a href="/projects" class="btn btn-ghost">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              Projects
+            </a>
+          </div>
           <div class="navbar-end gap-2">
             <.git_dropdown />
             <.user_menu current_user={@current_user} />
@@ -141,6 +149,32 @@ defmodule MaestroWeb.Layouts do
             <span class="truncate">{@current_user.email}</span>
           </li>
           <li><a href="/profile"><.icon name="hero-user" class="w-4 h-4" /> Profile</a></li>
+          <li>
+            <details>
+              <summary><.icon name="hero-cog-6-tooth" class="w-4 h-4" /> Settings</summary>
+              <ul>
+                <li><a href="/admin/tailwind-analysis">Tailwind Analysis</a></li>
+                <li><a href="/admin/page-inventory">Page Inventory</a></li>
+                <li><a href="/admin/component-replacement">Component Replacement</a></li>
+                <li class="menu-title">Theme</li>
+                <li>
+                  <button phx-click={set_theme("light")}>
+                    ☀️ Light
+                  </button>
+                </li>
+                <li>
+                  <button phx-click={set_theme("dark")}>
+                    🌙 Dark
+                  </button>
+                </li>
+                <li>
+                  <button phx-click={set_theme("both")}>
+                    ✨ Both
+                  </button>
+                </li>
+              </ul>
+            </details>
+          </li>
           <li><a href="/sign-out"><.icon name="hero-arrow-right-on-rectangle" class="w-4 h-4" /> Sign Out</a></li>
         </ul>
       </div>

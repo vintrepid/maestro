@@ -22,6 +22,11 @@ defmodule MaestroWeb.DashboardLive do
   end
 
   @impl true
+  def handle_event("navigate_to_project", %{"slug" => slug}, socket) do
+    {:noreply, push_navigate(socket, to: ~p"/projects/#{slug}")}
+  end
+
+  @impl true
   def handle_event("set_theme", %{"theme" => theme}, socket) do
     case theme do
       "light" ->
@@ -48,6 +53,7 @@ defmodule MaestroWeb.DashboardLive do
       select: %{
         id: type(p.id, :string),
         name: p.name,
+        slug: p.slug,
         description: p.description,
         status: p.status,
         web_port: p.web_port,
@@ -60,7 +66,18 @@ defmodule MaestroWeb.DashboardLive do
 
   def fields do
     [
-      name: %{label: "Project", sortable: true, searchable: true},
+      name: %{
+        label: "Project",
+        sortable: true,
+        searchable: true,
+        renderer: fn _name, %{slug: slug, name: name} = _row ->
+          Phoenix.HTML.raw("""
+          <a href="/projects/#{slug}" class="link link-primary font-semibold hover:link-hover">
+            #{Phoenix.HTML.html_escape(name) |> Phoenix.HTML.safe_to_string()}
+          </a>
+          """)
+        end
+      },
       description: %{label: "Description", sortable: false},
       status: %{label: "Status", sortable: true},
       web_port: %{label: "Web Port", sortable: true},

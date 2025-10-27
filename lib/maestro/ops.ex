@@ -13,8 +13,8 @@ defmodule Maestro.Ops do
     Repo.all(from p in Project, order_by: p.name)
   end
 
-  def get_project_by_slug!(slug) do
-    Repo.get_by!(Project, slug: slug)
+  def get_project_by_slug(slug) do
+    Repo.get_by(Project, slug: slug)
   end
 
   def list_projects_query do

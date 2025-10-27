@@ -4,12 +4,16 @@ defmodule MaestroWeb.ProjectDetailLive do
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
-    project = Ops.get_project_by_slug!(slug)
-    
-    {:ok,
-     socket
-     |> assign(:project, project)
-     |> assign(:page_title, project.name)}
+    case Ops.get_project_by_slug(slug) do
+      nil ->
+        {:ok, socket |> put_flash(:error, "Project not found") |> push_navigate(to: ~p"/projects")}
+      
+      project ->
+        {:ok,
+         socket
+         |> assign(:project, project)
+         |> assign(:page_title, project.name)}
+    end
   end
 
   @impl true
