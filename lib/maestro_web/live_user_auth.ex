@@ -17,9 +17,9 @@ defmodule MaestroWeb.LiveUserAuth do
     require Ash.Query
     
     user = Maestro.Accounts.User
-      |> Ash.Query.filter(email == "vince@maestro.dev")
+      |> Ash.Query.limit(1)
       |> Ash.Query.select([:id, :email, :name, :bio])
-      |> Ash.read_one!(authorize?: false)
+      |> Ash.read_one!()
     
     {:cont, assign(socket, :current_user, user)}
   end

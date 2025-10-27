@@ -23,6 +23,30 @@
       "size": null,
       "source": "email",
       "type": "citext"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "name",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "bio",
+      "type": "text"
     }
   ],
   "base_filter": null,
@@ -30,7 +54,7 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "DB9CB33CD55BB3DD8CE8D48196A205241C78927F56C013F26163F992C6D93FC4",
+  "hash": "84BAC4D25F3997BD805E1E94E2FDACEF972519FC1F1BB76DE68C2A088DA3A9DE",
   "identities": [
     {
       "all_tenants?": false,

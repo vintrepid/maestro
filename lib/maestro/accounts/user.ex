@@ -3,7 +3,6 @@ defmodule Maestro.Accounts.User do
     otp_app: :maestro,
     domain: Maestro.Accounts,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer],
     extensions: [AshAuthentication]
 
   authentication do
@@ -85,12 +84,6 @@ defmodule Maestro.Accounts.User do
     end
   end
 
-  policies do
-    bypass AshAuthentication.Checks.AshAuthenticationInteraction do
-      authorize_if always()
-    end
-  end
-
   attributes do
     uuid_primary_key :id
 
@@ -108,9 +101,6 @@ defmodule Maestro.Accounts.User do
       allow_nil? true
       public? true
     end
-
-    create_timestamp :inserted_at
-    update_timestamp :updated_at
   end
 
   identities do
