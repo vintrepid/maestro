@@ -7,21 +7,58 @@ defmodule MaestroWeb.ProfileLive do
       user = socket.assigns.current_user
       form = AshPhoenix.Form.for_update(user, :update_profile, domain: Maestro.Accounts)
 
-      agents_path = Path.join([File.cwd!(), "agents"])
-      agents_tree = if File.exists?(agents_path) do
-        build_directory_tree(agents_path)
-      else
-        []
-      end
+      project_guidelines = get_project_guidelines()
+      package_usage_rules = get_package_usage_rules()
+      agents_tree = get_agents_tree()
 
       {:ok,
        socket
        |> assign(:page_title, "Edit Profile")
        |> assign(:user, user)
        |> assign(:form, to_form(form))
+       |> assign(:project_guidelines, project_guidelines)
+       |> assign(:package_usage_rules, package_usage_rules)
        |> assign(:agents_tree, agents_tree)}
     else
       {:ok, push_navigate(socket, to: ~p"/sign-in")}
+    end
+  end
+
+  defp get_project_guidelines do
+    project_path = Path.join([File.cwd!(), "agents", "project-specific", "maestro"])
+    if File.exists?(project_path) do
+      File.ls!(project_path)
+      |> Enum.reject(&String.starts_with?(&1, "."))
+      |> Enum.sort()
+      |> Enum.map(&%{name: &1, type: :file, checked: false})
+    else
+      []
+    end
+  end
+
+  defp get_package_usage_rules do
+    deps_path = Path.join([File.cwd!(), "deps"])
+    if File.exists?(deps_path) do
+      File.ls!(deps_path)
+      |> Enum.map(fn dep ->
+        usage_rules = Path.join([deps_path, dep, "usage-rules.md"])
+        if File.exists?(usage_rules) do
+          %{name: "#{dep}/usage-rules.md", type: :file, checked: false}
+        end
+      end)
+      |> Enum.reject(&is_nil/1)
+      |> Enum.sort_by(& &1.name)
+    else
+      []
+    end
+  end
+
+  defp get_agents_tree do
+    agents_path = Path.join([File.cwd!(), "agents"])
+    if File.exists?(agents_path) do
+      build_directory_tree(agents_path)
+    else
+      []
     end
   end
 
@@ -70,6 +107,17 @@ defmodule MaestroWeb.ProfileLive do
           <div class="card bg-base-100 shadow-xl">
             <div class="card-body py-4">
               <div class="space-y-0.5">
+                <div class="text-xs font-bold text-primary mb-1">📋 Project Guidelines (Maestro)</div>
+                <%= for item <- @project_guidelines do %>
+                  <.simple_item item={item} />
+                <% end %>
+
+                <div class="text-xs font-bold text-secondary mt-3 mb-1">📦 Package Usage Rules</div>
+                <%= for item <- @package_usage_rules do %>
+                  <.simple_item item={item} />
+                <% end %>
+
+                <div class="text-xs font-bold text-accent mt-3 mb-1">📂 Agents Directory</div>
                 <%= for item <- @agents_tree do %>
                   <.tree_item item={item} level={0} />
                 <% end %>
@@ -156,6 +204,18 @@ defmodule MaestroWeb.ProfileLive do
         </div>
       </div>
     </Layouts.app>
+    """
+  end
+
+  attr :item, :map, required: true
+
+  defp simple_item(assigns) do
+    ~H"""
+    <div class="flex items-center gap-1.5 py-0.5">
+      <input type="checkbox" checked={@item.checked} class="checkbox checkbox-xs" />
+      <.icon name="hero-document-text" class="w-3 h-3 text-base-content/60" />
+      <span class="text-xs">{@item.name}</span>
+    </div>
     """
   end
 
