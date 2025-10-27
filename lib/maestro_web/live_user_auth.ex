@@ -10,7 +10,9 @@ defmodule MaestroWeb.LiveUserAuth do
   # To use, place the following at the top of that liveview:
   # on_mount {MaestroWeb.LiveUserAuth, :current_user}
   def on_mount(:current_user, _params, session, socket) do
-    {:cont, AshAuthentication.Phoenix.LiveSession.assign_new_resources(socket, session)}
+    socket = AshAuthentication.Phoenix.LiveSession.assign_new_resources(socket, session)
+    current_app = Application.get_env(:maestro, :current_app, "Maestro")
+    {:cont, assign(socket, :current_app, current_app)}
   end
 
   def on_mount(:load_current_user, _params, _session, socket) do
@@ -21,30 +23,38 @@ defmodule MaestroWeb.LiveUserAuth do
       |> Ash.Query.select([:id, :email, :name, :bio])
       |> Ash.read_one!()
     
-    {:cont, assign(socket, :current_user, user)}
+    current_app = Application.get_env(:maestro, :current_app, "Maestro")
+    
+    {:cont, socket |> assign(:current_user, user) |> assign(:current_app, current_app)}
   end
 
   def on_mount(:live_user_optional, _params, _session, socket) do
+    current_app = Application.get_env(:maestro, :current_app, "Maestro")
+    
     if socket.assigns[:current_user] do
-      {:cont, socket}
+      {:cont, assign(socket, :current_app, current_app)}
     else
-      {:cont, assign(socket, :current_user, nil)}
+      {:cont, socket |> assign(:current_user, nil) |> assign(:current_app, current_app)}
     end
   end
 
   def on_mount(:live_user_required, _params, _session, socket) do
+    current_app = Application.get_env(:maestro, :current_app, "Maestro")
+    
     if socket.assigns[:current_user] do
-      {:cont, socket}
+      {:cont, assign(socket, :current_app, current_app)}
     else
       {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/sign-in")}
     end
   end
 
   def on_mount(:live_no_user, _params, _session, socket) do
+    current_app = Application.get_env(:maestro, :current_app, "Maestro")
+    
     if socket.assigns[:current_user] do
       {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/")}
     else
-      {:cont, assign(socket, :current_user, nil)}
+      {:cont, socket |> assign(:current_user, nil) |> assign(:current_app, current_app)}
     end
   end
 end
