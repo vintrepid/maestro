@@ -206,7 +206,7 @@ defmodule MaestroWeb.ProfileLive do
         <div class="max-w-2xl mx-auto space-y-6">
           <div class="card bg-base-100 shadow-xl">
             <div class="card-body py-4">
-              <div class="flex items-center gap-2 mb-2 pb-2 border-b border-base-300">
+              <div class="flex items-center gap-2 mb-2">
                 <.icon name="hero-code-bracket" class="w-4 h-4 text-info" />
                 <span class="text-xs font-mono text-info">
                   git: {@current_branch}
@@ -219,7 +219,7 @@ defmodule MaestroWeb.ProfileLive do
                 </span>
               </div>
               <%= if @other_branches != [] do %>
-                <div class="mb-2 pb-2 border-b border-base-300">
+                <div>
                   <div class="text-xs text-base-content/60 mb-1">Other branches:</div>
                   <div class="flex flex-wrap gap-1">
                     <%= for {branch, ahead, behind} <- @other_branches do %>
@@ -236,6 +236,11 @@ defmodule MaestroWeb.ProfileLive do
                   </div>
                 </div>
               <% end %>
+            </div>
+          </div>
+
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body py-4">
               <div class="space-y-0.5">
                 <div class="text-xs font-bold text-primary mb-1">📋 Project Guidelines (Maestro)</div>
                 <%= for item <- @project_guidelines do %>
