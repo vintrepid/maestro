@@ -8,6 +8,7 @@ defmodule MaestroWeb.ProfileLive do
       form = AshPhoenix.Form.for_update(user, :update_profile, domain: Maestro.Accounts)
 
       project_guidelines = get_project_guidelines()
+      fork_usage_rules = get_fork_usage_rules()
       package_usage_rules = get_package_usage_rules()
       agents_tree = get_agents_tree()
       current_branch = get_current_branch()
@@ -19,6 +20,7 @@ defmodule MaestroWeb.ProfileLive do
        |> assign(:user, user)
        |> assign(:form, to_form(form))
        |> assign(:project_guidelines, project_guidelines)
+       |> assign(:fork_usage_rules, fork_usage_rules)
        |> assign(:package_usage_rules, package_usage_rules)
        |> assign(:agents_tree, agents_tree)
        |> assign(:current_branch, current_branch)
@@ -50,6 +52,21 @@ defmodule MaestroWeb.ProfileLive do
     end
 
     root_items ++ maestro_items
+  end
+
+  defp get_fork_usage_rules do
+    forks_base = Path.expand("~/dev/forks")
+    [
+      {"live_table", "usage_rules.md"},
+      {"css_linter", "README.md"}
+    ]
+    |> Enum.map(fn {fork, doc_file} ->
+      doc_path = Path.join([forks_base, fork, doc_file])
+      if File.exists?(doc_path) do
+        %{name: "#{fork}/#{doc_file} (our fork)", type: :file, checked: true}
+      end
+    end)
+    |> Enum.reject(&is_nil/1)
   end
 
   defp get_package_usage_rules do
@@ -150,6 +167,11 @@ defmodule MaestroWeb.ProfileLive do
               <div class="space-y-0.5">
                 <div class="text-xs font-bold text-primary mb-1">📋 Project Guidelines (Maestro)</div>
                 <%= for item <- @project_guidelines do %>
+                  <.simple_item item={item} />
+                <% end %>
+
+                <div class="text-xs font-bold text-success mt-3 mb-1">🔧 Our Forks</div>
+                <%= for item <- @fork_usage_rules do %>
                   <.simple_item item={item} />
                 <% end %>
 
