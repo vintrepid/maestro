@@ -1,13 +1,16 @@
 ## 2025-01-27 - Integrate CSS Linter
 
-**Goal:** Integrate css_linter from ~/dev/forks/css_linter into Maestro to analyze and improve CSS class usage across all projects.
+**Goal:** Move Tailwind analysis UI from Maestro to css_linter tool, making it reusable across all projects.
 
 **Tasks:**
-- [ ] Add css_linter dependency to mix.exs
-- [ ] Create UI for viewing CSS analysis results
-- [ ] Add mix task integration
-- [ ] Document usage in README
-- [ ] Test on Maestro codebase
+- [x] css_linter dependency already added
+- [ ] Move TailwindAnalysisLive from Maestro to css_linter
+- [ ] Move/merge TailwindClassUsage schema
+- [ ] Add Phoenix/LiveView dependencies to css_linter
+- [ ] Make UI mountable from any app
+- [ ] Update Maestro to use css_linter's UI
+- [ ] Test in both Maestro and Circle
+- [ ] Document web UI usage in README
 
 **Branch:** feature/css-linter
 
