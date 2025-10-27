@@ -363,3 +363,28 @@ mix components.replace --interactive simple_card **/*.ex
 
 ---
 
+## 2024-10-27 - User Profile Page
+
+**Goal:** Create a user profile editing page where users can edit their profile information.
+
+**Features to Build:**
+- User profile LiveView at /profile
+- Form to edit name and bio
+- User menu in navbar with avatar/dropdown
+- Profile link in user menu
+
+**Tasks:**
+- [x] Create ProfileLive at /profile
+- [x] Add name and bio fields to User resource
+- [x] Add update_profile action to User
+- [x] Create migration for new fields
+- [x] Add /profile route
+- [x] Create user menu component in navbar
+- [x] Pass current_user to layout properly
+- [ ] Test the profile page functionality
+- [ ] Verify UI/UX
+
+**Branch:** feature/user-profile-page
+
+**Status:** In Progress 🚧
+
