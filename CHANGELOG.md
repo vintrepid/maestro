@@ -6,16 +6,23 @@
 - [x] css_linter dependency already added
 - [x] Copy TailwindAnalysisLive to css_linter
 - [x] Refactor TailwindClassUsage schema (repo-agnostic)
-- [ ] Refactor LiveView to be mountable from any app
-- [ ] Add LiveTable dependency to css_linter
-- [ ] Update Maestro to use css_linter's UI
-- [ ] Test in both Maestro and Circle
-- [ ] Document web UI usage in README
+- [x] Refactor LiveView to be mountable from any app
+- [x] Add LiveTable dependency to css_linter
+- [ ] Configure css_linter in Maestro
+- [ ] Mount css_linter routes in Maestro
+- [ ] Test the UI
+- [ ] Remove old Maestro-specific analysis files
+- [ ] Test in Circle
+- [ ] Document web UI usage in css_linter README
 
 **Branch:** feature/css-linter  
 **CSS Linter Branch:** feature/web-ui
 
-**Progress:** Schema refactored and committed to css_linter. LiveView needs refactoring (521 lines, uses LiveTable).
+**Progress:** 
+- Schema refactored and committed
+- LiveView simplified from 521 to 250 lines
+- Router macro created for easy mounting
+- Ready to integrate into Maestro
 
 ---
 
