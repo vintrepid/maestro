@@ -76,11 +76,6 @@ defmodule MaestroWeb.ProjectDetailLive do
     <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="max-w-6xl mx-auto px-8 py-12">
         <div class="mb-8">
-          <.link navigate={~p"/"} class="btn btn-ghost btn-sm gap-2 mb-4">
-            <.icon name="hero-arrow-left" class="w-4 h-4" />
-            Back to Dashboard
-          </.link>
-          
           <div class="flex items-center justify-between">
             <h1 class="text-4xl font-bold">{@project.name}</h1>
             <span class={[
