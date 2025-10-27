@@ -10,7 +10,7 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
     ~H"""
     <.card class={@class}>
       <div class="text-xs font-bold text-primary mb-2">🚀 Agent Startup Sequence</div>
-      <div class="text-xs text-base-content/70 mb-3">Follow this order on each session:</div>
+      <div class="text-xs text-base-content/70 mb-3">Read in this order each session:</div>
       <%= for {item, index} <- Enum.with_index(@startup_sequence, 1) do %>
         <.startup_item item={item} index={index} />
       <% end %>
@@ -33,6 +33,7 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
       phx-click="open_file"
       phx-value-path={@item.path}
     >
+      <input type="checkbox" class="checkbox checkbox-xs mt-0.5" />
       <div class="badge badge-primary badge-sm mt-0.5">{@index}</div>
       <div class="flex-1">
         <div class="flex items-center gap-2">
