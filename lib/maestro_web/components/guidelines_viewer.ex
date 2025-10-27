@@ -33,10 +33,8 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
   defp startup_item(assigns) do
     ~H"""
     <div
-      class="flex items-start gap-2 py-1.5 hover:bg-base-200 rounded px-2 cursor-move mb-1"
+      class="flex items-start gap-2 py-1.5 hover:bg-base-200 rounded px-2 mb-1"
       data-path={@item.path}
-      phx-click="open_file"
-      phx-value-path={@item.path}
     >
       <div class="drag-handle cursor-move">
         <.icon name="hero-bars-3" class="w-4 h-4 text-base-content/40" />
@@ -44,9 +42,13 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
       <input type="checkbox" checked class="checkbox checkbox-xs mt-0.5" />
       <div class="badge badge-primary badge-sm mt-0.5">{@index}</div>
       <div class="flex-1">
-        <div class="flex items-center gap-2">
+        <div
+          class="flex items-center gap-2 cursor-pointer hover:underline"
+          phx-click="open_file"
+          phx-value-path={@item.path}
+        >
           <.icon name="hero-document-text" class="w-3 h-3 text-primary" />
-          <span class="text-xs font-semibold">{@item.name}</span>
+          <span class="text-xs font-semibold text-primary">{@item.name}</span>
         </div>
         <div class="text-xs text-base-content/60 ml-5">{@item.description}</div>
       </div>
