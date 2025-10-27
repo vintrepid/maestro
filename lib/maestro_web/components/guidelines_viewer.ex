@@ -2,9 +2,11 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
   use MaestroWeb, :html
 
   attr :class, :string, default: nil
+  attr :project, :string, default: nil
 
   def guidelines_viewer(assigns) do
-    assigns = assign(assigns, :startup_sequence, get_startup_sequence())
+    project = assigns[:project] || get_project_name()
+    assigns = assign(assigns, :startup_sequence, get_startup_sequence(project))
     assigns = assign(assigns, :agents_tree, get_agents_tree())
 
     ~H"""
@@ -115,8 +117,7 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
     end
   end
 
-  defp get_startup_sequence do
-    project = get_project_name()
+  defp get_startup_sequence(project) do
     
     [
       %{

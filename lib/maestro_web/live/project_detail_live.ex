@@ -52,71 +52,77 @@ defmodule MaestroWeb.ProjectDetailLive do
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-              <h2 class="card-title">Project Info</h2>
-              
-              <div class="space-y-3">
-                <div>
-                  <div class="text-sm text-base-content/60">Web Port</div>
-                  <div class="font-mono text-lg">{@project.web_port}</div>
-                </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2">
+            <div class="card bg-base-100 shadow-xl mb-6">
+              <div class="card-body">
+                <h2 class="card-title">Project Info</h2>
                 
-                <div>
-                  <div class="text-sm text-base-content/60">Debugger Port</div>
-                  <div class="font-mono text-lg">{@project.debugger_port}</div>
+                <div class="space-y-3">
+                  <div>
+                    <div class="text-sm text-base-content/60">Web Port</div>
+                    <div class="font-mono text-lg">{@project.web_port}</div>
+                  </div>
+                  
+                  <div>
+                    <div class="text-sm text-base-content/60">Debugger Port</div>
+                    <div class="font-mono text-lg">{@project.debugger_port}</div>
+                  </div>
+                  
+                  <div>
+                    <div class="text-sm text-base-content/60">Slug</div>
+                    <div class="font-mono">{@project.slug}</div>
+                  </div>
                 </div>
+              </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl">
+              <div class="card-body">
+                <h2 class="card-title">Quick Links</h2>
                 
-                <div>
-                  <div class="text-sm text-base-content/60">Slug</div>
-                  <div class="font-mono">{@project.slug}</div>
+                <div class="space-y-2">
+                  <a 
+                    href={"http://localhost:#{@project.web_port}"}
+                    target="_blank"
+                    class="btn btn-primary btn-block gap-2"
+                  >
+                    <.icon name="hero-globe-alt" class="w-5 h-5" />
+                    Open Web App
+                  </a>
+                  
+                  <a 
+                    href={"http://localhost:#{@project.debugger_port}"}
+                    target="_blank"
+                    class="btn btn-secondary btn-block gap-2"
+                  >
+                    <.icon name="hero-bug-ant" class="w-5 h-5" />
+                    Open Debugger
+                  </a>
+                  
+                  <a 
+                    href={@project.github_url}
+                    target="_blank"
+                    class="btn btn-ghost btn-block gap-2"
+                  >
+                    <.icon name="hero-code-bracket" class="w-5 h-5" />
+                    View on GitHub
+                  </a>
+                  
+                  <button 
+                    phx-click="open_in_vscodium"
+                    class="btn btn-accent btn-block gap-2"
+                  >
+                    <.icon name="hero-code-bracket-square" class="w-5 h-5" />
+                    Open in Editor
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-              <h2 class="card-title">Quick Links</h2>
-              
-              <div class="space-y-2">
-                <a 
-                  href={"http://localhost:#{@project.web_port}"}
-                  target="_blank"
-                  class="btn btn-primary btn-block gap-2"
-                >
-                  <.icon name="hero-globe-alt" class="w-5 h-5" />
-                  Open Web App
-                </a>
-                
-                <a 
-                  href={"http://localhost:#{@project.debugger_port}"}
-                  target="_blank"
-                  class="btn btn-secondary btn-block gap-2"
-                >
-                  <.icon name="hero-bug-ant" class="w-5 h-5" />
-                  Open Debugger
-                </a>
-                
-                <a 
-                  href={@project.github_url}
-                  target="_blank"
-                  class="btn btn-ghost btn-block gap-2"
-                >
-                  <.icon name="hero-code-bracket" class="w-5 h-5" />
-                  View on GitHub
-                </a>
-                
-                <button 
-                  phx-click="open_in_vscodium"
-                  class="btn btn-accent btn-block gap-2"
-                >
-                  <.icon name="hero-code-bracket-square" class="w-5 h-5" />
-                  Open in Editor
-                </button>
-              </div>
-            </div>
+          <div class="lg:col-span-1">
+            <MaestroWeb.Components.GuidelinesViewer.guidelines_viewer project={@project.slug} />
           </div>
         </div>
 
