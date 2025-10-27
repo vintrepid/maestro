@@ -23,6 +23,15 @@ defmodule MaestroWeb.Router do
     plug :load_from_bearer
     plug :set_actor, :user
   end
+  
+  scope "/" do
+    pipe_through :browser
+    
+    live_session :css_linter,
+      on_mount: [{MaestroWeb.LiveUserAuth, :load_current_user}] do
+      live "/admin/css-analysis", @css_linter_module, :index
+    end
+  end
 
   scope "/", MaestroWeb do
     pipe_through :browser
@@ -33,7 +42,6 @@ defmodule MaestroWeb.Router do
       live "/projects", DashboardLive, :projects
       live "/projects/:slug", ProjectDetailLive, :show
       live "/profile", ProfileLive, :edit
-      live "/admin/css-analysis", @css_linter_module, :index
       live "/admin/page-inventory", AdminLive.PageInventoryLive, :index
       live "/admin/component-replacement", AdminLive.ComponentReplacementLive, :index
     end
