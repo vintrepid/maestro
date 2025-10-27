@@ -25,8 +25,15 @@ defmodule MaestroWeb.ProfileLive do
   end
 
   defp get_project_guidelines do
+    root_agents_file = Path.join([File.cwd!(), "AGENTS.md"])
+    root_items = if File.exists?(root_agents_file) do
+      [%{name: "AGENTS.md (project root)", type: :file, checked: true}]
+    else
+      []
+    end
+
     project_path = Path.join([File.cwd!(), "agents", "project-specific", "maestro"])
-    if File.exists?(project_path) do
+    maestro_items = if File.exists?(project_path) do
       File.ls!(project_path)
       |> Enum.reject(&String.starts_with?(&1, "."))
       |> Enum.sort()
@@ -34,6 +41,8 @@ defmodule MaestroWeb.ProfileLive do
     else
       []
     end
+
+    root_items ++ maestro_items
   end
 
   defp get_package_usage_rules do
