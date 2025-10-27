@@ -148,11 +148,6 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
         name: "agents/DAISYUI.md",
         path: "agents/DAISYUI.md",
         description: "DaisyUI component usage and patterns"
-      },
-      %{
-        name: "agents/project-specific/#{project}/",
-        path: "agents/project-specific/#{project}",
-        description: "Project-specific guidelines and patterns"
       }
     ]
   end
