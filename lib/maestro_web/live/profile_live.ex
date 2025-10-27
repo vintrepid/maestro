@@ -68,12 +68,8 @@ defmodule MaestroWeb.ProfileLive do
       <div class="min-h-screen bg-gradient-to-br from-base-200 to-base-300 py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-2xl mx-auto space-y-6">
           <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-              <h2 class="card-title text-2xl font-bold mb-4">
-                <.icon name="hero-folder-open" class="w-6 h-6 text-primary" />
-                Agents Directory
-              </h2>
-              <div class="space-y-1">
+            <div class="card-body py-4">
+              <div class="space-y-0.5">
                 <%= for item <- @agents_tree do %>
                   <.tree_item item={item} level={0} />
                 <% end %>
@@ -168,21 +164,21 @@ defmodule MaestroWeb.ProfileLive do
 
   defp tree_item(assigns) do
     ~H"""
-    <div style={"padding-left: #{@level * 1.5}rem"}>
+    <div style={"padding-left: #{@level * 1}rem"}>
       <%= if @item.type == :directory do %>
-        <div class="flex items-center gap-2 py-1">
-          <input type="checkbox" checked class="checkbox checkbox-sm" />
-          <.icon name="hero-folder" class="w-5 h-5 text-warning" />
-          <span class="font-semibold text-warning">{@item.name}/</span>
+        <div class="flex items-center gap-1.5 py-0.5">
+          <input type="checkbox" checked class="checkbox checkbox-xs" />
+          <.icon name="hero-folder" class="w-4 h-4 text-warning" />
+          <span class="text-xs font-semibold text-warning">{@item.name}/</span>
         </div>
         <%= for child <- @item.children do %>
           <.tree_item item={child} level={@level + 1} />
         <% end %>
       <% else %>
-        <div class="flex items-center gap-2 py-1">
-          <input type="checkbox" checked class="checkbox checkbox-sm" />
-          <.icon name="hero-document-text" class="w-4 h-4 text-base-content/60" />
-          <span class="text-sm">{@item.name}</span>
+        <div class="flex items-center gap-1.5 py-0.5">
+          <input type="checkbox" checked class="checkbox checkbox-xs" />
+          <.icon name="hero-document-text" class="w-3 h-3 text-base-content/60" />
+          <span class="text-xs">{@item.name}</span>
         </div>
       <% end %>
     </div>
