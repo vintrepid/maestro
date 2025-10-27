@@ -2,7 +2,6 @@ defmodule MaestroWeb.Router do
   use MaestroWeb, :router
 
   import Oban.Web.Router
-  import CssLinterWeb.Router
   use AshAuthentication.Phoenix.Router
 
   import AshAuthentication.Plug.Helpers
@@ -32,7 +31,7 @@ defmodule MaestroWeb.Router do
       live "/projects", DashboardLive, :projects
       live "/projects/:slug", ProjectDetailLive, :show
       live "/profile", ProfileLive, :edit
-      css_linter_routes("/admin/css-analysis")
+      live "/admin/css-analysis", CssLinterWeb.Live.AnalysisLive, :index
       live "/admin/page-inventory", AdminLive.PageInventoryLive, :index
       live "/admin/component-replacement", AdminLive.ComponentReplacementLive, :index
     end
