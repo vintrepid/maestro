@@ -4,21 +4,44 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
   attr :class, :string, default: nil
 
   def guidelines_viewer(assigns) do
-    assigns = assign(assigns, :project_guidelines, get_project_guidelines())
+    assigns = assign(assigns, :startup_sequence, get_startup_sequence())
     assigns = assign(assigns, :agents_tree, get_agents_tree())
 
     ~H"""
     <.card class={@class}>
-      <div class="text-xs font-bold text-primary">📋 Project Guidelines (Maestro)</div>
-      <%= for item <- @project_guidelines do %>
-        <.file_item item={item} />
+      <div class="text-xs font-bold text-primary mb-2">🚀 Agent Startup Sequence</div>
+      <div class="text-xs text-base-content/70 mb-3">Follow this order on each session:</div>
+      <%= for {item, index} <- Enum.with_index(@startup_sequence, 1) do %>
+        <.startup_item item={item} index={index} />
       <% end %>
 
-      <div class="text-xs font-bold text-accent mt-3">📂 Agents Directory</div>
+      <div class="text-xs font-bold text-accent mt-4 mb-2">📂 All Documentation</div>
       <%= for item <- @agents_tree do %>
         <.tree_item item={item} level={0} path_prefix="agents" />
       <% end %>
     </.card>
+    """
+  end
+
+  attr :item, :map, required: true
+  attr :index, :integer, required: true
+
+  defp startup_item(assigns) do
+    ~H"""
+    <div
+      class="flex items-start gap-2 py-1.5 hover:bg-base-200 rounded px-2 cursor-pointer mb-1"
+      phx-click="open_file"
+      phx-value-path={@item.path}
+    >
+      <div class="badge badge-primary badge-sm mt-0.5">{@index}</div>
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <.icon name="hero-document-text" class="w-3 h-3 text-primary" />
+          <span class="text-xs font-semibold">{@item.name}</span>
+        </div>
+        <div class="text-xs text-base-content/60 ml-5">{@item.description}</div>
+      </div>
+    </div>
     """
   end
 
@@ -91,28 +114,50 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
     end
   end
 
-  defp get_project_guidelines do
-    root_files = ["AGENTS.md", "REFACTORING_NOTES.md"]
-    root_items = root_files
-    |> Enum.map(fn file ->
-      path = Path.join([File.cwd!(), file])
-      if File.exists?(path) do
-        %{name: "#{file} (project root)", type: :file, checked: false}
-      end
-    end)
-    |> Enum.reject(&is_nil/1)
+  defp get_startup_sequence do
+    project = get_project_name()
+    
+    [
+      %{
+        name: "AGENTS.md",
+        path: "AGENTS.md",
+        description: "Start here - project overview and initialization"
+      },
+      %{
+        name: "agents/startup/STARTUP.md",
+        path: "agents/startup/STARTUP.md",
+        description: "Core startup instructions for all projects"
+      },
+      %{
+        name: "agents/startup/#{String.upcase(project)}.md",
+        path: "agents/startup/#{String.upcase(project)}.md",
+        description: "Project-specific startup checklist"
+      },
+      %{
+        name: "agents/GUIDELINES.md",
+        path: "agents/GUIDELINES.md",
+        description: "Git workflow, data migrations, verification"
+      },
+      %{
+        name: "agents/ELIXIR.md",
+        path: "agents/ELIXIR.md",
+        description: "Elixir/Phoenix/LiveView technical patterns"
+      },
+      %{
+        name: "agents/DAISYUI.md",
+        path: "agents/DAISYUI.md",
+        description: "DaisyUI component usage and patterns"
+      },
+      %{
+        name: "agents/project-specific/#{project}/",
+        path: "agents/project-specific/#{project}",
+        description: "Project-specific guidelines and patterns"
+      }
+    ]
+  end
 
-    project_path = Path.join([File.cwd!(), "agents", "project-specific", "maestro"])
-    maestro_items = if File.exists?(project_path) do
-      File.ls!(project_path)
-      |> Enum.reject(&String.starts_with?(&1, "."))
-      |> Enum.sort()
-      |> Enum.map(&%{name: &1, type: :file, checked: false})
-    else
-      []
-    end
-
-    root_items ++ maestro_items
+  defp get_project_name do
+    Mix.Project.config()[:app] |> to_string()
   end
 
   defp get_agents_tree do
