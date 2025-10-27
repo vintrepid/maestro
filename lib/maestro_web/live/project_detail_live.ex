@@ -1,6 +1,7 @@
 defmodule MaestroWeb.ProjectDetailLive do
   use MaestroWeb, :live_view
   alias Maestro.Ops
+  import MaestroWeb.Live.Helpers.FileOpener
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
@@ -14,6 +15,12 @@ defmodule MaestroWeb.ProjectDetailLive do
          |> assign(:project, project)
          |> assign(:page_title, project.name)}
     end
+  end
+
+  @impl true
+  def handle_event("open_file", %{"path" => path}, socket) do
+    open_file(path)
+    {:noreply, socket}
   end
 
   @impl true
