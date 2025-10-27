@@ -13,6 +13,7 @@ defmodule MaestroWeb.ProfileLive do
       agents_tree = get_agents_tree()
       current_branch = get_current_branch()
       commits_ahead = get_commits_ahead_of_master()
+      commits_behind = get_commits_behind_master()
       other_branches = get_other_branches_ahead()
 
       {:ok,
@@ -26,6 +27,7 @@ defmodule MaestroWeb.ProfileLive do
        |> assign(:agents_tree, agents_tree)
        |> assign(:current_branch, current_branch)
        |> assign(:commits_ahead, commits_ahead)
+       |> assign(:commits_behind, commits_behind)
        |> assign(:other_branches, other_branches)}
     else
       {:ok, push_navigate(socket, to: ~p"/sign-in")}
@@ -113,6 +115,15 @@ defmodule MaestroWeb.ProfileLive do
     end
   end
 
+  defp get_commits_behind_master do
+    case System.cmd("git", ["rev-list", "--count", "HEAD..master"], stderr_to_stdout: true) do
+      {count, 0} -> 
+        count_int = String.trim(count) |> String.to_integer()
+        if count_int > 0, do: count_int, else: nil
+      _ -> nil
+    end
+  end
+
   defp get_other_branches_ahead do
     current_branch = get_current_branch()
     
@@ -125,15 +136,28 @@ defmodule MaestroWeb.ProfileLive do
         |> Enum.map(&String.replace_prefix(&1, "* ", ""))
         |> Enum.reject(&(&1 == current_branch))
         |> Enum.map(fn branch ->
-          case System.cmd("git", ["rev-list", "--count", "master..#{branch}"], stderr_to_stdout: true) do
+          ahead = case System.cmd("git", ["rev-list", "--count", "master..#{branch}"], stderr_to_stdout: true) do
             {count, 0} ->
               count_int = String.trim(count) |> String.to_integer()
-              if count_int > 0, do: {branch, count_int}, else: nil
+              if count_int > 0, do: count_int, else: nil
             _ -> nil
+          end
+          
+          behind = case System.cmd("git", ["rev-list", "--count", "#{branch}..master"], stderr_to_stdout: true) do
+            {count, 0} ->
+              count_int = String.trim(count) |> String.to_integer()
+              if count_int > 0, do: count_int, else: nil
+            _ -> nil
+          end
+          
+          if ahead || behind do
+            {branch, ahead, behind}
+          else
+            nil
           end
         end)
         |> Enum.reject(&is_nil/1)
-        |> Enum.sort_by(fn {_branch, count} -> -count end)
+        |> Enum.sort_by(fn {_branch, ahead, _behind} -> -(ahead || 0) end)
       _ -> []
     end
   end
@@ -189,16 +213,24 @@ defmodule MaestroWeb.ProfileLive do
                   <%= if @commits_ahead do %>
                     <span class="badge badge-xs badge-warning ml-1">+{@commits_ahead}</span>
                   <% end %>
+                  <%= if @commits_behind do %>
+                    <span class="badge badge-xs badge-error ml-1">-{@commits_behind}</span>
+                  <% end %>
                 </span>
               </div>
               <%= if @other_branches != [] do %>
                 <div class="mb-2 pb-2 border-b border-base-300">
-                  <div class="text-xs text-base-content/60 mb-1">Other branches ahead:</div>
+                  <div class="text-xs text-base-content/60 mb-1">Other branches:</div>
                   <div class="flex flex-wrap gap-1">
-                    <%= for {branch, count} <- @other_branches do %>
+                    <%= for {branch, ahead, behind} <- @other_branches do %>
                       <div class="badge badge-sm badge-ghost gap-1">
                         <span class="font-mono">{branch}</span>
-                        <span class="badge badge-xs badge-warning">+{count}</span>
+                        <%= if ahead do %>
+                          <span class="badge badge-xs badge-warning">+{ahead}</span>
+                        <% end %>
+                        <%= if behind do %>
+                          <span class="badge badge-xs badge-error">-{behind}</span>
+                        <% end %>
                       </div>
                     <% end %>
                   </div>
