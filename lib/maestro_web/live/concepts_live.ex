@@ -39,53 +39,6 @@ defmodule MaestroWeb.ConceptsLive do
           </p>
         </div>
 
-        <div class="card bg-base-100 shadow-xl mb-4 card-compact">
-          <div class="card-body">
-            <h2 class="card-title text-lg">Latest Guides</h2>
-            
-            <div class="space-y-2">
-              <div class="border-l-4 border-primary pl-3">
-                <h3 class="font-semibold text-sm">Polymorphic Relations Guide</h3>
-                <p class="text-xs text-base-content/70 mt-1">
-                  Step-by-step guide for implementing polymorphic relationships using entity_type and entity_id fields.
-                  Includes patterns, pitfalls, and a complete checklist.
-                </p>
-                <div class="mt-1 flex gap-1">
-                  <span class="badge badge-xs badge-success">Database</span>
-                  <span class="badge badge-xs badge-info">Ash</span>
-                  <span class="badge badge-xs badge-warning">Relations</span>
-                </div>
-                <button 
-                  phx-click="open_file" 
-                  phx-value-path="docs/guides/POLYMORPHIC_RELATIONS.md"
-                  class="text-xs mt-1 text-primary hover:text-primary-focus flex items-center gap-1 cursor-pointer"
-                >
-                  <.icon name="hero-document-text" class="w-3 h-3" />
-                  docs/guides/POLYMORPHIC_RELATIONS.md
-                  <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card bg-base-100 shadow-xl mb-4 card-compact">
-          <div class="card-body">
-            <h2 class="card-title text-lg">Example: Adding Task-to-Task Relations</h2>
-            <ol class="list-decimal list-inside space-y-1 text-xs">
-              <li><strong>Entity Type Options</strong> → Add "Task" to entity_type_options/0</li>
-              <li><strong>Display Name</strong> → Update calculation with CAST(? AS integer) for Task</li>
-              <li><strong>Entity Resolution</strong> → Add get_entity_name/2 clause for Task in forms and tables</li>
-              <li><strong>Sub-tasks Table</strong> → Add child records table on task detail page</li>
-              <li><strong>New Sub-task Link</strong> → Pre-fill entity_type=Task&entity_id=(parent_id)</li>
-              <li><strong>Test</strong> → Create sub-task, verify display names and hierarchy</li>
-            </ol>
-            <div class="mt-2">
-              <span class="text-xs text-success">✅ Completed in Task #2: new relation</span>
-            </div>
-          </div>
-        </div>
-
         <%= if @svg_exists do %>
           <%= if @fullscreen do %>
             <div 
