@@ -83,10 +83,9 @@ defmodule MaestroWeb.ConceptsLive do
                 <div class="navbar-end">
                   <button 
                     phx-click="toggle_fullscreen"
-                    class="btn btn-ghost btn-sm"
+                    class="btn btn-ghost btn-sm btn-circle"
                   >
                     <.icon name="hero-x-mark" class="w-5 h-5" />
-                    Close (ESC)
                   </button>
                 </div>
               </div>
