@@ -163,12 +163,21 @@ defmodule MaestroWeb.TaskFormLive do
                 </div>
               <% end %>
 
-              <div class="form-control mt-4">
-                <label class="label">
-                  <span class="label-text">Description</span>
-                </label>
-                <div id="markdown-editor-wrapper" phx-update="ignore"><textarea id="markdown-editor" name="form[description]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :description)}</textarea></div>
-              </div>
+              <%= if @task && is_nil_or_empty(@task.description) do %>
+                <details class="collapse collapse-arrow bg-base-200 mt-4">
+                  <summary class="collapse-title text-sm font-medium">Description (optional)</summary>
+                  <div class="collapse-content">
+                    <div id="markdown-editor-wrapper" phx-update="ignore"><textarea id="markdown-editor" name="form[description]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :description)}</textarea></div>
+                  </div>
+                </details>
+              <% else %>
+                <div class="form-control mt-4">
+                  <label class="label">
+                    <span class="label-text">Description</span>
+                  </label>
+                  <div id="markdown-editor-wrapper" phx-update="ignore"><textarea id="markdown-editor" name="form[description]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :description)}</textarea></div>
+                </div>
+              <% end %>
 
               <div class="form-control mt-4">
                 <label class="label">
@@ -263,4 +272,8 @@ defmodule MaestroWeb.TaskFormLive do
   end
   
   defp get_entity_name(_, _), do: nil
+  
+  defp is_nil_or_empty(nil), do: true
+  defp is_nil_or_empty(""), do: true
+  defp is_nil_or_empty(_), do: false
 end
