@@ -75,7 +75,7 @@ defmodule MaestroWeb.ProjectDetailLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
-      <div class="max-w-6xl mx-auto px-8 py-12">
+      <div class="mx-auto px-8 py-12">
         <div class="mb-8">
           <div class="flex items-center justify-between">
             <h1 class="text-4xl font-bold">{@project.name}</h1>
