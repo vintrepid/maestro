@@ -245,12 +245,6 @@ defmodule MaestroWeb.ConceptsLive do
           </div>
         </div>
 
-        <div class="mt-8">
-          <.link navigate={~p"/"} class="btn btn-ghost">
-            <.icon name="hero-arrow-left" class="w-5 h-5" />
-            Back to Dashboard
-          </.link>
-        </div>
       </div>
     </Layouts.app>
     """
