@@ -473,3 +473,713 @@ _The PostgreSQL data layer for Ash Framework_
 [ash_postgres usage rules](deps/ash_postgres/usage-rules.md)
 <!-- ash_postgres-end -->
 <!-- usage-rules-end -->
+
+<!-- maestro_tool-start -->
+## maestro_tool usage
+# MaestroTool Agent Guidelines
+
+## Overview
+
+MaestroTool is a standalone development tool for standardizing Phoenix/LiveView/Ash project configuration.
+
+## Usage
+
+### Installation
+
+Add to your project's mix.exs:
+
+```elixir
+def deps do
+  [
+    {:maestro_tool, github: "vintrepid/maestro_tool", only: [:dev]}
+  ]
+end
+```
+
+### Available Tasks
+
+#### `mix maestro_tool.project.update`
+
+Standardizes project configuration with:
+- `.env` file with project-specific ports
+- Updated `README.md` with correct information
+- Git remote setup (GitHub)
+- Agents symlink creation
+
+**Options:**
+- `--github-user` - GitHub username (default: vintrepid)
+
+**Example:**
+```bash
+mix maestro_tool.project.update
+mix maestro_tool.project.update --github-user myusername
+```
+
+**Behavior:**
+- Idempotent - safe to run multiple times
+- Won't overwrite existing `.env` files
+- Only updates README if it has default Phoenix content
+- Adds git remote only if missing
+
+## Project Ports
+
+The tool automatically detects project-specific ports:
+- maestro: 4004/4012
+- circle: 4015/4016
+- ready: 4000/4008
+- calvin: 4002/4010
+- san_juan: 4003/4011
+- new_project: 4001/4009
+- default: 4000/4012
+
+## Development
+
+### Structure
+
+```
+maestro_tool/
+├── lib/
+│   ├── maestro_tool/
+│   │   └── application.ex
+│   ├── mix/
+│   │   └── tasks/
+│   │       └── maestro_tool.project.update.ex
+│   └── maestro_tool.ex
+├── test/
+├── mix.exs
+├── README.md
+├── CHANGELOG.md
+└── AGENTS.md (this file)
+```
+
+### Adding New Tasks
+
+1. Create new file in `lib/mix/tasks/`
+2. Use `Mix.Task` behavior
+3. Add `@shortdoc` and `@moduledoc`
+4. Namespace with `Mix.Tasks.MaestroTool.*`
+
+Example:
+```elixir
+defmodule Mix.Tasks.MaestroTool.Analyze do
+  @moduledoc """
+  Analyzes project structure.
+  """
+  
+  use Mix.Task
+
+  @shortdoc "Analyze project structure"
+
+  def run(args) do
+    # Your logic here
+  end
+end
+```
+
+### Testing
+
+```bash
+mix test
+```
+
+### Release Process
+
+1. Update CHANGELOG.md
+2. Bump version in mix.exs
+3. Commit changes
+4. Tag release: `git tag v0.X.0`
+5. Push: `git push --tags`
+
+## Best Practices
+
+- Keep dependencies minimal
+- Make tasks idempotent
+- Provide clear error messages
+- Document all options
+- Test across different project types
+
+## Related Documentation
+
+- [README.md](README.md) - User-facing documentation
+- [CHANGELOG.md](CHANGELOG.md) - Version history
+- [TOOLS.md](https://github.com/vintrepid/agents/blob/main/TOOLS.md) - Creating tools guide
+<!-- maestro_tool-end -->
+
+<!-- css_linter-start -->
+## css_linter usage
+# CssLinter Agent Guidelines
+
+## Overview
+
+CssLinter is a CSS analysis tool with pluggable strategies for scanning and reporting on CSS class usage patterns.
+
+## Usage
+
+### Installation
+
+Add to your project's mix.exs:
+
+```elixir
+def deps do
+  [
+    {:css_linter, github: "vintrepid/css_linter", only: [:dev]}
+  ]
+end
+```
+
+### Available Tasks
+
+#### `mix css_linter.analyze`
+
+Analyzes CSS class usage in your project.
+
+**Options:**
+- `--strategy` - Analysis strategy to use (default: "tailwind")
+- `--output` - Output file path for JSON export
+- `--paths` - Comma-separated list of paths to scan (default: "lib")
+
+**Examples:**
+```bash
+# Analyze with Tailwind strategy
+mix css_linter.analyze --strategy tailwind
+
+# Export to JSON
+mix css_linter.analyze --strategy tailwind --output analysis.json
+
+# Scan specific paths
+mix css_linter.analyze --paths "lib,priv/templates"
+```
+
+## Strategies
+
+### Tailwind
+
+Categorizes Tailwind CSS classes into groups:
+- Layout (flex, grid, display)
+- Spacing (padding, margin, gap)
+- Sizing (width, height)
+- Typography (font, text)
+- Colors (bg, text, border colors)
+- Effects (shadow, opacity, blur)
+- DaisyUI Components
+- And more...
+
+### Custom Strategies
+
+Create your own strategy by implementing the `CssLinter.Strategy` behavior:
+
+```elixir
+defmodule MyApp.CustomStrategy do
+  @behaviour CssLinter.Strategy
+
+  def categorize(class_name) do
+    # Return category atom or nil
+  end
+  
+  def category_name(category) do
+    # Return human-readable category name
+  end
+end
+```
+
+## Development
+
+### Structure
+
+```
+css_linter/
+├── lib/
+│   ├── css_linter/
+│   │   ├── application.ex
+│   │   ├── reporter.ex
+│   │   ├── scanner.ex
+│   │   ├── strategy.ex
+│   │   ├── strategies/
+│   │   │   └── tailwind.ex
+│   │   └── schema/
+│   ├── mix/
+│   │   └── tasks/
+│   │       └── css_linter.analyze.ex
+│   └── css_linter.ex
+├── test/
+├── mix.exs
+├── README.md
+├── INSTALLATION.md
+├── CHANGELOG.md
+└── AGENTS.md (this file)
+```
+
+### Adding New Strategies
+
+1. Create new file in `lib/css_linter/strategies/`
+2. Implement `CssLinter.Strategy` behavior
+3. Define `categorize/1` and `category_name/1` functions
+4. Register in strategy loader
+
+### Testing
+
+```bash
+mix test
+```
+
+### Release Process
+
+1. Update CHANGELOG.md
+2. Bump version in mix.exs
+3. Commit changes
+4. Tag release: `git tag v0.X.0`
+5. Push: `git push --tags`
+
+## Output Format
+
+### Console Report
+
+```
+CSS Analysis Report
+==================
+
+Total Files Scanned: 45
+Total Classes Found: 258 unique (1,191 occurrences)
+
+Top 10 Classes:
+  flex: 45 occurrences
+  gap-4: 32 occurrences
+  btn: 28 occurrences
+
+By Category:
+  layout: 156 occurrences (45 unique)
+  spacing: 134 occurrences (38 unique)
+```
+
+### JSON Export
+
+```json
+{
+  "summary": {
+    "total_files": 45,
+    "total_classes": 258,
+    "total_occurrences": 1191
+  },
+  "classes": [
+    {
+      "name": "flex",
+      "category": "layout",
+      "count": 45,
+      "files": [...]
+    }
+  ]
+}
+```
+
+## Best Practices
+
+- Run analysis regularly to track CSS usage trends
+- Export JSON for historical tracking
+- Use with Tailwind purge configuration
+- Create custom strategies for project-specific patterns
+
+## Related Documentation
+
+- [README.md](README.md) - User-facing documentation
+- [INSTALLATION.md](INSTALLATION.md) - Installation guide
+- [CHANGELOG.md](CHANGELOG.md) - Version history
+- [TOOLS.md](https://github.com/vintrepid/agents/blob/main/TOOLS.md) - Creating tools guide
+
+## CSS Class Analysis & Cleanup
+
+### Running Analysis
+
+```bash
+mix css_linter.analyze --strategy tailwind --output analysis.json
+```
+
+### Cleanup Process
+
+1. Run analysis to identify high-usage patterns
+2. Extract repeated combinations (3+ occurrences) to semantic classes
+3. Create meaningful class names (`.page-section` not `.px-8-py-6`)
+4. Run analysis again to verify reduction
+5. Target: 20-26% reduction in unique classes
+
+### Where to Put Extracted Styles
+
+**Global CSS** (assets/css/app.css) - Application-wide patterns:
+```css
+.page-section {
+  @apply px-8 py-6;
+}
+```
+
+**Phoenix Components** (lib/*_web/components/) - Reusable UI patterns with markup
+
+**Keep in Template** - Simple layout and one-off adjustments
+
+### Integration Features
+
+**Web UI** (when mounted in app):
+- Visual class usage statistics
+- Category breakdowns
+- Sortable and searchable analysis results
+- Track cleanup progress over time
+<!-- css_linter-end -->
+
+<!-- live_table-start -->
+## live_table usage
+# LiveTable LLM Usage Guidelines
+
+This document provides clear rules and patterns for AI assistants to help developers use the LiveTable library correctly. Follow these guidelines when generating code suggestions or helping with LiveTable implementation.
+
+## Core Principles
+
+### 1. Field Key Mapping is Critical
+**RULE**: Field keys in `fields()` function MUST match exactly with:
+- Schema field names (for simple tables)
+- Select clause keys (for custom queries)
+
+### 2. Two Primary Usage Patterns
+LiveTable supports exactly two patterns - choose the correct one:
+
+#### Pattern A: Simple Tables (Single Schema)
+```elixir
+use LiveTable.LiveResource, schema: YourApp.Product
+```
+- Use when querying a single Ecto schema
+- Field keys must match schema field names exactly
+- No custom `data_provider` needed in `mount/3`
+
+#### Pattern B: Complex Tables (Custom Queries)
+```elixir
+use LiveTable.LiveResource
+# Must define custom data provider in mount/3
+```
+- Use for joins, computed fields, or complex logic
+- Field keys must match select clause keys exactly
+- Requires custom data provider assignment
+
+## Critical Don'ts
+
+### DON'T Mix Patterns
+**NEVER** use `schema:` parameter with custom queries:
+```elixir
+# WRONG - Don't do this
+use LiveTable.LiveResource, schema: User  # Remove this line
+def mount(_params, _session, socket) do
+  socket = assign(socket, :data_provider, {MyApp.Users, :complex_query, []})
+  {:ok, socket}
+end
+```
+
+### DON'T Misalign Field Keys
+**NEVER** use field keys that don't match your data source:
+```elixir
+# WRONG - Field key doesn't match schema field
+def fields do
+  [
+    user_name: %{label: "Name"}  # Schema field is 'name', not 'user_name'
+  ]
+end
+```
+
+### DON'T Forget Required Dependencies
+**NEVER** generate LiveTable code without the core dependency:
+```elixir
+# REQUIRED in mix.exs
+{:live_table, "~> 0.3.1"}
+# Add {:oban, "~> 2.19"} only if using export functionality
+```
+
+### DON'T Skip Asset Setup
+**NEVER** implement LiveTable without proper asset configuration
+
+## Required Setup Checklist
+
+When implementing with LiveTable, ALWAYS ensure:
+
+### 1. Dependencies
+```elixir
+# In mix.exs deps function
+{:live_table, "~> 0.3.1"}
+# Add {:oban, "~> 2.19"} only if using exports
+```
+
+### 2. Configuration
+```elixir
+# In config/config.exs
+config :live_table,
+  repo: YourApp.Repo,
+  pubsub: YourApp.PubSub
+
+# Add Oban config only if using exports
+# config :your_app, Oban,
+#   repo: YourApp.Repo,
+#   queues: [exports: 10]
+```
+
+### 3. JavaScript Assets
+```javascript
+// In assets/js/app.js
+import hooks_default from "../../deps/live_table/priv/static/live-table.js";
+
+const liveSocket = new LiveSocket("/live", Socket, {
+  hooks: hooks_default,  // Required
+  // ... other config
+});
+```
+
+### 4. CSS Assets
+```css
+/* In assets/css/app.css */
+@source "../../deps/live_table/lib";
+@import "../../deps/live_table/priv/static/live-table.css";
+```
+
+## Implementation Templates
+
+### Template A: Simple Table (Single Schema)
+```elixir
+defmodule YourAppWeb.ProductLive.Index do
+  use YourAppWeb, :live_view
+  use LiveTable.LiveResource, schema: YourApp.Product
+
+  def fields do
+    [
+      # Keys MUST match Product schema fields exactly
+      id: %{label: "ID", sortable: true},
+      name: %{label: "Product Name", sortable: true, searchable: true},
+      price: %{label: "Price", sortable: true},
+      stock_quantity: %{label: "Stock", sortable: true}
+    ]
+  end
+
+  def filters do
+    [
+      in_stock: Boolean.new(:stock_quantity, "in_stock", %{
+        label: "In Stock Only",
+        condition: dynamic([p], p.stock_quantity > 0)
+      })
+    ]
+  end
+end
+```
+
+### Template B: Complex Table (Custom Query)
+```elixir
+defmodule YourAppWeb.OrderReportLive.Index do
+  use YourAppWeb, :live_view
+  use LiveTable.LiveResource  # NO schema parameter
+
+  def mount(_params, _session, socket) do
+    # REQUIRED: Assign custom data provider as {Module, Function, Arguments}
+    socket = assign(socket, :data_provider, {YourApp.Orders, :list_with_details, []})
+    {:ok, socket}
+  end
+
+  def fields do
+    [
+      # Keys MUST match select clause keys exactly
+      order_id: %{label: "Order #", sortable: true},
+      customer_name: %{label: "Customer", sortable: true, searchable: true},
+      total_amount: %{label: "Total", sortable: true}
+    ]
+  end
+end
+```
+
+```elixir
+# Corresponding context function
+defmodule YourApp.Orders do
+  def list_with_details do
+    from o in Order,
+      join: c in Customer, on: o.customer_id == c.id,
+      select: %{
+        order_id: o.id,        # Field key must match this
+        customer_name: c.name, # Field key must match this
+        total_amount: o.total_amount
+      }
+  end
+end
+```
+
+## Field Configuration Rules
+
+### Basic Field Options
+```elixir
+field_name: %{
+  label: "Display Name",      # Always provide
+  sortable: true,            # REQUIRED if field should be sortable
+  searchable: true,          # REQUIRED if field should be searchable
+}
+```
+
+### Custom Rendering with `renderer`
+
+**CRITICAL**: Use `renderer:` for custom cell formatting, not `component:` or `value:`.
+
+The `renderer` function can receive either:
+- **function/1**: Receives only the cell value
+- **function/2**: Receives the cell value AND the full record/row
+
+```elixir
+# Function/1: Access only the cell value
+status: %{
+  label: "Status",
+  renderer: fn value -> 
+    content_tag(:span, String.upcase(value), class: "badge badge-#{value}")
+  end
+}
+
+# Function/2: Access cell value AND full record for conditional rendering
+priority: %{
+  label: "Priority",
+  renderer: fn value, record ->
+    class = if record.urgent, do: "text-red-600 font-bold", else: "text-gray-500"
+    content_tag(:span, value, class: class)
+  end
+}
+
+# Using Phoenix.Component ~H sigil for complex markup
+user_info: %{
+  label: "User",
+  renderer: fn _value, record ->
+    assigns = %{user: record}
+    ~H"""
+    <div class="flex items-center gap-2">
+      <img src={@user.avatar_url} class="w-8 h-8 rounded-full" />
+      <span>{@user.name}</span>
+    </div>
+    """
+  end
+}
+```
+
+**Why function/2 is powerful**: Access to the full record lets you use data from ANY field, not just the current column's field. For example, showing a status badge that changes color based on a different field's value.
+
+### Association Sorting (Custom Queries Only)
+```elixir
+# When sorting by joined table fields
+product_name: %{
+  label: "Product",
+  sortable: true,
+  assoc: {:order_items, :name}  # Must match query alias and field
+}
+```
+
+## Filter Types
+
+### Boolean Filter
+```elixir
+Boolean.new(:field_name, "param_name", %{
+  label: "Filter Label",
+  condition: dynamic([alias], alias.field_name > 0)
+})
+```
+
+### Range Filter
+```elixir
+Range.new(:field_name, "param_name", %{
+  type: :number,  # or :date
+  label: "Range Label",
+  min: 0,
+  max: 1000
+})
+```
+
+### Select Filter
+```elixir
+Select.new({:table_alias, :field_name}, "param_name", %{
+  label: "Select Label",
+  options: [
+    %{label: "Display", value: ["actual_value"]},
+    %{label: "All Active", value: ["active", "pending"]}
+  ]
+})
+```
+
+## Template Usage
+
+### Required Template Structure
+```elixir
+# In your .html.heex template
+<.live_table
+  fields={fields()}
+  filters={filters()}
+  options={@options}    # Required
+  streams={@streams}    # Required
+/>
+```
+
+## Common Error Patterns to Avoid
+
+### 1. Field Key Mismatch
+```elixir
+# Schema has 'email' field, but using wrong key
+email_address: %{label: "Email"}  # Wrong
+email: %{label: "Email"}          # Correct
+```
+
+### 2. Missing Data Provider for Custom Queries
+```elixir
+# Wrong - Custom query without data provider
+use LiveTable.LiveResource
+def fields do
+  [complex_field: %{label: "Complex"}]
+end
+# Missing: data_provider assignment in mount/3
+```
+
+### 3. Schema with Custom Query
+```elixir
+# Wrong - Using both schema and custom query
+use LiveTable.LiveResource, schema: User
+def mount(_params, _session, socket) do
+  socket = assign(socket, :data_provider, {App.Users, :custom_query, []})
+end
+```
+
+## Decision Tree for LLMs
+
+When helping with LiveTable implementation:
+
+1. **Is it a single table query?**
+   - YES → Use Pattern A (with `schema:`)
+   - NO → Use Pattern B (custom data provider)
+
+2. **Are there joins or computed fields?**
+   - YES → Must use Pattern B
+   - NO → Can use Pattern A
+
+3. **Do field keys match the data source?**
+   - Schema pattern → Keys match schema fields
+   - Custom pattern → Keys match select clause
+
+4. **Are all required assets configured?**
+   - Check deps, config, JS hooks, CSS imports
+
+5. **Is the template structure correct?**
+   - Verify `fields()`, `filters()`, `@options`, `@streams`
+
+## Quick Reference
+
+### Must-Have Functions
+- `fields()` - Always required
+- `filters()` - Optional but recommended
+
+### Must-Have Template Props
+- `fields={fields()}`
+- `filters={filters()}`
+- `options={@options}`
+- `streams={@streams}`
+
+### Must-Have Dependencies
+- `{:live_table, "~> 0.3.1"}` (always required)
+- `{:oban, "~> 2.19"}` (only if using exports)
+
+### Must-Have Config
+- LiveTable repo and pubsub config (always required)
+- Oban queue configuration (only if using exports)
+- JavaScript hooks import
+- CSS imports
+
+This document ensures LLMs provide accurate, complete LiveTable implementations every time.
+<!-- live_table-end -->
+<!-- usage-rules-end -->
