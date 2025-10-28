@@ -10,13 +10,19 @@ defmodule MaestroWeb.ConceptsLive do
     {:ok,
      socket
      |> assign(:page_title, "Guideline Concepts")
-     |> assign(:svg_exists, svg_exists)}
+     |> assign(:svg_exists, svg_exists)
+     |> assign(:fullscreen, false)}
   end
 
   @impl true
   def handle_event("open_file", %{"path" => path}, socket) do
     open_file(path)
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("toggle_fullscreen", _params, socket) do
+    {:noreply, assign(socket, :fullscreen, !socket.assigns.fullscreen)}
   end
 
   @impl true
@@ -64,14 +70,56 @@ defmodule MaestroWeb.ConceptsLive do
         </div>
 
         <%= if @svg_exists do %>
-          <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-              <h2 class="card-title">Concept DAG</h2>
-              <div class="overflow-x-auto">
-                <img src="/images/concept_dag.svg" alt="Concept Dependency Graph" class="w-full" />
+          <%= if @fullscreen do %>
+            <div 
+              class="fixed inset-0 z-50 bg-base-100 flex flex-col"
+              phx-window-keydown="toggle_fullscreen"
+              phx-key="Escape"
+            >
+              <div class="navbar bg-base-200">
+                <div class="navbar-start">
+                  <h2 class="text-xl font-bold">Concept DAG</h2>
+                </div>
+                <div class="navbar-end">
+                  <button 
+                    phx-click="toggle_fullscreen"
+                    class="btn btn-ghost btn-sm"
+                  >
+                    <.icon name="hero-x-mark" class="w-5 h-5" />
+                    Close (ESC)
+                  </button>
+                </div>
+              </div>
+              <div class="flex-1 overflow-auto p-8">
+                <img 
+                  src="/images/concept_dag.svg" 
+                  alt="Concept Dependency Graph" 
+                  class="w-full h-full object-contain"
+                />
               </div>
             </div>
-          </div>
+          <% else %>
+            <div class="card bg-base-100 shadow-xl">
+              <div class="card-body">
+                <div class="flex items-center justify-between">
+                  <h2 class="card-title">Concept DAG</h2>
+                  <button 
+                    phx-click="toggle_fullscreen"
+                    class="btn btn-sm btn-ghost gap-2"
+                  >
+                    <.icon name="hero-arrows-pointing-out" class="w-4 h-4" />
+                    Fullscreen
+                  </button>
+                </div>
+                <div 
+                  class="overflow-x-auto cursor-pointer hover:opacity-80 transition-opacity"
+                  phx-click="toggle_fullscreen"
+                >
+                  <img src="/images/concept_dag.svg" alt="Concept Dependency Graph" class="w-full" />
+                </div>
+              </div>
+            </div>
+          <% end %>
         <% else %>
           <div class="alert alert-warning">
             <.icon name="hero-exclamation-triangle" class="w-6 h-6" />
