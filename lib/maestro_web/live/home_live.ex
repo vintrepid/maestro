@@ -3,7 +3,13 @@ defmodule MaestroWeb.HomeLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :page_title, "Maestro")}
+    case Maestro.Ops.AppState.get_current_project() do
+      nil ->
+        {:ok, assign(socket, :page_title, "Maestro")}
+      
+      project ->
+        {:ok, push_navigate(socket, to: ~p"/projects/#{project.slug}")}
+    end
   end
 
   @impl true

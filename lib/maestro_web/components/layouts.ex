@@ -16,13 +16,27 @@ defmodule MaestroWeb.Layouts do
   slot :inner_block, required: true
 
   def app(assigns) do
+    current_project = try do
+      Maestro.Ops.AppState.get_current_project()
+    rescue
+      _ -> nil
+    end
+    
+    assigns = assign(assigns, :current_project, current_project)
+    
     ~H"""
     <div class="drawer">
       <input id="main-drawer" type="checkbox" class="drawer-toggle" />
       <div class="drawer-content flex flex-col">
         <div class="navbar bg-base-200 sticky top-0 z-50 shadow-md">
           <div class="navbar-start">
-            <a href="/" class="btn btn-ghost text-xl">🎼 Maestro</a>
+            <%= if @current_project do %>
+              <a href={~p"/projects/#{@current_project.slug}"} class="btn btn-ghost text-xl">
+                🎼 {@current_project.name}
+              </a>
+            <% else %>
+              <a href="/" class="btn btn-ghost text-xl">🎼 Maestro</a>
+            <% end %>
           </div>
           <div class="navbar-center gap-2">
             <a href="/projects" class="btn btn-ghost">

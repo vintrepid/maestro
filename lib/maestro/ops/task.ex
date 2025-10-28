@@ -17,7 +17,11 @@ defmodule Maestro.Ops.Task do
 
     attribute :description, :string
 
+    attribute :notes, :string
+
     attribute :due_at, :utc_datetime_usec
+
+    attribute :completed_at, :utc_datetime_usec
 
     attribute :task_type, :atom do
       constraints one_of: [:feature, :bug, :refactor, :documentation, :other]
@@ -45,11 +49,17 @@ defmodule Maestro.Ops.Task do
     defaults [:read, :destroy]
 
     create :create do
-      accept [:title, :description, :due_at, :task_type, :status, :entity_type, :entity_id]
+      accept [:title, :description, :notes, :due_at, :completed_at, :task_type, :status, :entity_type, :entity_id]
     end
 
     update :update do
-      accept [:title, :description, :due_at, :task_type, :status]
+      accept [:title, :description, :notes, :due_at, :completed_at, :task_type, :status]
+    end
+
+    update :mark_complete do
+      accept []
+      change set_attribute(:status, :done)
+      change set_attribute(:completed_at, &DateTime.utc_now/0)
     end
   end
 
@@ -57,6 +67,7 @@ defmodule Maestro.Ops.Task do
     define :create
     define :read
     define :update
+    define :mark_complete
     define :destroy
     define :by_id, get_by: [:id], action: :read
   end

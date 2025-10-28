@@ -16,6 +16,7 @@ defmodule Maestro.Application do
          Application.fetch_env!(:maestro, Oban)
        )},
       Maestro.Ops.ProjectMonitor,
+      Maestro.Ops.AppState,
       MaestroWeb.Endpoint,
       {AshAuthentication.Supervisor, [otp_app: :maestro]}
     ]

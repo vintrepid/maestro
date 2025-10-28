@@ -53,6 +53,56 @@ defmodule MaestroWeb.TaskFormLive do
     end
   end
 
+  def handle_event("run_task", _params, socket) do
+    task = socket.assigns.task
+    
+    if task do
+      Maestro.Ops.AppState.set_current_task(task.id)
+      
+      entity_project = if task.entity_type == "Project" do
+        case Maestro.Repo.get(Maestro.Ops.Project, task.entity_id) do
+          nil -> nil
+          project -> project
+        end
+      else
+        nil
+      end
+      
+      if entity_project do
+        Maestro.Ops.AppState.set_current_project(entity_project.id)
+      end
+      
+      {:noreply,
+       socket
+       |> put_flash(:info, "Task #{task.title} is now active")
+       |> push_navigate(to: ~p"/")}
+    else
+      {:noreply, put_flash(socket, :error, "Cannot run unsaved task")}
+    end
+  end
+
+  def handle_event("mark_complete", _params, socket) do
+    task = socket.assigns.task
+    
+    if task do
+      case Task.mark_complete(task) do
+        {:ok, updated_task} ->
+          form = AshPhoenix.Form.for_update(updated_task, :update)
+          
+          {:noreply,
+           socket
+           |> assign(:task, updated_task)
+           |> assign(:form, to_form(form))
+           |> put_flash(:info, "Task marked as complete")}
+        
+        {:error, _} ->
+          {:noreply, put_flash(socket, :error, "Failed to mark task as complete")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Cannot mark unsaved task as complete")}
+    end
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -102,6 +152,20 @@ defmodule MaestroWeb.TaskFormLive do
                 <.input field={@form[:due_at]} type="datetime-local" class="input input-bordered" />
               </div>
 
+              <%= if @task && @task.completed_at do %>
+                <div class="alert alert-success mt-4">
+                  <.icon name="hero-check-circle" class="w-5 h-5" />
+                  <span>Completed on {Calendar.strftime(@task.completed_at, "%B %d, %Y at %I:%M %p")}</span>
+                </div>
+              <% end %>
+
+              <div class="form-control mt-4">
+                <label class="label">
+                  <span class="label-text">Notes</span>
+                </label>
+                <div id="notes-markdown-editor-wrapper" phx-update="ignore"><textarea id="notes-markdown-editor" name="form[notes]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :notes)}</textarea></div>
+              </div>
+
               <%= if is_nil(@task) do %>
                 <div class="grid grid-cols-2 gap-4 mt-4">
                   <div class="form-control">
@@ -124,6 +188,18 @@ defmodule MaestroWeb.TaskFormLive do
                 <.link navigate={~p"/tasks"} class="btn btn-ghost">
                   Cancel
                 </.link>
+                <%= if @task do %>
+                  <%= if @task.status != :done do %>
+                    <button type="button" phx-click="mark_complete" class="btn btn-success gap-2">
+                      <.icon name="hero-check-circle" class="w-5 h-5" />
+                      Mark Complete
+                    </button>
+                  <% end %>
+                  <button type="button" phx-click="run_task" class="btn btn-accent gap-2">
+                    <.icon name="hero-play" class="w-5 h-5" />
+                    Run Task
+                  </button>
+                <% end %>
                 <button type="submit" class="btn btn-primary">
                   Save Task
                 </button>

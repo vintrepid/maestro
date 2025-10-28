@@ -74,4 +74,12 @@ defmodule Maestro.Ops.Project do
     identity :unique_slug, [:slug]
     identity :unique_web_port, [:web_port]
   end
+
+  code_interface do
+    define :create
+    define :read
+    define :update
+    define :destroy
+    define :by_id, get_by: [:id], action: :read
+  end
 end
