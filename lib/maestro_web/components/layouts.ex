@@ -57,7 +57,6 @@ defmodule MaestroWeb.Layouts do
           <div class="navbar-end gap-2">
             <.git_dropdown />
             <.user_menu current_user={@current_user} />
-            <.admin_menu />
           </div>
         </div>
 
