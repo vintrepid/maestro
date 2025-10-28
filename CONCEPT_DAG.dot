@@ -2,76 +2,140 @@ digraph GuidelineConcepts {
   rankdir=LR;
   node [shape=box, style=filled];
   
+  // Core concepts
   node [fillcolor=lightblue];
-  git [label="Git Workflow"];
-  verification [label="Code Verification"];
-  communication [label="Communication"];
-  
-  node [fillcolor=lightgreen];
-  db_pk [label="Primary Keys"];
-  ash_resource [label="Ash Resources"];
-  poly_relations [label="Polymorphic Relations"];
-  migrations [label="Data Migrations"];
-  data_modification [label="Data Modification\n(guides/DATA_MODIFICATION)"];
-  
-  node [fillcolor=lightyellow];
-  phoenix [label="Phoenix Patterns"];
-  ui_decision [label="LiveView vs JS\nDecision Point\n(guides/LIVEVIEW_VS_JS)"];
-  liveview [label="LiveView"];
-  javascript [label="JavaScript"];
-  daisyui [label="DaisyUI Components"];
-  css [label="CSS Standards"];
-  markdown_editor [label="Markdown Editor\n(guides/MARKDOWN_EDITOR)"];
-  
-  node [fillcolor=lightcoral];
-  css_linter [label="CSS Linter"];
-  live_table [label="LiveTable"];
-  fly [label="Fly Deployment"];
+  git [label="Git Workflow\n(GUIDELINES)"];
+  verification [label="Code Verification\n(GUIDELINES)"];
+  communication [label="Communication\n(GUIDELINES)"];
   startup_json [label="Startup JSON\n(guides/STARTUP_JSON)"];
   
+  // Database concepts
+  node [fillcolor=lightgreen];
+  db_pk [label="Primary Keys\n(GUIDELINES)"];
+  ash_resource [label="Ash Resources\n(GUIDELINES)"];
+  poly_relations [label="Polymorphic Relations\n(POLYMORPHIC_RELATIONS)"];
+  migrations [label="Data Migrations\n(GUIDELINES)"];
+  data_modification [label="Data Modification\n(guides/DATA_MODIFICATION)"];
+  
+  // UI/Frontend concepts
+  node [fillcolor=lightyellow];
+  phoenix [label="Phoenix Patterns\n(LIVEVIEW)"];
+  ui_decision [label="LiveView vs JS\nDecision Point\n(guides/LIVEVIEW_VS_JS)"];
+  liveview [label="LiveView\n(LIVEVIEW)"];
+  javascript [label="JavaScript\n(guides/LIVEVIEW_VS_JS)"];
+  daisyui [label="DaisyUI Components\n(DAISYUI)"];
+  css [label="CSS Standards\n(DAISYUI)"];
+  markdown_editor [label="Markdown Editor\n(guides/MARKDOWN_EDITOR)"];
+  
+  // Tools
+  node [fillcolor=lightcoral];
+  css_linter [label="CSS Linter\n(usage_rules)"];
+  live_table [label="LiveTable\n(LIVE_TABLE)"];
+  fly [label="Fly Deployment\n(FLY_DEPLOYMENT)"];
+  
+  // Project-specific
   node [fillcolor=plum];
-  calvin_domain [label="Calvin Business"];
-  sanjuan_domain [label="SanJuan Analytics"];
-  maestro_coord [label="Maestro Coordination"];
+  calvin_domain [label="Calvin Business\n(calvin/README)"];
+  sanjuan_domain [label="SanJuan Analytics\n(sanjuan/README)"];
+  maestro_coord [label="Maestro Coordination\n(maestro/README)"];
   circle_learnings [label="Circle Patterns\n(guides/CIRCLE_LEARNINGS)"];
   
-  db_pk -> ash_resource;
-  ash_resource -> poly_relations;
-  ash_resource -> migrations;
-  ash_resource -> data_modification [label="updated via"];
-  data_modification -> verification [label="ensures"];
+  // Database flow
+  db_pk -> ash_resource [label="used in"];
+  ash_resource -> poly_relations [label="implements"];
+  ash_resource -> migrations [label="creates"];
+  ash_resource -> data_modification [label="ALWAYS use\nnever SQL"];
+  poly_relations -> migrations [label="requires"];
+  migrations -> verification [label="requires"];
+  data_modification -> verification [label="ensures validity"];
   
-  phoenix -> ui_decision [label="first decide"];
-  ui_decision -> liveview [label="real-time"];
-  ui_decision -> javascript [label="client-side"];
+  // UI decision flow
+  phoenix -> ui_decision [label="FIRST decide"];
+  ui_decision -> liveview [label="if real-time\nor multi-user"];
+  ui_decision -> javascript [label="if client-side\nor simple"];
   
-  liveview -> daisyui;
-  javascript -> daisyui;
-  liveview -> markdown_editor;
+  // UI flow
+  liveview -> daisyui [label="styles with"];
+  javascript -> daisyui [label="styles with"];
+  daisyui -> css [label="defines"];
+  css -> css_linter [label="analyzed by"];
+  
+  // Markdown Editor
+  liveview -> markdown_editor [label="can use"];
   ash_resource -> markdown_editor [label="field type"];
+  markdown_editor -> daisyui [label="styled with"];
   
-  liveview -> live_table;
-  live_table -> daisyui;
+  // LiveView patterns
+  liveview -> live_table [label="can use"];
+  live_table -> daisyui [label="styled with"];
   
-  circle_learnings -> liveview [label="multi-select"];
+  // Development flow
+  git -> verification [label="before merge"];
+  verification -> communication [label="report via"];
+  startup_json -> git [label="defines workflow"];
+  
+  // Database & UI intersection
+  ash_resource -> liveview [label="displayed in"];
+  ash_resource -> javascript [label="fetched by"];
+  poly_relations -> liveview [label="displayed in"];
+  db_pk -> calvin_domain [label="applied in"];
+  db_pk -> sanjuan_domain [label="applied in"];
+  poly_relations -> maestro_coord [label="used in tasks"];
+  
+  // Circle Learnings
+  circle_learnings -> liveview [label="multi-select patterns"];
   circle_learnings -> daisyui [label="tag UI"];
   circle_learnings -> ash_resource [label="junction tables"];
+  circle_learnings -> data_modification [label="proper updates"];
   
-  git -> verification;
-  verification -> communication;
-  startup_json -> git;
+  // Project coordination
+  maestro_coord -> calvin_domain [label="coordinates"];
+  maestro_coord -> sanjuan_domain [label="coordinates"];
+  maestro_coord -> git [label="manages via"];
   
-  ash_resource -> liveview;
-  poly_relations -> liveview;
+  // Tools & Concepts
+  css_linter -> maestro_coord [label="integrated in"];
+  live_table -> sanjuan_domain [label="used in"];
+  live_table -> calvin_domain [label="used in"];
   
-  maestro_coord -> calvin_domain;
-  maestro_coord -> sanjuan_domain;
-  maestro_coord -> git;
+  // Deployment
+  liveview -> fly [label="deployed via"];
+  ash_resource -> fly [label="deployed via"];
+  fly -> verification [label="tested after"];
   
-  css_linter -> maestro_coord;
-  live_table -> sanjuan_domain;
-  live_table -> calvin_domain;
+  // Organization clusters
+  subgraph cluster_core {
+    label="Core Guidelines";
+    style=filled;
+    color=lightgrey;
+    git; verification; communication; startup_json;
+  }
   
-  liveview -> fly;
-  ash_resource -> fly;
+  subgraph cluster_data {
+    label="Database Layer";
+    style=filled;
+    color=lightgrey;
+    db_pk; ash_resource; poly_relations; migrations; data_modification;
+  }
+  
+  subgraph cluster_ui {
+    label="UI Layer";
+    style=filled;
+    color=lightgrey;
+    phoenix; ui_decision; liveview; javascript; daisyui; css; markdown_editor;
+  }
+  
+  subgraph cluster_tools {
+    label="Tools & Infrastructure";
+    style=filled;
+    color=lightgrey;
+    css_linter; live_table; fly;
+  }
+  
+  subgraph cluster_projects {
+    label="Projects";
+    style=filled;
+    color=lightgrey;
+    calvin_domain; sanjuan_domain; maestro_coord; circle_learnings;
+  }
 }
