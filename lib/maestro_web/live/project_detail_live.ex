@@ -11,9 +11,14 @@ defmodule MaestroWeb.ProjectDetailLive do
         {:ok, socket |> put_flash(:error, "Project not found") |> push_navigate(to: ~p"/projects")}
       
       project ->
+        maestro_capacity = read_session_capacity()
+        project_capacity = read_project_session_capacity(project)
+        
         {:ok,
          socket
          |> assign(:project, project)
+         |> assign(:session_capacity, maestro_capacity)
+         |> assign(:project_capacity, project_capacity)
          |> assign(:page_title, project.name)}
     end
   end
@@ -79,12 +84,25 @@ defmodule MaestroWeb.ProjectDetailLive do
         <div class="mb-8">
           <div class="flex items-center justify-between">
             <h1 class="text-4xl font-bold">{@project.name}</h1>
-            <span class={[
-              "badge badge-lg",
-              status_badge_class(@project.status)
-            ]}>
-              {@project.status}
-            </span>
+            <div class="flex items-center gap-2">
+              <span class={[
+                "badge badge-lg",
+                status_badge_class(@project.status)
+              ]}>
+                {@project.status}
+              </span>
+              <%= if @project_capacity && @project.status == :running do %>
+                <span class="badge badge-lg badge-warning" title="Project AI session capacity">
+                  <.icon name="hero-cpu-chip" class="w-4 h-4 mr-1" />
+                  {@project_capacity}
+                </span>
+              <% end %>
+              <%= if @session_capacity do %>
+                <span class="badge badge-lg badge-info" title="Maestro session capacity">
+                  {@session_capacity}
+                </span>
+              <% end %>
+            </div>
           </div>
           
           <p :if={@project.description} class="text-lg text-base-content/70 mt-2">
@@ -298,4 +316,27 @@ defmodule MaestroWeb.ProjectDetailLive do
   defp status_badge_class(status) when status in [:running, "running"], do: "badge-success"
   defp status_badge_class(status) when status in [:stopped, "stopped"], do: "badge-error"
   defp status_badge_class(_), do: "badge-ghost"
+  
+  defp read_session_capacity do
+    capacity_file = Path.join([File.cwd!(), "SESS_CAP.md"])
+    
+    if File.exists?(capacity_file) do
+      File.read!(capacity_file)
+      |> String.trim()
+    else
+      nil
+    end
+  end
+  
+  defp read_project_session_capacity(project) do
+    project_path = Path.expand("~/dev/#{project.slug}")
+    capacity_file = Path.join([project_path, "SESS_CAP.md"])
+    
+    if File.exists?(capacity_file) do
+      File.read!(capacity_file)
+      |> String.trim()
+    else
+      nil
+    end
+  end
 end

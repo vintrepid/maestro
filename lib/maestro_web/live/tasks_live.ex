@@ -8,7 +8,30 @@ defmodule MaestroWeb.TasksLive do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:page_title, "Tasks")}
+     |> assign(:page_title, "Tasks")
+     |> load_tasks()}
+  end
+
+  @impl true
+  def handle_event("delete_task", %{"id" => id}, socket) do
+    task = Task.by_id!(String.to_integer(id))
+    
+    case Task.destroy(task) do
+      :ok ->
+        {:noreply,
+         socket
+         |> load_tasks()
+         |> put_flash(:info, "Task deleted successfully")}
+      
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to delete task")}
+    end
+  end
+
+  defp load_tasks(socket) do
+    tasks = Repo.all(list_tasks_query())
+    |> Maestro.Ops.load!([:display_name])
+    assign(socket, :tasks, tasks)
   end
 
   @impl true
@@ -26,10 +49,9 @@ defmodule MaestroWeb.TasksLive do
 
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
-            <MaestroWeb.Components.TaskTable.task_table
-              
+            <MaestroWeb.Components.TaskTable.task_table_static
               id="tasks-table"
-              query_fn={&list_tasks_query/0}
+              tasks={@tasks}
             />
           </div>
         </div>
@@ -39,6 +61,6 @@ defmodule MaestroWeb.TasksLive do
   end
 
   def list_tasks_query do
-    from t in Task, order_by: [desc: t.inserted_at]
+    from t in Task, order_by: [desc: t.updated_at]
   end
 end

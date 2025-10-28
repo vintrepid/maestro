@@ -32,6 +32,7 @@ defmodule MaestroWeb.TaskFormLive do
      |> assign(:task, task)
      |> assign(:entity_name, entity_name)
      |> assign(:editing_notes, false)
+     |> assign(:editing_description, false)
      |> assign(:form, to_form(form))}
   end
 
@@ -56,6 +57,7 @@ defmodule MaestroWeb.TaskFormLive do
          |> assign(:task, task)
          |> assign(:form, to_form(form))
          |> assign(:editing_notes, false)
+         |> assign(:editing_description, false)
          |> put_flash(:info, "Task saved successfully")}
       
       {:error, form} ->
@@ -69,6 +71,14 @@ defmodule MaestroWeb.TaskFormLive do
 
   def handle_event("cancel_edit_notes", _params, socket) do
     {:noreply, assign(socket, :editing_notes, false)}
+  end
+
+  def handle_event("edit_description", _params, socket) do
+    {:noreply, assign(socket, :editing_description, true)}
+  end
+
+  def handle_event("cancel_edit_description", _params, socket) do
+    {:noreply, assign(socket, :editing_description, false)}
   end
 
   def handle_event("run_task", _params, socket) do
@@ -168,28 +178,44 @@ defmodule MaestroWeb.TaskFormLive do
                   <.icon name="hero-check-circle" class="w-5 h-5" />
                   <span>Completed on {Calendar.strftime(@task.completed_at, "%B %d, %Y at %I:%M %p")}</span>
                 </div>
-              <% else %>
-                <div class="form-control mt-4">
-                  <label class="label">
-                    <span class="label-text">Due Date</span>
-                  </label>
-                  <.input field={@form[:due_at]} type="datetime-local" class="input input-bordered" />
-                </div>
               <% end %>
 
-              <%= if @task && is_nil_or_empty(@task.description) do %>
-                <details class="collapse collapse-arrow bg-base-200 mt-4">
-                  <summary class="collapse-title text-sm font-medium">Description (optional)</summary>
-                  <div class="collapse-content">
-                    <div id="markdown-editor-wrapper" phx-update="ignore"><textarea id="markdown-editor" name="form[description]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :description)}</textarea></div>
+              <%= if @task do %>
+                <%= if @editing_description do %>
+                  <div class="mt-6 p-4 bg-base-200 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                      <div class="text-sm font-semibold uppercase tracking-wide">Edit Description</div>
+                      <button type="button" phx-click="cancel_edit_description" class="btn btn-ghost btn-xs">
+                        <.icon name="hero-x-mark" class="w-4 h-4" />
+                        Cancel
+                      </button>
+                    </div>
+                    <div id="description-markdown-editor-wrapper" phx-update="ignore"><textarea id="description-markdown-editor" name="form[description]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :description)}</textarea></div>
                   </div>
-                </details>
+                <% else %>
+                  <%= if @task.description do %>
+                    <div class="mt-6 p-6 bg-base-200 rounded-lg prose prose-sm max-w-none cursor-pointer hover:bg-base-300 transition-colors" phx-click="edit_description">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="text-xs text-base-content/60 uppercase tracking-wide">Description (click to edit)</div>
+                        <.icon name="hero-pencil" class="w-4 h-4 text-base-content/40" />
+                      </div>
+                      {raw(Earmark.as_html!(@task.description))}
+                    </div>
+                  <% else %>
+                    <button type="button" phx-click="edit_description" class="mt-6 w-full p-4 bg-base-200 rounded-lg hover:bg-base-300 transition-colors text-left">
+                      <div class="flex items-center gap-2 text-base-content/60">
+                        <.icon name="hero-plus" class="w-5 h-5" />
+                        <span>Add description...</span>
+                      </div>
+                    </button>
+                  <% end %>
+                <% end %>
               <% else %>
                 <div class="form-control mt-4">
                   <label class="label">
-                    <span class="label-text">Description</span>
+                    <span class="label-text">Description (optional)</span>
                   </label>
-                  <div id="markdown-editor-wrapper" phx-update="ignore"><textarea id="markdown-editor" name="form[description]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :description)}</textarea></div>
+                  <div id="description-markdown-editor-wrapper" phx-update="ignore"><textarea id="description-markdown-editor" name="form[description]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :description)}</textarea></div>
                 </div>
               <% end %>
 

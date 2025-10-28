@@ -50,6 +50,8 @@ defmodule MaestroWeb.Router do
       live "/tasks/new", TaskFormLive, :new
       live "/tasks/:id/edit", TaskFormLive, :edit
       live "/profile", ProfileLive, :edit
+      live "/settings/hotkeys", HotkeysLive
+      live "/settings/aliases", AliasesLive
       live "/admin/page-inventory", AdminLive.PageInventoryLive, :index
       live "/admin/component-replacement", AdminLive.ComponentReplacementLive, :index
     end

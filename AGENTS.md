@@ -1,5 +1,3 @@
 # Agent Startup Instructions
 
-## Read this
-
-task_meta.json
+Read **startup.json** - it tells you everything you need to know.

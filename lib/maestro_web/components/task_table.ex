@@ -23,34 +23,86 @@ defmodule MaestroWeb.Components.TaskTable do
             <th>Title</th>
             <th>Type</th>
             <th>Status</th>
-            <th>Due</th>
-            <th>Entity</th>
-            <th>Actions</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           <%= if @tasks == [] do %>
             <tr>
-              <td colspan="6" class="text-center text-base-content/60">No tasks yet</td>
+              <td colspan="4" class="text-center text-base-content/60">No tasks yet</td>
             </tr>
           <% end %>
           <%= for task <- @tasks do %>
             <tr>
-              <td>{task.display_name}</td>
+              <td>
+                <.link navigate={~p"/tasks/#{task.id}/edit"} class="link link-primary">
+                  {task.display_name}
+                </.link>
+              </td>
               <td><span class="badge badge-sm">{task.task_type}</span></td>
               <td><span class={"badge badge-sm #{status_class(task.status)}"}>{task.status}</span></td>
               <td>
-                <%= if task.due_at do %>
-                  {Calendar.strftime(task.due_at, "%b %d, %Y")}
-                <% else %>
-                  <span class="text-base-content/40">—</span>
-                <% end %>
+                <button
+                  phx-click="delete_task"
+                  phx-value-id={task.id}
+                  data-confirm="Are you sure you want to delete this task?"
+                  class="btn btn-ghost btn-xs text-error hover:bg-error hover:text-error-content"
+                >
+                  <.icon name="hero-trash" class="w-4 h-4" />
+                </button>
               </td>
-              <td><span class="text-sm">{task.entity_display_name || task.entity_id}</span></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    """
+  end
+
+  attr :tasks, :list, required: true
+  attr :id, :string, required: true
+
+  def task_table_static(assigns) do
+    tasks_with_names = Enum.map(assigns.tasks, fn task ->
+      Map.put(task, :entity_display_name, get_entity_name(task.entity_type, task.entity_id))
+    end)
+    assigns = assign(assigns, :tasks, tasks_with_names)
+
+    ~H"""
+    <div class="overflow-x-auto">
+      <table class="table table-zebra table-pin-rows">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= if @tasks == [] do %>
+            <tr>
+              <td colspan="4" class="text-center text-base-content/60">No tasks yet</td>
+            </tr>
+          <% end %>
+          <%= for task <- @tasks do %>
+            <tr>
               <td>
-                <.link navigate={~p"/tasks/#{task.id}/edit"} class="btn btn-ghost btn-xs">
-                  <.icon name="hero-pencil" class="w-4 h-4" />
+                <.link navigate={~p"/tasks/#{task.id}/edit"} class="link link-primary">
+                  {task.display_name}
                 </.link>
+              </td>
+              <td><span class="badge badge-sm">{task.task_type}</span></td>
+              <td><span class={"badge badge-sm #{status_class(task.status)}"}>{task.status}</span></td>
+              <td>
+                <button
+                  phx-click="delete_task"
+                  phx-value-id={task.id}
+                  data-confirm="Are you sure you want to delete this task?"
+                  class="btn btn-ghost btn-xs text-error hover:bg-error hover:text-error-content"
+                >
+                  <.icon name="hero-trash" class="w-4 h-4" />
+                </button>
               </td>
             </tr>
           <% end %>
@@ -61,8 +113,8 @@ defmodule MaestroWeb.Components.TaskTable do
   end
 
   defp status_class(:todo), do: "badge-ghost"
-  defp status_class(:in_progress), do: "badge-info"
-  defp status_class(:done), do: "badge-success"
+  defp status_class(:in_progress), do: "badge-success"
+  defp status_class(:done), do: "badge-info"
   defp status_class(:blocked), do: "badge-error"
   defp status_class(_), do: "badge-ghost"
   

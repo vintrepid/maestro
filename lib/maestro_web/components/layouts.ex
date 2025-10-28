@@ -210,6 +210,8 @@ defmodule MaestroWeb.Layouts do
             <details>
               <summary><.icon name="hero-cog-6-tooth" class="w-4 h-4" /> Settings</summary>
               <ul>
+                <li><a href="/settings/hotkeys"><.icon name="hero-command-line" class="w-4 h-4" /> Hotkeys</a></li>
+                <li><a href="/settings/aliases"><.icon name="hero-chat-bubble-left-right" class="w-4 h-4" /> Aliases</a></li>
                 <li><a href="/admin/tailwind-analysis">Tailwind Analysis</a></li>
                 <li><a href="/admin/page-inventory">Page Inventory</a></li>
                 <li><a href="/admin/component-replacement">Component Replacement</a></li>
