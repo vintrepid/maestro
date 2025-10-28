@@ -175,6 +175,13 @@ defmodule MaestroWeb.TaskFormLive do
                   <span class="label-text">Notes</span>
                 </label>
                 <div id="notes-markdown-editor-wrapper" phx-update="ignore"><textarea id="notes-markdown-editor" name="form[notes]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :notes)}</textarea></div>
+                
+                <%= if @task && @task.notes do %>
+                  <div class="mt-4 p-4 bg-base-200 rounded-lg prose prose-sm max-w-none">
+                    <div class="text-xs text-base-content/60 mb-2">Rendered Preview:</div>
+                    {raw(Earmark.as_html!(@task.notes))}
+                  </div>
+                <% end %>
               </div>
 
               <%= if is_nil(@task) do %>
