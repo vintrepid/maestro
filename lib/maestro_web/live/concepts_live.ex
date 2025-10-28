@@ -160,6 +160,7 @@ defmodule MaestroWeb.ConceptsLive do
                     <li>Ash Resources</li>
                     <li>Polymorphic Relations</li>
                     <li>Data Migrations</li>
+                    <li>Data Modification Patterns (NEW)</li>
                   </ul>
                 </div>
 
@@ -167,9 +168,12 @@ defmodule MaestroWeb.ConceptsLive do
                   <h3 class="font-semibold text-sm text-warning">UI Layer</h3>
                   <ul class="list-disc list-inside text-xs">
                     <li>Phoenix Patterns</li>
+                    <li>LiveView vs JavaScript Decision (NEW)</li>
                     <li>LiveView</li>
+                    <li>JavaScript</li>
                     <li>DaisyUI Components</li>
                     <li>CSS Standards</li>
+                    <li>Markdown Editor Pattern (NEW)</li>
                   </ul>
                 </div>
 
@@ -179,6 +183,7 @@ defmodule MaestroWeb.ConceptsLive do
                     <li>CSS Linter</li>
                     <li>LiveTable</li>
                     <li>Fly Deployment</li>
+                    <li>Startup JSON (NEW)</li>
                   </ul>
                 </div>
 
@@ -188,6 +193,7 @@ defmodule MaestroWeb.ConceptsLive do
                     <li>Calvin (Guide Scheduling)</li>
                     <li>SanJuan (Analytics)</li>
                     <li>Maestro (Coordination)</li>
+                    <li>Circle Learnings (NEW)</li>
                   </ul>
                 </div>
               </div>
