@@ -5,8 +5,17 @@ A step-by-step guide for implementing polymorphic relationships in the applicati
 ## What are Polymorphic Relations?
 
 Polymorphic relations allow a model to belong to multiple other models through a single association. Instead of having separate foreign keys for each possible parent type, we use two fields:
-- `entity_type` (string) - The type of the parent (e.g., "Project", "Task", "User")
-- `entity_id` (string/integer) - The ID of the parent record
+- A "type" field (string) - The type of the parent (e.g., "Project", "Task", "User")
+- An "id" field (string/integer) - The ID of the parent record
+
+**Common naming patterns:**
+- `entity_type` / `entity_id` (generic)
+- `parent_type` / `parent_id` (for hierarchies)
+- `owner_type` / `owner_id` (for ownership)
+- `commentable_type` / `commentable_id` (for comments)
+- `taggable_type` / `taggable_id` (for tags)
+
+> **Note:** This guide uses `entity_type`/`entity_id` as examples, but you should choose names that make sense for your domain. The pattern and implementation steps are the same regardless of the field names.
 
 ## Example Use Case
 
@@ -29,6 +38,8 @@ If the polymorphic fields don't exist, add them to your schema:
 ```elixir
 # In lib/my_app/resource.ex
 attributes do
+  # Use names that fit your domain!
+  # entity_type/entity_id, parent_type/parent_id, owner_type/owner_id, etc.
   attribute :entity_type, :string do
     allow_nil? false
   end
@@ -302,3 +313,49 @@ When adding a polymorphic relation, check these files:
 | Resolve Entity | LiveView/Components | `get_entity_name/2` clauses |
 | Child Table | Detail LiveView | Table component + query |
 | New Links | Detail LiveView | Link with params |
+
+## Naming Your Polymorphic Fields
+
+Choose field names that clearly express the relationship in your domain:
+
+### Generic Relations
+```elixir
+entity_type / entity_id  # When the relationship is generic/multipurpose
+```
+
+### Hierarchical Relations
+```elixir
+parent_type / parent_id  # For parent-child hierarchies
+child_type / child_id    # For inverse relationships
+```
+
+### Ownership Relations
+```elixir
+owner_type / owner_id    # For ownership (User, Organization, Team)
+creator_type / creator_id  # For tracking who created something
+```
+
+### Content Relations
+```elixir
+commentable_type / commentable_id  # For comments
+taggable_type / taggable_id        # For tags
+likeable_type / likeable_id        # For likes
+attachable_type / attachable_id    # For attachments
+```
+
+### Activity/Event Relations
+```elixir
+subject_type / subject_id  # For activity feeds (who did it)
+object_type / object_id    # For activity feeds (what was affected)
+```
+
+### Guidelines:
+- Use `_type` suffix for the type field
+- Use `_id` suffix for the ID field
+- Match both fields to the same root word
+- Choose names that read naturally: "comment.commentable_id" = "the thing this comment is on"
+- Keep names consistent across your codebase
+
+### This Guide's Examples
+
+This guide uses `entity_type`/`entity_id` because that's what Maestro's Task model uses. When implementing your own polymorphic relations, substitute these names with whatever fits your domain (e.g., replace all instances of `entity_type` with `parent_type` and `entity_id` with `parent_id`).
