@@ -1,0 +1,159 @@
+{
+  "task": "consolidate_and_apply_learnings",
+  "version": "1.0.0",
+  "project": "Maestro",
+  "session": "next",
+  "status": "ready",
+  "context": {
+    "branch": "feature/task-runner",
+    "last_session": "Oct 28 - Documentation and learning capture",
+    "key_achievements": [
+      "Created 3 major guides (850+ lines)",
+      "Dynamic git widget implemented",
+      "Circle patterns extracted",
+      "Data modification rules established"
+    ]
+  },
+  
+  "assessment": {
+    "strengths": [
+      "Comprehensive documentation now exists",
+      "Clear patterns established",
+      "Git widget working",
+      "Task documentation convention defined"
+    ],
+    "needs_attention": [
+      "Many old feature branches (all behind master)",
+      "Documentation needs testing/validation",
+      "New patterns not yet applied to real features",
+      "Resources feature partially implemented but unused"
+    ]
+  },
+  
+  "recommended_priorities": {
+    "priority_1_cleanup": {
+      "name": "Git Branch Cleanup",
+      "rationale": "16+ feature branches all behind, cluttering workspace",
+      "tasks": [
+        "Review each feature branch",
+        "Identify which are merged/obsolete",
+        "Delete obsolete branches locally and remotely",
+        "Document any unmerged work worth keeping"
+      ],
+      "estimated_time": "20 minutes",
+      "commands": [
+        "git branch -a | grep feature/",
+        "git branch -d <branch-name> (for merged)",
+        "git push origin --delete <branch-name> (remote)"
+      ]
+    },
+    
+    "priority_2_validation": {
+      "name": "Test New Documentation",
+      "rationale": "Created guides, need to verify they're actually helpful",
+      "tasks": [
+        "Read through LIVEVIEW_VS_JAVASCRIPT.md - any gaps?",
+        "Read through CIRCLE_LEARNINGS.md - clear enough?",
+        "Read through DATA_MODIFICATION_PATTERNS.md - actionable?",
+        "Try applying one pattern to validate it works"
+      ],
+      "estimated_time": "15 minutes"
+    },
+    
+    "priority_3_apply": {
+      "name": "Apply New Patterns to Real Feature",
+      "rationale": "Best way to validate learnings is to use them",
+      "options": [
+        {
+          "option_a": "Resources Feature Completion",
+          "description": "Maestro has Resources (like Interests) partially implemented",
+          "files_exist": [
+            "lib/maestro/resources/resource.ex",
+            "lib/maestro_web/live/resources_live.ex"
+          ],
+          "apply_patterns": [
+            "Multi-select tags (from Circle learnings)",
+            "Junction table management",
+            "DaisyUI patterns"
+          ],
+          "estimated_time": "45 minutes"
+        },
+        {
+          "option_b": "Task Detail View Enhancement",
+          "description": "Improve task detail page using new patterns",
+          "apply_patterns": [
+            "Better visual hierarchy",
+            "DaisyUI improvements",
+            "JavaScript for interactions (not LiveView)"
+          ],
+          "estimated_time": "30 minutes"
+        }
+      ]
+    }
+  },
+  
+  "git_status": {
+    "current_branch": "feature/task-runner",
+    "commits_ahead_master": 1,
+    "commits_behind_master": 0,
+    "feature_branches_behind": [
+      "agent_startup (-49)",
+      "feature/calvin-agent (-133)",
+      "feature/cleanup-analysis-page (-95)",
+      "feature/css-linter (-28)",
+      "feature/display-git-branch (-66)",
+      "Many more..."
+    ],
+    "recommendation": "Clean up old branches, they're historical cruft"
+  },
+  
+  "decision_questions": {
+    "q1": "Should we clean up branches first (organizational hygiene)?",
+    "q2": "Should we validate docs by applying to a real feature?",
+    "q3": "Should we finish Resources feature using Circle patterns?",
+    "q4": "Something else entirely?"
+  },
+  
+  "my_recommendation": {
+    "approach": "Validation through application",
+    "sequence": [
+      "1. Quick branch cleanup (10 min) - delete obviously obsolete ones",
+      "2. Pick option_b (Task Detail Enhancement) - faster, applies learnings",
+      "3. Use new guides as reference while implementing",
+      "4. Note any gaps in documentation as we go",
+      "5. Update guides if needed"
+    ],
+    "rationale": "Best way to validate learnings is to use them immediately. Task detail page is smaller scope than Resources feature, good for testing patterns."
+  },
+  
+  "files_to_review": [
+    "SESSION_SUMMARY.md - What we did last time",
+    "agents/guides/LIVEVIEW_VS_JAVASCRIPT.md - Decision framework",
+    "agents/guides/CIRCLE_LEARNINGS.md - Implementation patterns",
+    "agents/guides/DATA_MODIFICATION_PATTERNS.md - Ash usage rules",
+    "lib/maestro_web/live/task_form_live.ex - Current task UI"
+  ],
+  
+  "success_criteria": {
+    "for_cleanup": [
+      "Fewer than 5 feature branches locally",
+      "All remaining branches documented or merged"
+    ],
+    "for_validation": [
+      "Successfully applied at least 2 patterns from guides",
+      "Found and fixed any issues in documentation",
+      "Confirmed guides are actually useful"
+    ]
+  },
+  
+  "notes_for_next_agent": {
+    "context": "Last session created extensive documentation. This session should validate it.",
+    "dont_forget": [
+      "Always use Ash for data modifications",
+      "JavaScript for client interactions, LiveView for real-time",
+      "Read COMPLETION files from projects, don't create them",
+      "Work on feature/task-runner branch"
+    ],
+    "if_stuck": "Review SESSION_SUMMARY.md for context"
+  }
+}
