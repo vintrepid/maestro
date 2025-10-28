@@ -69,6 +69,23 @@ defmodule MaestroWeb.ConceptsLive do
           </div>
         </div>
 
+        <div class="card bg-base-100 shadow-xl mb-8">
+          <div class="card-body">
+            <h2 class="card-title">Example: Adding Task-to-Task Relations</h2>
+            <ol class="list-decimal list-inside space-y-2 text-sm">
+              <li><strong>Entity Type Options</strong> → Add "Task" to entity_type_options/0</li>
+              <li><strong>Display Name</strong> → Update calculation with CAST(? AS integer) for Task</li>
+              <li><strong>Entity Resolution</strong> → Add get_entity_name/2 clause for Task in forms and tables</li>
+              <li><strong>Sub-tasks Table</strong> → Add child records table on task detail page</li>
+              <li><strong>New Sub-task Link</strong> → Pre-fill entity_type=Task&entity_id=(parent_id)</li>
+              <li><strong>Test</strong> → Create sub-task, verify display names and hierarchy</li>
+            </ol>
+            <div class="mt-4">
+              <span class="text-xs text-success">✅ Completed in Task #2: new relation</span>
+            </div>
+          </div>
+        </div>
+
         <%= if @svg_exists do %>
           <%= if @fullscreen do %>
             <div 
@@ -224,23 +241,6 @@ defmodule MaestroWeb.ConceptsLive do
                   <p class="text-xs mt-1">Orchestrates work across projects</p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card bg-base-100 shadow-xl mt-6">
-          <div class="card-body">
-            <h2 class="card-title">Example: Adding Task-to-Task Relations</h2>
-            <ol class="list-decimal list-inside space-y-2 text-sm">
-              <li><strong>Entity Type Options</strong> → Add "Task" to entity_type_options/0</li>
-              <li><strong>Display Name</strong> → Update calculation with CAST(? AS integer) for Task</li>
-              <li><strong>Entity Resolution</strong> → Add get_entity_name/2 clause for Task in forms and tables</li>
-              <li><strong>Sub-tasks Table</strong> → Add child records table on task detail page</li>
-              <li><strong>New Sub-task Link</strong> → Pre-fill entity_type=Task&entity_id=(parent_id)</li>
-              <li><strong>Test</strong> → Create sub-task, verify display names and hierarchy</li>
-            </ol>
-            <div class="mt-4">
-              <span class="text-xs text-success">✅ Completed in Task #2: new relation</span>
             </div>
           </div>
         </div>
