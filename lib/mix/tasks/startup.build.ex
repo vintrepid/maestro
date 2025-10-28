@@ -22,6 +22,7 @@ defmodule Mix.Tasks.Startup.Build do
     readme_path = "README.md"
     bootstrap_path = Path.join([System.user_home!(), "dev", "agents", "bundles", "bootstrap.json"])
     aliases_path = Path.join([System.user_home!(), "dev", "agents", "core", "ALIASES.md"])
+    usage_rules_path = "USAGE_RULES.md"
     
     unless File.exists?(readme_path) do
       Mix.raise("README.md not found in project root")
@@ -36,6 +37,12 @@ defmodule Mix.Tasks.Startup.Build do
     
     aliases_content = if File.exists?(aliases_path) do
       File.read!(aliases_path)
+    else
+      nil
+    end
+    
+    usage_rules_content = if File.exists?(usage_rules_path) do
+      File.read!(usage_rules_path)
     else
       nil
     end
@@ -60,6 +67,15 @@ defmodule Mix.Tasks.Startup.Build do
         %{
           "content" => aliases_content,
           "purpose" => "Conversational shortcuts user employs (hi, bye, gpb, learn, wip, ci)"
+        }
+      else
+        nil
+      end,
+      
+      "usage_rules" => if usage_rules_content do
+        %{
+          "content" => usage_rules_content,
+          "purpose" => "Library-specific patterns (Ash, Phoenix, Ecto, LiveView, etc.)"
         }
       else
         nil
@@ -93,6 +109,9 @@ defmodule Mix.Tasks.Startup.Build do
     Mix.shell().info("  - Bootstrap bundle (#{map_size(bootstrap_content)} keys)")
     if aliases_content do
       Mix.shell().info("  - ALIASES.md (#{byte_size(aliases_content)} bytes)")
+    end
+    if usage_rules_content do
+      Mix.shell().info("  - USAGE_RULES.md (#{byte_size(usage_rules_content)} bytes)")
     end
     Mix.shell().info("\nNext agent can read just startup.json to get started!")
   end
