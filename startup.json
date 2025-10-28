@@ -341,6 +341,6 @@
     "3_check_task": "Read current_task.json for assigned work",
     "4_load_contextual": "If task involves another project, read their README. If task type known, load relevant bundle",
     "5_work": "Execute task, logging guideline usage as you go",
-    "6_end_session": "mix bundles.track summary && mix session.capacity <used> 200000 && mix startup.build"
+    "6_end_session": "mix session.end <tokens_used> 200000 (runs summary, capacity, startup.build)"
   }
 }
