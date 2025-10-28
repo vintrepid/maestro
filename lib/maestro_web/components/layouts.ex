@@ -49,6 +49,10 @@ defmodule MaestroWeb.Layouts do
               <.icon name="hero-check-circle" class="w-5 h-5" />
               Tasks
             </a>
+            <a href="/resources" class="btn btn-ghost">
+              <.icon name="hero-bookmark" class="w-5 h-5" />
+              Resources
+            </a>
             <a href="/concepts" class="btn btn-ghost">
               <.icon name="hero-square-3-stack-3d" class="w-5 h-5" />
               Concepts
