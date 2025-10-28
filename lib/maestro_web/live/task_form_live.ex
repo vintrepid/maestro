@@ -113,17 +113,17 @@ defmodule MaestroWeb.TaskFormLive do
     <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="max-w-2xl mx-auto px-8 py-12">
         <div class="mb-8">
-          <h1 class="text-4xl font-bold">{if @task, do: @task.display_name, else: if(@entity_name, do: "#{@entity_name} - New Task", else: @page_title)}</h1>
+          <h2 class="text-2xl font-semibold">{if @task, do: @task.display_name, else: if(@entity_name, do: "#{@entity_name} - New Task", else: @page_title)}</h2>
         </div>
 
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
             <.form for={@form} phx-change="validate" phx-submit="save">
               <%= if @entity_name do %>
-                <div class="text-sm text-base-content/60 mb-2">
-                  <.icon name="hero-folder" class="w-4 h-4 inline" />
+                <h3 class="text-xl font-extrabold mb-4">
+                  <.icon name="hero-folder" class="w-5 h-5 inline" />
                   {@entity_name}
-                </div>
+                </h3>
               <% end %>
               
               <div class="form-control">
