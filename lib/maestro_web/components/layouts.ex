@@ -75,48 +75,80 @@ defmodule MaestroWeb.Layouts do
   end
 
   def git_dropdown(assigns) do
-    assigns = assign(assigns, :current_branch, MaestroWeb.Components.GitWidget.get_current_branch())
-    assigns = assign(assigns, :commits_ahead, MaestroWeb.Components.GitWidget.get_commits_ahead_of_master())
-    assigns = assign(assigns, :commits_behind, MaestroWeb.Components.GitWidget.get_commits_behind_master())
-    assigns = assign(assigns, :other_branches, MaestroWeb.Components.GitWidget.get_other_branches_ahead())
-
     ~H"""
-    <div class="dropdown dropdown-end">
-      <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
+    <div class="dropdown dropdown-end" id="git-dropdown" data-project-path="">
+      <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2" id="git-dropdown-button" onclick="window.loadGitInfo()">
         <.icon name="hero-code-bracket" class="w-4 h-4" />
-        <span class="font-mono text-xs">{@current_branch}</span>
-        <%= if @commits_ahead do %>
-          <span class="badge badge-xs badge-warning">+{@commits_ahead}</span>
-        <% end %>
-        <%= if @commits_behind do %>
-          <span class="badge badge-xs badge-error">-{@commits_behind}</span>
-        <% end %>
+        <span class="font-mono text-xs" id="git-branch-label">git</span>
+        <span id="git-commits-ahead"></span>
+        <span id="git-commits-behind"></span>
       </div>
-      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-64">
+      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-64" id="git-dropdown-menu" style="display: none;">
         <li class="menu-title">Current Branch</li>
         <li class="px-4 py-2">
-          <span class="font-mono text-sm">{@current_branch}</span>
+          <span class="font-mono text-sm" id="git-current-branch"></span>
         </li>
-        <%= if @other_branches != [] do %>
-          <li class="menu-title mt-2">Other Branches</li>
-          <%= for {branch, ahead, behind} <- @other_branches do %>
-            <li>
-              <div class="flex items-center justify-between">
-                <span class="font-mono text-xs">{branch}</span>
-                <div class="flex gap-1">
-                  <%= if ahead do %>
-                    <span class="badge badge-xs badge-warning">+{ahead}</span>
-                  <% end %>
-                  <%= if behind do %>
-                    <span class="badge badge-xs badge-error">-{behind}</span>
-                  <% end %>
-                </div>
-              </div>
-            </li>
-          <% end %>
-        <% end %>
+        <div id="git-other-branches"></div>
       </ul>
     </div>
+    
+    <script>
+      window.loadGitInfo = function() {
+        if (window.gitInfoLoaded) {
+          document.getElementById('git-dropdown-menu').style.display = 'block';
+          return;
+        }
+        
+        const dropdown = document.getElementById('git-dropdown');
+        const projectPath = dropdown.dataset.projectPath;
+        const url = projectPath ? `/api/git/info?project_path=${encodeURIComponent(projectPath)}` : '/api/git/info';
+        
+        fetch(url)
+          .then(r => r.json())
+          .then(data => {
+            document.getElementById('git-branch-label').textContent = data.current_branch;
+            document.getElementById('git-current-branch').textContent = data.current_branch;
+            
+            if (data.commits_ahead) {
+              document.getElementById('git-commits-ahead').innerHTML = `<span class="badge badge-xs badge-warning">+${data.commits_ahead}</span>`;
+            }
+            
+            if (data.commits_behind) {
+              document.getElementById('git-commits-behind').innerHTML = `<span class="badge badge-xs badge-error">-${data.commits_behind}</span>`;
+            }
+            
+            if (data.other_branches && data.other_branches.length > 0) {
+              const branchesHTML = data.other_branches.map(b => `
+                <li>
+                  <div class="flex items-center justify-between">
+                    <span class="font-mono text-xs">${b.branch}</span>
+                    <div class="flex gap-1">
+                      ${b.ahead ? `<span class="badge badge-xs badge-warning">+${b.ahead}</span>` : ''}
+                      ${b.behind ? `<span class="badge badge-xs badge-error">-${b.behind}</span>` : ''}
+                    </div>
+                  </div>
+                </li>
+              `).join('');
+              
+              document.getElementById('git-other-branches').innerHTML = `
+                <li class="menu-title mt-2">Other Branches</li>
+                ${branchesHTML}
+              `;
+            }
+            
+            document.getElementById('git-dropdown-menu').style.display = 'block';
+            window.gitInfoLoaded = true;
+          })
+          .catch(err => console.error('Failed to load git info:', err));
+      };
+      
+      document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('git-dropdown');
+        if (dropdown && !dropdown.contains(e.target)) {
+          document.getElementById('git-dropdown-menu').style.display = 'none';
+        }
+      });
+    </script>
     """
   end
 

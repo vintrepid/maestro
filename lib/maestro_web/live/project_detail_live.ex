@@ -139,6 +139,13 @@ defmodule MaestroWeb.ProjectDetailLive do
               </div>
             </div>
 
+            <div class="card bg-base-100 shadow-xl mb-6">
+              <div class="card-body">
+                <h2 class="card-title">Git Status</h2>
+                <.project_git_status project={@project} />
+              </div>
+            </div>
+
             <div class="card bg-base-100 shadow-xl">
               <div class="card-body">
                 <h2 class="card-title">Quick Links</h2>
@@ -208,6 +215,77 @@ defmodule MaestroWeb.ProjectDetailLive do
         </div>
       </div>
     </Layouts.app>
+    """
+  end
+
+  defp project_git_status(assigns) do
+    project_path = Path.expand("~/dev/#{assigns.project.slug}")
+    
+    ~H"""
+    <div id={"git-status-#{@project.id}"} data-project-path={project_path}>
+      <button 
+        class="btn btn-sm btn-ghost gap-2" 
+        phx-click={JS.exec("onclick", to: "#git-load-btn-#{@project.id}")}
+        id={"git-load-btn-#{@project.id}"}
+        onclick={"window.loadProjectGitInfo('#{@project.id}', '#{project_path}')"}
+      >
+        <.icon name="hero-code-bracket" class="w-4 h-4" />
+        <span id={"git-branch-#{@project.id}"}>Click to load...</span>
+      </button>
+      
+      <div id={"git-info-#{@project.id}"} class="mt-4" style="display: none;">
+        <div class="space-y-2">
+          <div>
+            <div class="text-sm text-base-content/60">Current Branch</div>
+            <div class="font-mono" id={"git-current-#{@project.id}"}></div>
+          </div>
+          
+          <div id={"git-badges-#{@project.id}"} class="flex gap-2"></div>
+          
+          <div id={"git-branches-#{@project.id}"}></div>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      window.loadProjectGitInfo = function(projectId, projectPath) {
+        const url = `/api/git/info?project_path=${encodeURIComponent(projectPath)}`;
+        
+        fetch(url)
+          .then(r => r.json())
+          .then(data => {
+            document.getElementById(`git-branch-${projectId}`).textContent = data.current_branch;
+            document.getElementById(`git-current-${projectId}`).textContent = data.current_branch;
+            
+            let badgesHTML = '';
+            if (data.commits_ahead) {
+              badgesHTML += `<span class="badge badge-warning">+${data.commits_ahead} ahead</span>`;
+            }
+            if (data.commits_behind) {
+              badgesHTML += `<span class="badge badge-error">-${data.commits_behind} behind</span>`;
+            }
+            document.getElementById(`git-badges-${projectId}`).innerHTML = badgesHTML;
+            
+            if (data.other_branches && data.other_branches.length > 0) {
+              const branchesHTML = '<div class="text-sm text-base-content/60 mb-2">Other Branches</div>' +
+                data.other_branches.slice(0, 5).map(b => `
+                  <div class="flex items-center justify-between py-1">
+                    <span class="font-mono text-sm">${b.branch}</span>
+                    <div class="flex gap-1">
+                      ${b.ahead ? `<span class="badge badge-xs badge-warning">+${b.ahead}</span>` : ''}
+                      ${b.behind ? `<span class="badge badge-xs badge-error">-${b.behind}</span>` : ''}
+                    </div>
+                  </div>
+                `).join('');
+              
+              document.getElementById(`git-branches-${projectId}`).innerHTML = branchesHTML;
+            }
+            
+            document.getElementById(`git-info-${projectId}`).style.display = 'block';
+          })
+          .catch(err => console.error('Failed to load git info:', err));
+      };
+    </script>
     """
   end
 

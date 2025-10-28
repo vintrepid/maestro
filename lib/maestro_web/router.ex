@@ -58,6 +58,8 @@ defmodule MaestroWeb.Router do
   scope "/", MaestroWeb do
     pipe_through :browser
 
+    get "/api/git/info", GitController, :info
+
     auth_routes AuthController, Maestro.Accounts.User, path: "/auth"
     sign_out_route AuthController
 

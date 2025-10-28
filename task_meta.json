@@ -1,0 +1,94 @@
+{
+  "bundle": "task_meta",
+  "version": "1.0.0",
+  "task_id": 12,
+  "project": "Maestro",
+  "description": "Create Interests continuation task for Circle",
+  
+  "meta_task": true,
+  "purpose": "Next session: Create task for Circle to continue Interests",
+  
+  "your_task": {
+    "what": "Create a comprehensive task for Circle",
+    "not": "Don't implement Circle's features yourself",
+    "deliverables": [
+      "~/dev/circle/task_interests_continue.json",
+      "~/dev/circle/TASK.md (for humans)",
+      "~/dev/circle/AGENTS.md (just point to JSON)"
+    ]
+  },
+  
+  "circle_current_state": {
+    "completed": [
+      "Ash resources: Interest, Tag, InterestTag, TagHierarchy",
+      "Migrations: 4 tables created and migrated",
+      "LiveViews: InterestsLive, InterestFormLive, BookmarkImportLive",
+      "Components: InterestTable",
+      "Routes: /interests, /interests/new, /interests/:id/edit, /interests/import",
+      "Navbar: Custom ouroboros logo integrated"
+    ],
+    "check_commands": [
+      "cd ~/dev/circle && git log --oneline -10",
+      "ls ~/dev/circle/lib/circle/interests/",
+      "cat ~/dev/circle/lib/circle_web/router.ex | grep interests"
+    ]
+  },
+  
+  "circle_needs_next": {
+    "priority_1_ui": [
+      "Interest detail view (show single interest with all tags)",
+      "Tag management page (CRUD for tags)",
+      "Tag hierarchy visualization (tree view)",
+      "Multi-tag assignment on interest form"
+    ],
+    "priority_2_features": [
+      "Test bookmark import with real HTML file",
+      "Error handling for import (empty folders, duplicates)",
+      "Progress indicator for import",
+      "Tag color picker in tag form"
+    ],
+    "priority_3_scraping": [
+      "Test web scraper with real URLs",
+      "Error handling for failed scrapes",
+      "Use og:image for thumbnails",
+      "Content preview in interest detail"
+    ]
+  },
+  
+  "task_structure_for_circle": {
+    "git_workflow": "feature/interests-enhancements",
+    "bundles_needed": ["bootstrap.json", "ui_work.json"],
+    "reference": "~/dev/maestro/lib/maestro_web/live/resources_live.ex",
+    "sections": [
+      "git workflow",
+      "current state summary",
+      "features to implement (prioritized)",
+      "testing checklist",
+      "success criteria"
+    ]
+  },
+  
+  "guidance_for_you": {
+    "remember": [
+      "TASK.md is for humans (keep it)",
+      "AGENTS.md just points to JSON",
+      "Bundle needed guidelines into task JSON",
+      "You won't have full guidelines loaded next time",
+      "Add guidance as needed for your task"
+    ],
+    "workflow": [
+      "1. Check Circle's git log and file structure",
+      "2. Assess what's working vs broken",
+      "3. Prioritize features",
+      "4. Create task_interests_continue.json with embedded guidance",
+      "5. Create human-readable TASK.md",
+      "6. Update Circle AGENTS.md to just load the JSON",
+      "7. Save task in Maestro"
+    ]
+  },
+  
+  "this_session_context": "Running out of time, save for next session",
+  "no_git_merging": true,
+  "no_feature_implementation": true,
+  "just_task_creation": true
+}

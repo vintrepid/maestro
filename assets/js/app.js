@@ -67,11 +67,102 @@ const MarkdownEditorHook = {
   }
 };
 
+const GitDropdownHook = {
+  mounted() {
+    this.button = this.el.querySelector('#git-dropdown-button');
+    this.menu = this.el.querySelector('#git-dropdown-menu');
+    this.loaded = false;
+    
+    this.button.addEventListener('click', () => {
+      if (!this.loaded) {
+        this.loadGitInfo();
+      } else {
+        this.toggleMenu();
+      }
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!this.el.contains(e.target)) {
+        this.hideMenu();
+      }
+    });
+  },
+  
+  async loadGitInfo() {
+    const projectPath = this.el.dataset.projectPath;
+    const url = projectPath ? `/api/git/info?project_path=${encodeURIComponent(projectPath)}` : '/api/git/info';
+    
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      this.renderGitInfo(data);
+      this.loaded = true;
+      this.showMenu();
+    } catch (error) {
+      console.error('Failed to load git info:', error);
+    }
+  },
+  
+  renderGitInfo(data) {
+    const branchLabel = this.el.querySelector('#git-branch-label');
+    const commitsAhead = this.el.querySelector('#git-commits-ahead');
+    const commitsBehind = this.el.querySelector('#git-commits-behind');
+    const currentBranch = this.el.querySelector('#git-current-branch');
+    const otherBranches = this.el.querySelector('#git-other-branches');
+    
+    branchLabel.textContent = data.current_branch;
+    currentBranch.textContent = data.current_branch;
+    
+    if (data.commits_ahead) {
+      commitsAhead.innerHTML = `<span class="badge badge-xs badge-warning">+${data.commits_ahead}</span>`;
+    }
+    
+    if (data.commits_behind) {
+      commitsBehind.innerHTML = `<span class="badge badge-xs badge-error">-${data.commits_behind}</span>`;
+    }
+    
+    if (data.other_branches && data.other_branches.length > 0) {
+      const branchesHTML = data.other_branches.map(b => `
+        <li>
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs">${b.branch}</span>
+            <div class="flex gap-1">
+              ${b.ahead ? `<span class="badge badge-xs badge-warning">+${b.ahead}</span>` : ''}
+              ${b.behind ? `<span class="badge badge-xs badge-error">-${b.behind}</span>` : ''}
+            </div>
+          </div>
+        </li>
+      `).join('');
+      
+      otherBranches.innerHTML = `
+        <li class="menu-title mt-2">Other Branches</li>
+        ${branchesHTML}
+      `;
+    }
+  },
+  
+  showMenu() {
+    this.menu.style.display = 'block';
+  },
+  
+  hideMenu() {
+    this.menu.style.display = 'none';
+  },
+  
+  toggleMenu() {
+    if (this.menu.style.display === 'none') {
+      this.showMenu();
+    } else {
+      this.hideMenu();
+    }
+  }
+};
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook},
+  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook, GitDropdownHook},
 })
 
 window.addEventListener("phx:theme-changed", (e) => {

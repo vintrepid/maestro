@@ -1,8 +1,5 @@
 # Agent Startup Instructions
 
-## Read these
+## Read this
 
-README.md
-agents/bundles/*
-
-
+task_meta.json
