@@ -31,6 +31,7 @@ defmodule MaestroWeb.TaskFormLive do
      |> assign(:page_title, if(task, do: "Edit Task", else: "New Task"))
      |> assign(:task, task)
      |> assign(:entity_name, entity_name)
+     |> assign(:editing_notes, false)
      |> assign(:form, to_form(form))}
   end
 
@@ -46,15 +47,28 @@ defmodule MaestroWeb.TaskFormLive do
     form = socket.assigns.form.source
     
     case AshPhoenix.Form.submit(form, params: params) do
-      {:ok, _task} ->
+      {:ok, task} ->
+        task = Task.by_id!(task.id, load: [:display_name])
+        form = AshPhoenix.Form.for_update(task, :update)
+        
         {:noreply,
          socket
-         |> put_flash(:info, "Task saved successfully")
-         |> push_navigate(to: ~p"/tasks")}
+         |> assign(:task, task)
+         |> assign(:form, to_form(form))
+         |> assign(:editing_notes, false)
+         |> put_flash(:info, "Task saved successfully")}
       
       {:error, form} ->
         {:noreply, assign(socket, :form, to_form(form))}
     end
+  end
+
+  def handle_event("edit_notes", _params, socket) do
+    {:noreply, assign(socket, :editing_notes, true)}
+  end
+
+  def handle_event("cancel_edit_notes", _params, socket) do
+    {:noreply, assign(socket, :editing_notes, false)}
   end
 
   def handle_event("run_task", _params, socket) do
@@ -197,11 +211,36 @@ defmodule MaestroWeb.TaskFormLive do
                 </div>
               <% end %>
 
-              <%= if @task && @task.notes do %>
-                <div class="mt-6 p-6 bg-base-200 rounded-lg prose prose-sm max-w-none">
-                  <div class="text-xs text-base-content/60 mb-2 uppercase tracking-wide">Notes:</div>
-                  {raw(Earmark.as_html!(@task.notes))}
-                </div>
+              <%= if @task do %>
+                <%= if @editing_notes do %>
+                  <div class="mt-6 p-4 bg-base-200 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                      <div class="text-sm font-semibold uppercase tracking-wide">Edit Notes</div>
+                      <button type="button" phx-click="cancel_edit_notes" class="btn btn-ghost btn-xs">
+                        <.icon name="hero-x-mark" class="w-4 h-4" />
+                        Cancel
+                      </button>
+                    </div>
+                    <div id="notes-markdown-editor-wrapper" phx-update="ignore"><textarea id="notes-markdown-editor" name="form[notes]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :notes)}</textarea></div>
+                  </div>
+                <% else %>
+                  <%= if @task.notes do %>
+                    <div class="mt-6 p-6 bg-base-200 rounded-lg prose prose-sm max-w-none cursor-pointer hover:bg-base-300 transition-colors" phx-click="edit_notes">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="text-xs text-base-content/60 uppercase tracking-wide">Notes (click to edit)</div>
+                        <.icon name="hero-pencil" class="w-4 h-4 text-base-content/40" />
+                      </div>
+                      {raw(Earmark.as_html!(@task.notes))}
+                    </div>
+                  <% else %>
+                    <button type="button" phx-click="edit_notes" class="mt-6 w-full p-4 bg-base-200 rounded-lg hover:bg-base-300 transition-colors text-left">
+                      <div class="flex items-center gap-2 text-base-content/60">
+                        <.icon name="hero-plus" class="w-5 h-5" />
+                        <span>Add notes...</span>
+                      </div>
+                    </button>
+                  <% end %>
+                <% end %>
               <% end %>
 
               <%= if is_nil(@task) do %>
