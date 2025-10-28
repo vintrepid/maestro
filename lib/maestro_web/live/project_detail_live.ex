@@ -92,28 +92,29 @@ defmodule MaestroWeb.ProjectDetailLive do
           </p>
         </div>
 
+        <div class="card bg-base-100 shadow-xl mb-6">
+          <div class="card-body">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="card-title">Tasks</h2>
+              <.link navigate={~p"/tasks/new?entity_type=Project&entity_id=#{@project.id}"} class="btn btn-sm btn-primary">
+                <.icon name="hero-plus" class="w-4 h-4" />
+                New Task
+              </.link>
+            </div>
+            <MaestroWeb.Components.TaskTable.task_table
+              
+              id="project-tasks-table"
+              query_fn={fn -> project_tasks_query(@project.id) end}
+            />
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="lg:col-span-1 order-first">
+          <div class="lg:col-span-1">
             <MaestroWeb.Components.GuidelinesViewer.guidelines_viewer project={@project.slug} />
           </div>
 
           <div class="lg:col-span-2">
-            <div class="card bg-base-100 shadow-xl mb-6">
-              <div class="card-body">
-                <div class="flex items-center justify-between mb-4">
-                  <h2 class="card-title">Tasks</h2>
-                  <.link navigate={~p"/tasks/new?entity_type=Project&entity_id=#{@project.id}"} class="btn btn-sm btn-primary">
-                    <.icon name="hero-plus" class="w-4 h-4" />
-                    New Task
-                  </.link>
-                </div>
-                <MaestroWeb.Components.TaskTable.task_table
-                  
-                  id="project-tasks-table"
-                  query_fn={fn -> project_tasks_query(@project.id) end}
-                />
-              </div>
-            </div>
 
             <div class="card bg-base-100 shadow-xl mb-6">
               <div class="card-body">
