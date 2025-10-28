@@ -67,6 +67,7 @@ defmodule MaestroWeb.ConceptsLive do
                   <ul class="list-disc list-inside text-sm">
                     <li>Primary Keys</li>
                     <li>Ash Resources</li>
+                    <li>Polymorphic Relations</li>
                     <li>Data Migrations</li>
                   </ul>
                 </div>
@@ -145,16 +146,42 @@ defmodule MaestroWeb.ConceptsLive do
 
         <div class="card bg-base-100 shadow-xl mt-6">
           <div class="card-body">
-            <h2 class="card-title">Example: Adding a Public Resource</h2>
+            <h2 class="card-title">Latest Guides</h2>
+            
+            <div class="space-y-4">
+              <div class="border-l-4 border-primary pl-4">
+                <h3 class="font-semibold">Polymorphic Relations Guide</h3>
+                <p class="text-sm text-base-content/70 mt-1">
+                  Step-by-step guide for implementing polymorphic relationships using entity_type and entity_id fields.
+                  Includes patterns, pitfalls, and a complete checklist.
+                </p>
+                <div class="mt-2">
+                  <span class="badge badge-sm badge-success">Database</span>
+                  <span class="badge badge-sm badge-info">Ash</span>
+                  <span class="badge badge-sm badge-warning">Relations</span>
+                </div>
+                <p class="text-xs mt-2 text-base-content/60">
+                  📄 docs/guides/POLYMORPHIC_RELATIONS.md
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl mt-6">
+          <div class="card-body">
+            <h2 class="card-title">Example: Adding Task-to-Task Relations</h2>
             <ol class="list-decimal list-inside space-y-2 text-sm">
-              <li><strong>Primary Keys</strong> (GUIDELINES) → Choose integer + slug</li>
-              <li><strong>Ash Resources</strong> (GUIDELINES) → Create resource with PK strategy</li>
-              <li><strong>Data Migrations</strong> (GUIDELINES) → Create migration safely</li>
-              <li><strong>LiveView</strong> (LIVEVIEW) → Display in UI</li>
-              <li><strong>DaisyUI</strong> (DAISYUI) → Style the display</li>
-              <li><strong>Git Workflow</strong> (GUIDELINES) → Commit on feature branch</li>
-              <li><strong>Code Verification</strong> (GUIDELINES) → Run tests before merge</li>
+              <li><strong>Entity Type Options</strong> → Add "Task" to entity_type_options/0</li>
+              <li><strong>Display Name</strong> → Update calculation with CAST(? AS integer) for Task</li>
+              <li><strong>Entity Resolution</strong> → Add get_entity_name/2 clause for Task in forms and tables</li>
+              <li><strong>Sub-tasks Table</strong> → Add child records table on task detail page</li>
+              <li><strong>New Sub-task Link</strong> → Pre-fill entity_type=Task&entity_id=(parent_id)</li>
+              <li><strong>Test</strong> → Create sub-task, verify display names and hierarchy</li>
             </ol>
+            <div class="mt-4">
+              <span class="text-xs text-success">✅ Completed in Task #2: new relation</span>
+            </div>
           </div>
         </div>
 

@@ -49,6 +49,10 @@ defmodule MaestroWeb.Layouts do
               <.icon name="hero-check-circle" class="w-5 h-5" />
               Tasks
             </a>
+            <a href="/concepts" class="btn btn-ghost">
+              <.icon name="hero-square-3-stack-3d" class="w-5 h-5" />
+              Concepts
+            </a>
           </div>
           <div class="navbar-end gap-2">
             <.git_dropdown />
