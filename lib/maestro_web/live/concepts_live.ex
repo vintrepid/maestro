@@ -26,6 +26,30 @@ defmodule MaestroWeb.ConceptsLive do
           </p>
         </div>
 
+        <div class="card bg-base-100 shadow-xl mb-8">
+          <div class="card-body">
+            <h2 class="card-title">Latest Guides</h2>
+            
+            <div class="space-y-4">
+              <div class="border-l-4 border-primary pl-4">
+                <h3 class="font-semibold">Polymorphic Relations Guide</h3>
+                <p class="text-sm text-base-content/70 mt-1">
+                  Step-by-step guide for implementing polymorphic relationships using entity_type and entity_id fields.
+                  Includes patterns, pitfalls, and a complete checklist.
+                </p>
+                <div class="mt-2">
+                  <span class="badge badge-sm badge-success">Database</span>
+                  <span class="badge badge-sm badge-info">Ash</span>
+                  <span class="badge badge-sm badge-warning">Relations</span>
+                </div>
+                <p class="text-xs mt-2 text-base-content/60">
+                  📄 docs/guides/POLYMORPHIC_RELATIONS.md
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <%= if @svg_exists do %>
           <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
@@ -139,30 +163,6 @@ defmodule MaestroWeb.ConceptsLive do
                   </div>
                   <p class="text-xs mt-1">Orchestrates work across projects</p>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card bg-base-100 shadow-xl mt-6">
-          <div class="card-body">
-            <h2 class="card-title">Latest Guides</h2>
-            
-            <div class="space-y-4">
-              <div class="border-l-4 border-primary pl-4">
-                <h3 class="font-semibold">Polymorphic Relations Guide</h3>
-                <p class="text-sm text-base-content/70 mt-1">
-                  Step-by-step guide for implementing polymorphic relationships using entity_type and entity_id fields.
-                  Includes patterns, pitfalls, and a complete checklist.
-                </p>
-                <div class="mt-2">
-                  <span class="badge badge-sm badge-success">Database</span>
-                  <span class="badge badge-sm badge-info">Ash</span>
-                  <span class="badge badge-sm badge-warning">Relations</span>
-                </div>
-                <p class="text-xs mt-2 text-base-content/60">
-                  📄 docs/guides/POLYMORPHIC_RELATIONS.md
-                </p>
               </div>
             </div>
           </div>
