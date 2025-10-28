@@ -116,19 +116,9 @@ defmodule MaestroWeb.ConceptsLive do
             </div>
           <% else %>
             <div class="card bg-base-100 shadow-xl card-compact">
-              <div class="card-body">
-                <div class="flex items-center justify-between">
-                  <h2 class="card-title text-lg">Concept DAG</h2>
-                  <button 
-                    phx-click="toggle_fullscreen"
-                    class="btn btn-xs btn-ghost gap-1"
-                  >
-                    <.icon name="hero-arrows-pointing-out" class="w-4 h-4" />
-                    Fullscreen
-                  </button>
-                </div>
+              <div class="card-body p-0">
                 <div 
-                  class="overflow-x-auto cursor-pointer hover:opacity-80 transition-opacity"
+                  class="cursor-pointer hover:opacity-80 transition-opacity"
                   phx-click="toggle_fullscreen"
                 >
                   <img src="/images/concept_dag.svg" alt="Concept Dependency Graph" class="w-full" />
