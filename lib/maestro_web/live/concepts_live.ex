@@ -29,38 +29,38 @@ defmodule MaestroWeb.ConceptsLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
-      <div class="max-w-7xl mx-auto px-8 py-12">
-        <h1 class="text-4xl font-bold mb-8">Guideline Concept Relationships</h1>
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <h1 class="text-2xl font-bold mb-4">Guideline Concept Relationships</h1>
         
-        <div class="prose max-w-none mb-8">
-          <p>
+        <div class="prose prose-sm max-w-none mb-4">
+          <p class="text-sm">
             This diagram shows how concepts link across different guideline files.
             Understanding these relationships helps identify which guidelines are needed for specific tasks.
           </p>
         </div>
 
-        <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card bg-base-100 shadow-xl mb-4 card-compact">
           <div class="card-body">
-            <h2 class="card-title">Latest Guides</h2>
+            <h2 class="card-title text-lg">Latest Guides</h2>
             
-            <div class="space-y-4">
-              <div class="border-l-4 border-primary pl-4">
-                <h3 class="font-semibold">Polymorphic Relations Guide</h3>
-                <p class="text-sm text-base-content/70 mt-1">
+            <div class="space-y-2">
+              <div class="border-l-4 border-primary pl-3">
+                <h3 class="font-semibold text-sm">Polymorphic Relations Guide</h3>
+                <p class="text-xs text-base-content/70 mt-1">
                   Step-by-step guide for implementing polymorphic relationships using entity_type and entity_id fields.
                   Includes patterns, pitfalls, and a complete checklist.
                 </p>
-                <div class="mt-2">
-                  <span class="badge badge-sm badge-success">Database</span>
-                  <span class="badge badge-sm badge-info">Ash</span>
-                  <span class="badge badge-sm badge-warning">Relations</span>
+                <div class="mt-1 flex gap-1">
+                  <span class="badge badge-xs badge-success">Database</span>
+                  <span class="badge badge-xs badge-info">Ash</span>
+                  <span class="badge badge-xs badge-warning">Relations</span>
                 </div>
                 <button 
                   phx-click="open_file" 
                   phx-value-path="docs/guides/POLYMORPHIC_RELATIONS.md"
-                  class="text-xs mt-2 text-primary hover:text-primary-focus flex items-center gap-1 cursor-pointer"
+                  class="text-xs mt-1 text-primary hover:text-primary-focus flex items-center gap-1 cursor-pointer"
                 >
-                  <.icon name="hero-document-text" class="w-4 h-4" />
+                  <.icon name="hero-document-text" class="w-3 h-3" />
                   docs/guides/POLYMORPHIC_RELATIONS.md
                   <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
                 </button>
@@ -69,10 +69,10 @@ defmodule MaestroWeb.ConceptsLive do
           </div>
         </div>
 
-        <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card bg-base-100 shadow-xl mb-4 card-compact">
           <div class="card-body">
-            <h2 class="card-title">Example: Adding Task-to-Task Relations</h2>
-            <ol class="list-decimal list-inside space-y-2 text-sm">
+            <h2 class="card-title text-lg">Example: Adding Task-to-Task Relations</h2>
+            <ol class="list-decimal list-inside space-y-1 text-xs">
               <li><strong>Entity Type Options</strong> → Add "Task" to entity_type_options/0</li>
               <li><strong>Display Name</strong> → Update calculation with CAST(? AS integer) for Task</li>
               <li><strong>Entity Resolution</strong> → Add get_entity_name/2 clause for Task in forms and tables</li>
@@ -80,7 +80,7 @@ defmodule MaestroWeb.ConceptsLive do
               <li><strong>New Sub-task Link</strong> → Pre-fill entity_type=Task&entity_id=(parent_id)</li>
               <li><strong>Test</strong> → Create sub-task, verify display names and hierarchy</li>
             </ol>
-            <div class="mt-4">
+            <div class="mt-2">
               <span class="text-xs text-success">✅ Completed in Task #2: new relation</span>
             </div>
           </div>
@@ -115,13 +115,13 @@ defmodule MaestroWeb.ConceptsLive do
               </div>
             </div>
           <% else %>
-            <div class="card bg-base-100 shadow-xl">
+            <div class="card bg-base-100 shadow-xl card-compact">
               <div class="card-body">
                 <div class="flex items-center justify-between">
-                  <h2 class="card-title">Concept DAG</h2>
+                  <h2 class="card-title text-lg">Concept DAG</h2>
                   <button 
                     phx-click="toggle_fullscreen"
-                    class="btn btn-sm btn-ghost gap-2"
+                    class="btn btn-xs btn-ghost gap-1"
                   >
                     <.icon name="hero-arrows-pointing-out" class="w-4 h-4" />
                     Fullscreen
@@ -148,15 +148,15 @@ defmodule MaestroWeb.ConceptsLive do
           </div>
         <% end %>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-          <div class="card bg-base-100 shadow-xl">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+          <div class="card bg-base-100 shadow-xl card-compact">
             <div class="card-body">
-              <h2 class="card-title">Concept Clusters</h2>
+              <h2 class="card-title text-lg">Concept Clusters</h2>
               
-              <div class="space-y-4">
+              <div class="space-y-2">
                 <div>
-                  <h3 class="font-semibold text-primary">Core Guidelines</h3>
-                  <ul class="list-disc list-inside text-sm">
+                  <h3 class="font-semibold text-sm text-primary">Core Guidelines</h3>
+                  <ul class="list-disc list-inside text-xs">
                     <li>Git Workflow</li>
                     <li>Code Verification</li>
                     <li>Communication</li>
@@ -164,8 +164,8 @@ defmodule MaestroWeb.ConceptsLive do
                 </div>
 
                 <div>
-                  <h3 class="font-semibold text-success">Database Layer</h3>
-                  <ul class="list-disc list-inside text-sm">
+                  <h3 class="font-semibold text-sm text-success">Database Layer</h3>
+                  <ul class="list-disc list-inside text-xs">
                     <li>Primary Keys</li>
                     <li>Ash Resources</li>
                     <li>Polymorphic Relations</li>
@@ -174,8 +174,8 @@ defmodule MaestroWeb.ConceptsLive do
                 </div>
 
                 <div>
-                  <h3 class="font-semibold text-warning">UI Layer</h3>
-                  <ul class="list-disc list-inside text-sm">
+                  <h3 class="font-semibold text-sm text-warning">UI Layer</h3>
+                  <ul class="list-disc list-inside text-xs">
                     <li>Phoenix Patterns</li>
                     <li>LiveView</li>
                     <li>DaisyUI Components</li>
@@ -184,8 +184,8 @@ defmodule MaestroWeb.ConceptsLive do
                 </div>
 
                 <div>
-                  <h3 class="font-semibold text-error">Tools & Infrastructure</h3>
-                  <ul class="list-disc list-inside text-sm">
+                  <h3 class="font-semibold text-sm text-error">Tools & Infrastructure</h3>
+                  <ul class="list-disc list-inside text-xs">
                     <li>CSS Linter</li>
                     <li>LiveTable</li>
                     <li>Fly Deployment</li>
@@ -193,8 +193,8 @@ defmodule MaestroWeb.ConceptsLive do
                 </div>
 
                 <div>
-                  <h3 class="font-semibold text-secondary">Projects</h3>
-                  <ul class="list-disc list-inside text-sm">
+                  <h3 class="font-semibold text-sm text-secondary">Projects</h3>
+                  <ul class="list-disc list-inside text-xs">
                     <li>Calvin (Guide Scheduling)</li>
                     <li>SanJuan (Analytics)</li>
                     <li>Maestro (Coordination)</li>
@@ -204,41 +204,41 @@ defmodule MaestroWeb.ConceptsLive do
             </div>
           </div>
 
-          <div class="card bg-base-100 shadow-xl">
+          <div class="card bg-base-100 shadow-xl card-compact">
             <div class="card-body">
-              <h2 class="card-title">Key Relationships</h2>
+              <h2 class="card-title text-lg">Key Relationships</h2>
               
-              <div class="space-y-4 text-sm">
+              <div class="space-y-2 text-xs">
                 <div>
-                  <h3 class="font-semibold">Database → UI Flow</h3>
+                  <h3 class="font-semibold text-sm">Database → UI Flow</h3>
                   <div class="text-base-content/70">
                     Primary Keys → Ash Resources → LiveView → DaisyUI
                   </div>
-                  <p class="text-xs mt-1">Database decisions affect UI display</p>
+                  <p class="text-xs mt-0.5">Database decisions affect UI display</p>
                 </div>
 
                 <div>
-                  <h3 class="font-semibold">Development Flow</h3>
+                  <h3 class="font-semibold text-sm">Development Flow</h3>
                   <div class="text-base-content/70">
                     Git Workflow → Code Verification → Communication
                   </div>
-                  <p class="text-xs mt-1">Changes go through git, verification, reporting</p>
+                  <p class="text-xs mt-0.5">Changes go through git, verification, reporting</p>
                 </div>
 
                 <div>
-                  <h3 class="font-semibold">Component Reuse</h3>
+                  <h3 class="font-semibold text-sm">Component Reuse</h3>
                   <div class="text-base-content/70">
                     LiveTable → DaisyUI + LiveView
                   </div>
-                  <p class="text-xs mt-1">Combines patterns for reusable tables</p>
+                  <p class="text-xs mt-0.5">Combines patterns for reusable tables</p>
                 </div>
 
                 <div>
-                  <h3 class="font-semibold">Project Coordination</h3>
+                  <h3 class="font-semibold text-sm">Project Coordination</h3>
                   <div class="text-base-content/70">
                     Maestro → Calvin/SanJuan via Git
                   </div>
-                  <p class="text-xs mt-1">Orchestrates work across projects</p>
+                  <p class="text-xs mt-0.5">Orchestrates work across projects</p>
                 </div>
               </div>
             </div>
