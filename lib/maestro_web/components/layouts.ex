@@ -19,17 +19,21 @@ defmodule MaestroWeb.Layouts do
     ~H"""
     <div class="drawer">
       <input id="main-drawer" type="checkbox" class="drawer-toggle" />
-      <div class="drawer-content">
-        <div class="navbar bg-base-200">
+      <div class="drawer-content flex flex-col">
+        <div class="navbar bg-base-200 sticky top-0 z-50 shadow-md">
           <div class="navbar-start">
             <a href="/" class="btn btn-ghost text-xl">🎼 Maestro</a>
           </div>
-          <div class="navbar-center">
+          <div class="navbar-center gap-2">
             <a href="/projects" class="btn btn-ghost">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
               </svg>
               Projects
+            </a>
+            <a href="/tasks" class="btn btn-ghost">
+              <.icon name="hero-check-circle" class="w-5 h-5" />
+              Tasks
             </a>
           </div>
           <div class="navbar-end gap-2">
@@ -39,7 +43,7 @@ defmodule MaestroWeb.Layouts do
           </div>
         </div>
 
-        <main class="container mx-auto px-4 py-2 max-w-7xl">
+        <main class="container mx-auto px-4 py-2 max-w-7xl flex-1">
           {render_slot(@inner_block)}
         </main>
       </div>

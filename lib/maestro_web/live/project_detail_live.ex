@@ -2,6 +2,7 @@ defmodule MaestroWeb.ProjectDetailLive do
   use MaestroWeb, :live_view
   alias Maestro.Ops
   import MaestroWeb.Live.Helpers.FileOpener
+  import Ecto.Query
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
@@ -99,6 +100,23 @@ defmodule MaestroWeb.ProjectDetailLive do
           <div class="lg:col-span-2">
             <div class="card bg-base-100 shadow-xl mb-6">
               <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                  <h2 class="card-title">Tasks</h2>
+                  <.link navigate={~p"/tasks/new?entity_type=Project&entity_id=#{@project.id}"} class="btn btn-sm btn-primary">
+                    <.icon name="hero-plus" class="w-4 h-4" />
+                    New Task
+                  </.link>
+                </div>
+                <MaestroWeb.Components.TaskTable.task_table
+                  
+                  id="project-tasks-table"
+                  query_fn={fn -> project_tasks_query(@project.id) end}
+                />
+              </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl mb-6">
+              <div class="card-body">
                 <h2 class="card-title">Project Info</h2>
                 
                 <div class="space-y-3">
@@ -190,6 +208,12 @@ defmodule MaestroWeb.ProjectDetailLive do
       </div>
     </Layouts.app>
     """
+  end
+
+  defp project_tasks_query(project_id) do
+    from t in Maestro.Ops.Task,
+      where: t.entity_type == "Project" and t.entity_id == ^to_string(project_id),
+      order_by: [desc: t.inserted_at]
   end
 
   defp status_badge_class(status) when status in [:running, "running"], do: "badge-success"

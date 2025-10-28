@@ -26,6 +26,7 @@ import {hooks as colocatedHooks} from "phoenix-colocated/maestro"
 import TableHooks from "../../deps/live_table/priv/static/live-table.js"
 import topbar from "../vendor/topbar"
 import Sortable from "sortablejs"
+import EasyMDE from "easymde"
 
 const SortableHook = {
   mounted() {
@@ -44,11 +45,33 @@ const SortableHook = {
   }
 };
 
+const MarkdownEditorHook = {
+  mounted() {
+    const textarea = this.el;
+    const easyMDE = new EasyMDE({
+      element: textarea,
+      spellChecker: false,
+      toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "side-by-side", "fullscreen"],
+      status: false,
+      initialValue: textarea.value || ""
+    });
+    
+    easyMDE.codemirror.on("change", () => {
+      textarea.value = easyMDE.value();
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    
+    this.handleEvent("clear-editor", () => {
+      easyMDE.value("");
+    });
+  }
+};
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, ...TableHooks, SortableHook},
+  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook},
 })
 
 window.addEventListener("phx:theme-changed", (e) => {

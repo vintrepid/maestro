@@ -3,6 +3,7 @@ defmodule Maestro.Ops do
 
   resources do
     resource Maestro.Ops.Project
+    resource Maestro.Ops.Task
   end
 
   import Ecto.Query

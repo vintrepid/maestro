@@ -6,8 +6,13 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
 
   def guidelines_viewer(assigns) do
     project = assigns[:project] || get_project_name()
-    assigns = assign(assigns, :startup_sequence, get_startup_sequence(project))
-    assigns = assign(assigns, :agents_tree, get_agents_tree())
+    startup_sequence = get_startup_sequence(project)
+    agents_tree = get_agents_tree()
+    total_size = calculate_total_size(agents_tree)
+    
+    assigns = assign(assigns, :startup_sequence, startup_sequence)
+    assigns = assign(assigns, :agents_tree, agents_tree)
+    assigns = assign(assigns, :total_size, total_size)
 
     ~H"""
     <.card class={@class}>
@@ -19,7 +24,10 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
         <% end %>
       </div>
 
-      <div class="text-xs font-bold text-accent mt-4 mb-2">📂 All Documentation</div>
+      <div class="flex items-center justify-between mt-4 mb-2">
+        <div class="text-xs font-bold text-accent">📂 All Documentation</div>
+        <div class="text-xs text-base-content/60 font-mono">Total: {format_file_size(@total_size)}</div>
+      </div>
       <%= for item <- @agents_tree do %>
         <.tree_item item={item} level={0} path_prefix="agents" />
       <% end %>
@@ -105,7 +113,8 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
         >
           <input type="checkbox" class="checkbox checkbox-xs" />
           <.icon name="hero-document-text" class="w-3 h-3 text-base-content/60" />
-          <span class="text-xs">{@item.name}</span>
+          <span class="text-xs flex-1">{@item.name}</span>
+          <span class="text-xs text-base-content/40 font-mono">{format_file_size(@item.size)}</span>
         </div>
       <% end %>
     </div>
@@ -184,7 +193,21 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
         children = build_directory_tree(item_path)
         %{name: item, type: :directory, children: children}
       else
-        %{name: item, type: :file}
+        file_stat = File.stat!(item_path)
+        %{name: item, type: :file, size: file_stat.size}
+      end
+    end)
+  end
+  
+  defp format_file_size(bytes) when bytes < 1024, do: "#{bytes}B"
+  defp format_file_size(bytes) when bytes < 1024 * 1024, do: "#{div(bytes, 1024)}KB"
+  defp format_file_size(bytes), do: "#{Float.round(bytes / (1024 * 1024), 1)}MB"
+  
+  defp calculate_total_size(tree) do
+    Enum.reduce(tree, 0, fn item, acc ->
+      case item.type do
+        :directory -> acc + calculate_total_size(item.children)
+        :file -> acc + item.size
       end
     end)
   end
