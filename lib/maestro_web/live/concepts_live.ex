@@ -1,5 +1,6 @@
 defmodule MaestroWeb.ConceptsLive do
   use MaestroWeb, :live_view
+  import MaestroWeb.Live.Helpers.FileOpener
 
   @impl true
   def mount(_params, _session, socket) do
@@ -10,6 +11,12 @@ defmodule MaestroWeb.ConceptsLive do
      socket
      |> assign(:page_title, "Guideline Concepts")
      |> assign(:svg_exists, svg_exists)}
+  end
+
+  @impl true
+  def handle_event("open_file", %{"path" => path}, socket) do
+    open_file(path)
+    {:noreply, socket}
   end
 
   @impl true
@@ -42,9 +49,15 @@ defmodule MaestroWeb.ConceptsLive do
                   <span class="badge badge-sm badge-info">Ash</span>
                   <span class="badge badge-sm badge-warning">Relations</span>
                 </div>
-                <p class="text-xs mt-2 text-base-content/60">
-                  📄 docs/guides/POLYMORPHIC_RELATIONS.md
-                </p>
+                <button 
+                  phx-click="open_file" 
+                  phx-value-path="docs/guides/POLYMORPHIC_RELATIONS.md"
+                  class="text-xs mt-2 text-primary hover:text-primary-focus flex items-center gap-1 cursor-pointer"
+                >
+                  <.icon name="hero-document-text" class="w-4 h-4" />
+                  docs/guides/POLYMORPHIC_RELATIONS.md
+                  <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
+                </button>
               </div>
             </div>
           </div>
