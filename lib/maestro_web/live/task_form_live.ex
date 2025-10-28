@@ -5,7 +5,7 @@ defmodule MaestroWeb.TaskFormLive do
   @impl true
   def mount(params, _session, socket) do
     task = if params["id"] do
-      Task.by_id!(params["id"])
+      Task.by_id!(params["id"], load: [:display_name])
     else
       nil
     end
@@ -109,7 +109,7 @@ defmodule MaestroWeb.TaskFormLive do
     <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="max-w-2xl mx-auto px-8 py-12">
         <div class="mb-8">
-          <h1 class="text-4xl font-bold">{if @entity_name, do: "#{@entity_name} - Task", else: @page_title}</h1>
+          <h1 class="text-4xl font-bold">{if @task, do: @task.display_name, else: if(@entity_name, do: "#{@entity_name} - New Task", else: @page_title)}</h1>
         </div>
 
         <div class="card bg-base-100 shadow-xl">
@@ -120,13 +120,6 @@ defmodule MaestroWeb.TaskFormLive do
                   <span class="label-text">Title</span>
                 </label>
                 <.input field={@form[:title]} type="text" class="input input-bordered" required />
-              </div>
-
-              <div class="form-control mt-4">
-                <label class="label">
-                  <span class="label-text">Description</span>
-                </label>
-                <div id="markdown-editor-wrapper" phx-update="ignore"><textarea id="markdown-editor" name="form[description]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :description)}</textarea></div>
               </div>
 
               <div class="grid grid-cols-2 gap-4 mt-4">
@@ -145,19 +138,26 @@ defmodule MaestroWeb.TaskFormLive do
                 </div>
               </div>
 
-              <div class="form-control mt-4">
-                <label class="label">
-                  <span class="label-text">Due Date</span>
-                </label>
-                <.input field={@form[:due_at]} type="datetime-local" class="input input-bordered" />
-              </div>
-
               <%= if @task && @task.completed_at do %>
                 <div class="alert alert-success mt-4">
                   <.icon name="hero-check-circle" class="w-5 h-5" />
                   <span>Completed on {Calendar.strftime(@task.completed_at, "%B %d, %Y at %I:%M %p")}</span>
                 </div>
+              <% else %>
+                <div class="form-control mt-4">
+                  <label class="label">
+                    <span class="label-text">Due Date</span>
+                  </label>
+                  <.input field={@form[:due_at]} type="datetime-local" class="input input-bordered" />
+                </div>
               <% end %>
+
+              <div class="form-control mt-4">
+                <label class="label">
+                  <span class="label-text">Description</span>
+                </label>
+                <div id="markdown-editor-wrapper" phx-update="ignore"><textarea id="markdown-editor" name="form[description]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :description)}</textarea></div>
+              </div>
 
               <div class="form-control mt-4">
                 <label class="label">

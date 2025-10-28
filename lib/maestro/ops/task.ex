@@ -45,6 +45,16 @@ defmodule Maestro.Ops.Task do
     update_timestamp :updated_at
   end
 
+  calculations do
+    calculate :display_name, :string, expr(
+      cond do
+        not is_nil(title) and entity_type == "Project" ->
+          fragment("? || ' - ' || (SELECT name FROM projects WHERE id = CAST(? AS uuid))", title, entity_id)
+        true -> title
+      end
+    )
+  end
+
   actions do
     defaults [:read, :destroy]
 

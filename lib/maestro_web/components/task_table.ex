@@ -6,7 +6,10 @@ defmodule MaestroWeb.Components.TaskTable do
   attr :id, :string, required: true
 
   def task_table(assigns) do
-    tasks = Repo.all(assigns.query_fn.())
+    query = assigns.query_fn.()
+    tasks = Repo.all(query)
+    |> Maestro.Ops.load!([:display_name])
+    
     tasks_with_names = Enum.map(tasks, fn task ->
       Map.put(task, :entity_display_name, get_entity_name(task.entity_type, task.entity_id))
     end)
@@ -33,7 +36,7 @@ defmodule MaestroWeb.Components.TaskTable do
           <% end %>
           <%= for task <- @tasks do %>
             <tr>
-              <td>{task.title}</td>
+              <td>{task.display_name}</td>
               <td><span class="badge badge-sm">{task.task_type}</span></td>
               <td><span class={"badge badge-sm #{status_class(task.status)}"}>{task.status}</span></td>
               <td>
