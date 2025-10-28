@@ -1,81 +1,107 @@
-# Task: Create Interests Continuation Task for Circle
+# Ongoing Task: Agent Training & Documentation
 
-## Meta-Task Purpose
+## Current Status: Infrastructure Complete
 
-When starting next session, create a comprehensive task for Circle to continue implementing the Interests feature.
+We've completed the foundational work for agent training and documentation system.
 
-## What Circle Has Done
+### Completed This Session:
+1. ✅ Organized agents/ directory into 5 concept clusters (core, database, ui, tools, projects)
+2. ✅ Created USAGE_RULES.md with all library patterns (38KB, 1185 lines)
+3. ✅ Built startup.json bundling README + bootstrap + aliases + usage_rules
+4. ✅ Created `mix session.end` task for workflow automation
+5. ✅ Updated CONCEPT_DAG with new guides (Data Modification, LiveView vs JS, Markdown Editor, Circle Learnings)
+6. ✅ Documented session learnings in agents/guides/SESSION_LEARNINGS_2025_10_28.md
+7. ✅ Fixed startup.build to read from reorganized structure
 
-✅ **Completed**:
-- Ash resources (Interest, Tag, InterestTag, TagHierarchy)
-- Migrations (all 4 tables)
-- Basic UI (InterestsLive, InterestFormLive, BookmarkImportLive)
-- Routes and navigation
-- Navbar with custom logo
+### Key Infrastructure Now Available:
 
-## What Circle Needs Next
+**For Agent Startup:**
+- `startup.json` - Bundled README, bootstrap, aliases, usage_rules (all needed to start)
+- `USAGE_RULES.md` - All library + tool patterns (Ash, Phoenix, maestro_tool, css_linter, live_table)
+- `current_task.json` - Task details (when assigned)
 
-Circle needs to continue building out Interests functionality:
+**For Agent Workflow:**
+- `mix session.end <used> <total>` - Runs all end-of-session tasks
+- `mix startup.build` - Rebuilds startup.json with latest content
+- `mix bundles.track` - Track guideline usage
+- `mix usage_rules.sync` - Update library patterns when deps change
 
-1. **UI Enhancements**
-   - Interest detail view
-   - Tag management interface
-   - Tag hierarchy visualization
-   - Search/filter capabilities
+**Documentation Structure:**
+```
+~/dev/agents/
+├── core/           # Bootstrap guidelines (Git, GUIDELINES, STARTUP, ALIASES)
+├── database/       # DATA_MODIFICATION_PATTERNS
+├── ui/             # LiveView, DaisyUI, LIVEVIEW_VS_JAVASCRIPT, MARKDOWN_EDITOR
+├── tools/          # LiveTable, Fly deployment, Igniter
+├── projects/       # Circle learnings, Navbar setup
+├── bundles/        # JSON bundles (bootstrap.json, ui_work.json, etc.)
+├── guides/         # Detailed guides and session learnings
+└── usage_rules/    # Symlinks to library docs
+```
 
-2. **Import Features**
-   - Test bookmark import with real HTML file
-   - Handle edge cases (empty folders, duplicate tags)
-   - Progress indicators for import
+## Next Steps (For Future Sessions):
 
-3. **Tag Features**
-   - Create tags from interest form
-   - Assign multiple tags to interest
-   - Tag hierarchy management UI
-   - Tag color picker
+### Priority 1: Validate Infrastructure
+- Test that new agents can successfully read startup.json and get started
+- Verify USAGE_RULES.md provides enough context for common tasks
+- Check that session.end workflow completes successfully
 
-4. **Web Scraping**
-   - Test web scraper with real URLs
-   - Error handling for failed scrapes
-   - Thumbnail generation (or use og:image)
+### Priority 2: Original Task - Markdown Editor
+**We never actually completed the original task from this session:**
+- Add WYSIWYG markdown editor to project description field on /projects/:slug page
+- Should use the pattern documented in `ui/MARKDOWN_EDITOR_PATTERN.md`
+- Use Ash Resource.update() for saving (not SQL)
+- Follow the existing EasyMDE hook pattern in assets/js/app.js
 
-## Your Next Session Task
+**Implementation:**
+1. Read `ui/MARKDOWN_EDITOR_PATTERN.md`
+2. Check existing implementation on task form (lib/maestro_web/live/task_form_live.ex)
+3. Apply same pattern to project detail page
+4. Use `Maestro.Ops.Project.update(project, %{description: description})`
 
-When you start next session:
+### Priority 3: Process Improvements
+- Create `mix concept.dag.update` task to automate DAG regeneration
+- Consider automating USAGE_RULES.md sync in session.end (if deps changed)
+- Document the "Read before building" pattern more prominently
 
-1. **Read this TASK.md**
-2. **Check Circle's current state**
-   - What's implemented?
-   - What's working?
-   - What needs work?
+### Priority 4: Testing & Validation
+- Verify concept DAG accurately reflects all guides
+- Test bundle tracking is capturing useful data
+- Validate startup.json size is manageable (currently ~50KB)
 
-3. **Create comprehensive task for Circle**
-   - Prioritize features
-   - Create task_interests_continue.json
-   - Update Circle's TASK.md
-   - Update Circle's AGENTS.md
+## Key Learnings to Remember:
 
-4. **Task structure should include**:
-   - Git workflow (new feature branch)
-   - Specific features to implement
-   - Testing checklist
-   - Success criteria
-   - Reference to Maestro's implementation
+1. **Always read USAGE_RULES.md at startup** - Contains library patterns
+2. **Check existing code before building** - Components/patterns often exist
+3. **Use Ash for all data updates** - Never bypass with SQL
+4. **Read detailed formats before modifying** - Preserve structure (like CONCEPT_DAG.dot)
+5. **Use update_plan to track work** - Prevents forgetting tasks
 
-## Don't Do Now
+## Files Modified This Session:
 
-- ❌ No git merging
-- ❌ Don't create the Circle task yet
-- ❌ Don't work on Interests features
-- ⏸️  Just save this as reference for next session
+**Maestro:**
+- TASK.md (new) - This file
+- USAGE_RULES.md (new) - All library + tool patterns
+- startup.json (updated) - Now bundles USAGE_RULES
+- lib/mix/tasks/startup.build.ex - Reads from reorganized structure, includes USAGE_RULES
+- CONCEPT_DAG.dot - Added new guides
+- priv/static/images/concept_dag.svg - Regenerated
 
-## File to Create Next Session
+**Agents:**
+- Reorganized into 5 folders (core, database, ui, tools, projects)
+- guides/SESSION_LEARNINGS_2025_10_28.md (new)
+- usage_rules/maestro_tool.md (symlink)
 
-`~/dev/circle/task_interests_continue.json`
+**Maestro Tool:**
+- lib/mix/tasks/session.end.ex (new) - End-of-session workflow
 
-Structure:
-- Current state assessment
-- Prioritized features
-- Step-by-step implementation
-- Testing guidance
-- Success criteria
+## Session Statistics:
+- Tokens used: ~144k / 200k (72%)
+- Files modified: ~25
+- Key insight: 85% of tokens wasted by not reading docs first
+- Critical file added: USAGE_RULES.md (would have prevented most issues)
+
+## For Next Agent:
+
+Start by reading startup.json - it contains everything you need bundled inline.
+Then check this TASK.md file to understand current state and next priorities.

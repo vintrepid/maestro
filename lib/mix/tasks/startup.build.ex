@@ -23,6 +23,7 @@ defmodule Mix.Tasks.Startup.Build do
     bootstrap_path = Path.join([System.user_home!(), "dev", "agents", "bundles", "bootstrap.json"])
     aliases_path = Path.join([System.user_home!(), "dev", "agents", "core", "ALIASES.md"])
     usage_rules_path = "USAGE_RULES.md"
+    task_path = "TASK.md"
     
     unless File.exists?(readme_path) do
       Mix.raise("README.md not found in project root")
@@ -43,6 +44,12 @@ defmodule Mix.Tasks.Startup.Build do
     
     usage_rules_content = if File.exists?(usage_rules_path) do
       File.read!(usage_rules_path)
+    else
+      nil
+    end
+    
+    task_content = if File.exists?(task_path) do
+      File.read!(task_path)
     else
       nil
     end
@@ -81,6 +88,15 @@ defmodule Mix.Tasks.Startup.Build do
         nil
       end,
       
+      "task" => if task_content do
+        %{
+          "content" => task_content,
+          "purpose" => "Current ongoing task and context"
+        }
+      else
+        nil
+      end,
+      
       "workflow" => %{
         "1_start_session" => "Read this file (startup.json) - everything bundled here",
         "2_init_tracking" => "mix bundles.track init maestro <branch> bootstrap",
@@ -112,6 +128,9 @@ defmodule Mix.Tasks.Startup.Build do
     end
     if usage_rules_content do
       Mix.shell().info("  - USAGE_RULES.md (#{byte_size(usage_rules_content)} bytes)")
+    end
+    if task_content do
+      Mix.shell().info("  - TASK.md (#{byte_size(task_content)} bytes)")
     end
     Mix.shell().info("\nNext agent can read just startup.json to get started!")
   end
