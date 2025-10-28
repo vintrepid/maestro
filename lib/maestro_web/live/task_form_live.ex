@@ -20,7 +20,11 @@ defmodule MaestroWeb.TaskFormLive do
       AshPhoenix.Form.for_create(Task, :create, params: initial_params)
     end
     
-    entity_name = get_entity_name(params["entity_type"], params["entity_id"])
+    entity_name = if task do
+      get_entity_name(task.entity_type, task.entity_id)
+    else
+      get_entity_name(params["entity_type"], params["entity_id"])
+    end
 
     {:ok,
      socket
@@ -115,6 +119,13 @@ defmodule MaestroWeb.TaskFormLive do
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
             <.form for={@form} phx-change="validate" phx-submit="save">
+              <%= if @entity_name do %>
+                <div class="text-sm text-base-content/60 mb-2">
+                  <.icon name="hero-folder" class="w-4 h-4 inline" />
+                  {@entity_name}
+                </div>
+              <% end %>
+              
               <div class="form-control">
                 <label class="label">
                   <span class="label-text">Title</span>
