@@ -21,7 +21,7 @@ defmodule Mix.Tasks.Startup.Build do
   def run(_args) do
     readme_path = "README.md"
     bootstrap_path = Path.join([System.user_home!(), "dev", "agents", "bundles", "bootstrap.json"])
-    aliases_path = Path.join([System.user_home!(), "dev", "agents", "ALIASES.md"])
+    aliases_path = Path.join([System.user_home!(), "dev", "agents", "core", "ALIASES.md"])
     
     unless File.exists?(readme_path) do
       Mix.raise("README.md not found in project root")
