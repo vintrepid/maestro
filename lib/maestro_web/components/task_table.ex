@@ -73,5 +73,12 @@ defmodule MaestroWeb.Components.TaskTable do
     end
   end
   
+  defp get_entity_name("Task", entity_id) when not is_nil(entity_id) do
+    case Maestro.Ops.Task.by_id(entity_id) do
+      {:ok, task} -> task |> Maestro.Ops.load!([:display_name]) |> Map.get(:display_name)
+      _ -> nil
+    end
+  end
+  
   defp get_entity_name(_, _), do: nil
 end

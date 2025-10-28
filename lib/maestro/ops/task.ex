@@ -50,6 +50,8 @@ defmodule Maestro.Ops.Task do
       cond do
         not is_nil(title) and entity_type == "Project" ->
           fragment("? || ' - ' || (SELECT name FROM projects WHERE id = CAST(? AS uuid))", title, entity_id)
+        not is_nil(title) and entity_type == "Task" ->
+          fragment("? || ' - ' || (SELECT title FROM tasks WHERE id = CAST(? AS integer))", title, entity_id)
         true -> title
       end
     )

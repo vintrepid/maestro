@@ -234,6 +234,24 @@ defmodule MaestroWeb.TaskFormLive do
             </.form>
           </div>
         </div>
+
+        <%= if @task do %>
+          <div class="card bg-base-100 shadow-xl mt-6">
+            <div class="card-body">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="card-title">Sub-tasks</h3>
+                <.link navigate={~p"/tasks/new?entity_type=Task&entity_id=#{@task.id}"} class="btn btn-sm btn-primary">
+                  <.icon name="hero-plus" class="w-4 h-4" />
+                  New Sub-task
+                </.link>
+              </div>
+              <MaestroWeb.Components.TaskTable.task_table
+                id="task-subtasks-table"
+                query_fn={fn -> task_subtasks_query(@task.id) end}
+              />
+            </div>
+          </div>
+        <% end %>
       </div>
     </Layouts.app>
     """
@@ -260,7 +278,8 @@ defmodule MaestroWeb.TaskFormLive do
 
   defp entity_type_options do
     [
-      {"Project", "Project"}
+      {"Project", "Project"},
+      {"Task", "Task"}
     ]
   end
 
@@ -271,9 +290,23 @@ defmodule MaestroWeb.TaskFormLive do
     end
   end
   
+  defp get_entity_name("Task", entity_id) when not is_nil(entity_id) do
+    case Task.by_id(entity_id) do
+      {:ok, task} -> task |> Maestro.Ops.load!([:display_name]) |> Map.get(:display_name)
+      _ -> nil
+    end
+  end
+  
   defp get_entity_name(_, _), do: nil
   
   defp is_nil_or_empty(nil), do: true
   defp is_nil_or_empty(""), do: true
   defp is_nil_or_empty(_), do: false
+  
+  defp task_subtasks_query(task_id) do
+    import Ecto.Query
+    from t in Task,
+      where: t.entity_type == "Task" and t.entity_id == ^to_string(task_id),
+      order_by: [desc: t.inserted_at]
+  end
 end
