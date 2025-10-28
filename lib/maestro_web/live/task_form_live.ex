@@ -179,19 +179,30 @@ defmodule MaestroWeb.TaskFormLive do
                 </div>
               <% end %>
 
-              <div class="form-control mt-4">
-                <label class="label">
-                  <span class="label-text">Notes</span>
-                </label>
-                <div id="notes-markdown-editor-wrapper" phx-update="ignore"><textarea id="notes-markdown-editor" name="form[notes]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered">{Phoenix.HTML.Form.input_value(@form, :notes)}</textarea></div>
-                
-                <%= if @task && @task.notes do %>
-                  <div class="mt-4 p-4 bg-base-200 rounded-lg prose prose-sm max-w-none">
-                    <div class="text-xs text-base-content/60 mb-2">Rendered Preview:</div>
-                    {raw(Earmark.as_html!(@task.notes))}
+              <%= if @task do %>
+                <div class="card bg-base-100 shadow-xl mt-6">
+                  <div class="card-body">
+                    <div class="flex items-center justify-between mb-4">
+                      <h3 class="card-title">Sub-tasks</h3>
+                      <.link navigate={~p"/tasks/new?entity_type=Task&entity_id=#{@task.id}"} class="btn btn-sm btn-primary">
+                        <.icon name="hero-plus" class="w-4 h-4" />
+                        New Sub-task
+                      </.link>
+                    </div>
+                    <MaestroWeb.Components.TaskTable.task_table
+                      id="task-subtasks-table"
+                      query_fn={fn -> task_subtasks_query(@task.id) end}
+                    />
                   </div>
-                <% end %>
-              </div>
+                </div>
+              <% end %>
+
+              <%= if @task && @task.notes do %>
+                <div class="mt-6 p-6 bg-base-200 rounded-lg prose prose-sm max-w-none">
+                  <div class="text-xs text-base-content/60 mb-2 uppercase tracking-wide">Notes:</div>
+                  {raw(Earmark.as_html!(@task.notes))}
+                </div>
+              <% end %>
 
               <%= if is_nil(@task) do %>
                 <div class="grid grid-cols-2 gap-4 mt-4">
@@ -234,24 +245,6 @@ defmodule MaestroWeb.TaskFormLive do
             </.form>
           </div>
         </div>
-
-        <%= if @task do %>
-          <div class="card bg-base-100 shadow-xl mt-6">
-            <div class="card-body">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="card-title">Sub-tasks</h3>
-                <.link navigate={~p"/tasks/new?entity_type=Task&entity_id=#{@task.id}"} class="btn btn-sm btn-primary">
-                  <.icon name="hero-plus" class="w-4 h-4" />
-                  New Sub-task
-                </.link>
-              </div>
-              <MaestroWeb.Components.TaskTable.task_table
-                id="task-subtasks-table"
-                query_fn={fn -> task_subtasks_query(@task.id) end}
-              />
-            </div>
-          </div>
-        <% end %>
       </div>
     </Layouts.app>
     """
