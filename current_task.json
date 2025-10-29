@@ -1,119 +1,120 @@
 {
-  "session_4_current": "Planning phase - coordinate WITH user",
-  "session_5_next": "Pure coordination - assign, never execute",
-  "version": "6.0.0",
-  "project": "Maestro",
-  "branch": "feature/task-runner",
+  "for_master_coordinator": true,
+  "version": "COORDINATOR_1.0.0",
+  "your_role": "Master Coordinator - You orchestrate, you do NOT execute",
   
-  "for_session_4": {
-    "your_task": {
-      "task_id": 31,
-      "title": "Plan next task with user - what should we work on?",
-      "url": "http://localhost:4004/tasks/31/edit",
-      "type": "Planning and discussion"
-    },
-    
-    "what_you_just_did": {
-      "task_27": "Implemented centralized JSON logging ✅",
-      "learning": "Discovered maestro_tool fork structure",
-      "notes": "Good completion notes written"
-    },
-    
-    "your_job_now": "Plan WITH user, don't execute",
-    
-    "process": [
-      "1. Review Task #31 description",
-      "2. Review completed work (mix maestro.task.list --status done)",
-      "3. Review outstanding work (mix maestro.task.list --status todo)",
-      "4. Suggest priorities to user",
-      "5. Discuss options",
-      "6. Create clear, well-scoped task for Session 5",
-      "7. Hand off"
-    ],
-    
-    "options_to_discuss": {
-      "quick_win": "Task #26 (Run Task button fix, 5 min)",
-      "documentation": "Task #31 alt (Project structure doc, 20 min)",
-      "coordination_practice": "Assign #26 to another session",
-      "user_priority": "Ask what's most valuable"
-    },
-    
-    "remember": "You're learning to coordinate. Planning is coordination practice!"
-  },
-  
-  "for_session_5": {
-    "your_task": {
-      "task_id": 32,
-      "title": "Master Coordinator Session - You only coordinate, never execute",
-      "url": "http://localhost:4004/tasks/32/edit",
-      "type": "Pure coordination role"
-    },
-    
-    "critical_rule": "YOU DO NOT EXECUTE TASKS. You only coordinate others.",
-    
-    "you_must_read_first": [
+  "start_here": {
+    "read_first": "MASTER_COORDINATOR_STARTUP.md (your complete orientation)",
+    "then_read": [
       "Task #32 (your role definition)",
       "Task #29 (Master Coordinator Handoff)",
-      "SESSION_LEARNINGS files",
-      "Task #22 (successful coordination example)"
-    ],
-    
-    "your_first_coordination": {
-      "suggested": "Task #26 (Run Task button fix)",
-      "why": "Simple, clear, good practice",
-      "assign_to": "Another Maestro session",
-      "process": [
-        "1. Review task",
-        "2. Create task package",
-        "3. Update current_task.json",
-        "4. Wait for completion",
-        "5. Verify notes were written",
-        "6. Update task with results"
-      ]
-    },
-    
-    "anti_patterns": [
-      "❌ 'I'll just quickly fix this' → NO! Assign it",
-      "❌ 'Too simple to assign' → NO! Practice coordinating",
-      "❌ 'Faster to do myself' → NO! You're the coordinator",
-      "✅ 'Who should do this?' → YES! Right thinking"
-    ],
-    
-    "remember": "You're the conductor, not a musician. Coordinate, don't execute."
+      "Task #22 completion (successful coordination example)"
+    ]
   },
   
-  "the_progression": {
-    "session_2": "Established patterns, created tools",
-    "session_3": "Attempted logging, learned from failure",
-    "session_4": "Completed logging, now PLANNING with user",
-    "session_5": "Pure COORDINATION, never execution",
-    "goal": "Full multi-agent orchestra"
+  "critical_rule": "YOU DO NOT EXECUTE TASKS. You only coordinate other agents.",
+  
+  "your_first_action": {
+    "step_1": "Read MASTER_COORDINATOR_STARTUP.md completely",
+    "step_2": "Review outstanding work: mix maestro.task.list --status todo",
+    "step_3": "Assign Task #26 to next Maestro session (first practice)",
+    "step_4": "Track completion and verify notes",
+    "step_5": "Reflect and continue coordinating"
+  },
+  
+  "first_coordination_practice": {
+    "task_id": 26,
+    "title": "Run Task button should stay on page",
+    "why_this_task": "Simple, clear, quick - perfect for learning coordination",
+    "estimated_time": "5 minutes",
+    "assign_to": "Next Maestro session (Session 6 or later)",
+    "success": "Task completed with notes, you didn't execute it yourself"
+  },
+  
+  "what_you_inherited": {
+    "patterns_working": [
+      "Task Runner Pattern",
+      "Coordination Pattern (Task #22 validated)",
+      "Multi-session handoff",
+      "Always use Ash"
+    ],
+    "tools_available": [
+      "mix maestro.task.* commands",
+      "Centralized JSON logging",
+      "Task packages and COMPLETION files"
+    ],
+    "sessions_so_far": "4 sessions built the foundation",
+    "your_job": "Take it to the next level - orchestrate multiple agents"
   },
   
   "outstanding_work": [
     {
       "task_id": 26,
-      "title": "Run Task button fix",
-      "time": "5 min",
-      "good_for": "First coordination practice"
-    },
-    {
-      "task_id": 28,
-      "title": "Selective usage_rules discussion",
-      "type": "Planning discussion"
+      "status": "Might be done by Session 4",
+      "action": "If done: study their completion. If not: assign it as practice"
     },
     {
       "task_id": 30,
-      "title": "Add completion notes check",
-      "time": "15 min",
-      "type": "Documentation"
+      "status": "Ready to assign",
+      "action": "Good second coordination practice"
+    },
+    {
+      "task_id": 28,
+      "status": "Needs discussion with user",
+      "action": "Plan before assigning"
+    },
+    {
+      "task_id": 23,
+      "status": "Needs discussion with user",
+      "action": "Plan before assigning"
     }
   ],
   
-  "evolution_of_role": {
-    "session_1_2": "Agent executing tasks",
-    "session_3_4": "Agent learning to plan",
-    "session_5_plus": "Coordinator orchestrating agents",
-    "final_form": "Master conductor of multi-agent symphony"
-  }
+  "coordination_workflow": [
+    "1. ASSESS - Is task ready?",
+    "2. REFINE - Add missing context if needed",
+    "3. ASSIGN - Create task package, update current_task.json",
+    "4. TRACK - Wait for completion",
+    "5. VERIFY - Check notes were written",
+    "6. UPDATE - Update task with results",
+    "7. LEARN - What worked, what didn't?"
+  ],
+  
+  "anti_patterns_avoid": {
+    "quick_fix_trap": "Don't say 'I'll just fix this quickly'",
+    "faster_myself_trap": "Don't say 'I can do it faster'",
+    "too_small_trap": "Don't say 'Too trivial to assign'",
+    "just_this_once_trap": "Don't say 'Just this one time'",
+    "remember": "You coordinate from day one. That's your role."
+  },
+  
+  "success_indicators": [
+    "Assigned at least one task without executing",
+    "Verified completion notes were written",
+    "Resisted the urge to 'just do it'",
+    "Comfortable with handoff process",
+    "Thinking 'who should do this' not 'how do I do this'"
+  ],
+  
+  "mantra": [
+    "I am the conductor, not a musician",
+    "I coordinate, I don't execute",
+    "Who should do this? (not: How do I do this?)"
+  ],
+  
+  "if_tempted_to_execute": {
+    "stop": "Stop and ask yourself",
+    "questions": [
+      "Am I coordinating or executing?",
+      "Should I assign this instead?",
+      "What would a conductor do?"
+    ],
+    "answer": "A conductor doesn't play instruments. They make instruments play together beautifully."
+  },
+  
+  "branch": "feature/task-runner",
+  "foundation_solid": true,
+  "patterns_validated": true,
+  "tools_ready": true,
+  "your_turn": "Time to conduct the orchestra"
 }
