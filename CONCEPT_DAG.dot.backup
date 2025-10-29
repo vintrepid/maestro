@@ -1,0 +1,224 @@
+digraph GuidelineConcepts {
+  rankdir=LR;
+  node [shape=box, style=filled];
+  
+  // Bootstrap layer - Core foundations
+  node [fillcolor=lightblue];
+  bootstrap [label="Bootstrap Bundle\n(agents/bundles/bootstrap.json)"];
+  guidelines [label="Guidelines\n(agents/bootstrap/GUIDELINES.md)"];
+  aliases [label="Aliases\n(agents/bootstrap/ALIASES.md)"];
+  user_context [label="User Context\n(agents/bootstrap/USER_CONTEXT.md)"];
+  startup_json [label="Startup JSON\n(agents/guides/STARTUP_JSON_GUIDE)"];
+  
+  // Coordination layer
+  node [fillcolor=lightpink];
+  task_runner [label="Task Runner\nWorkflow\n(TASK_RUNNER_WORKFLOW)"];
+  coordination [label="Agent Coordination\nPattern\n(MASTER_COORDINATOR)"];
+  git_maestro [label="Git Maestro\nSpecialized Agent\n(GIT_MAESTRO_STARTUP)"];
+  
+  // Git workflow
+  node [fillcolor=lightskyblue];
+  git [label="Git Workflow\n(agents/git/)"];
+  verification [label="Code Verification\n(guidelines)"];
+  communication [label="Communication\n(guidelines)"];
+  
+  // Bundle system
+  node [fillcolor=lavender];
+  bundles [label="Bundles System\n(agents/bundles/)"];
+  database_bundle [label="Database Work Bundle"];
+  ui_bundle [label="UI Work Bundle"];
+  tools_bundle [label="Tools Bundle"];
+  projects_bundle [label="Projects Bundle"];
+  navbar_bundle [label="Navbar Setup Bundle"];
+  maestro_bundle [label="Maestro Bundle"];
+  
+  // Database concepts
+  node [fillcolor=lightgreen];
+  db_pk [label="Primary Keys\n(guidelines)"];
+  ash_resource [label="Ash Resources\n(guidelines)"];
+  poly_relations [label="Polymorphic Relations\n(database_work)"];
+  migrations [label="Data Migrations\n(guidelines)"];
+  data_modification [label="Data Modification\n(guides/DATA_MODIFICATION)"];
+  
+  // UI/Frontend concepts
+  node [fillcolor=lightyellow];
+  phoenix [label="Phoenix Patterns\n(ui_work)"];
+  ui_decision [label="LiveView vs JS\nDecision Point\n(guides/LIVEVIEW_VS_JS)"];
+  liveview [label="LiveView\n(ui_work)"];
+  javascript [label="JavaScript\n(guides/LIVEVIEW_VS_JS)"];
+  daisyui [label="DaisyUI Components\n(ui_work)"];
+  css [label="CSS Standards\n(ui_work)"];
+  markdown_editor [label="Markdown Editor\n(guides/MARKDOWN_EDITOR)"];
+  
+  // Tools
+  node [fillcolor=lightcoral];
+  css_linter [label="CSS Linter\n(tools)"];
+  live_table [label="LiveTable\n(tools)"];
+  fly [label="Fly Deployment\n(tools)"];
+  maestro_tool [label="Maestro Tool Package\n(tools)"];
+  
+  // Project-specific
+  node [fillcolor=plum];
+  calvin_domain [label="Calvin Business\n(projects/calvin)"];
+  sanjuan_domain [label="SanJuan Analytics\n(projects/sanjuan)"];
+  maestro_coord [label="Maestro Coordination\n(maestro/README)"];
+  circle_learnings [label="Circle Patterns\n(guides/CIRCLE_LEARNINGS)"];
+  
+  // Bootstrap relationships
+  bootstrap -> guidelines [label="contains"];
+  bootstrap -> aliases [label="contains"];
+  bootstrap -> user_context [label="contains"];
+  bootstrap -> git [label="defines"];
+  bootstrap -> verification [label="defines"];
+  bootstrap -> communication [label="defines"];
+  startup_json -> bootstrap [label="bundles"];
+  
+  // Coordination relationships
+  coordination -> maestro_coord [label="implements"];
+  coordination -> task_runner [label="uses"];
+  coordination -> git_maestro [label="deploys"];
+  task_runner -> communication [label="defines handoffs"];
+  git_maestro -> git [label="executes"];
+  
+  // Bundle system relationships
+  bundles -> database_bundle [label="provides"];
+  bundles -> ui_bundle [label="provides"];
+  bundles -> tools_bundle [label="provides"];
+  bundles -> projects_bundle [label="provides"];
+  bundles -> navbar_bundle [label="provides"];
+  bundles -> maestro_bundle [label="provides"];
+  
+  database_bundle -> ash_resource [label="contains"];
+  database_bundle -> poly_relations [label="contains"];
+  database_bundle -> migrations [label="contains"];
+  
+  ui_bundle -> phoenix [label="contains"];
+  ui_bundle -> liveview [label="contains"];
+  ui_bundle -> daisyui [label="contains"];
+  
+  tools_bundle -> css_linter [label="contains"];
+  tools_bundle -> live_table [label="contains"];
+  tools_bundle -> maestro_tool [label="contains"];
+  
+  // Database flow
+  db_pk -> ash_resource [label="used in"];
+  ash_resource -> poly_relations [label="implements"];
+  ash_resource -> migrations [label="creates"];
+  ash_resource -> data_modification [label="ALWAYS use\nnever SQL"];
+  poly_relations -> migrations [label="requires"];
+  migrations -> verification [label="requires"];
+  data_modification -> verification [label="ensures validity"];
+  
+  // UI decision flow
+  phoenix -> ui_decision [label="FIRST decide"];
+  ui_decision -> liveview [label="if real-time\nor multi-user"];
+  ui_decision -> javascript [label="if client-side\nor simple"];
+  
+  // UI flow
+  liveview -> daisyui [label="styles with"];
+  javascript -> daisyui [label="styles with"];
+  daisyui -> css [label="defines"];
+  css -> css_linter [label="analyzed by"];
+  
+  // Markdown Editor
+  liveview -> markdown_editor [label="can use"];
+  ash_resource -> markdown_editor [label="field type"];
+  markdown_editor -> daisyui [label="styled with"];
+  
+  // LiveView patterns
+  liveview -> live_table [label="can use"];
+  live_table -> daisyui [label="styled with"];
+  
+  // Development flow
+  git -> verification [label="before merge"];
+  verification -> communication [label="report via"];
+  
+  // Database & UI intersection
+  ash_resource -> liveview [label="displayed in"];
+  ash_resource -> javascript [label="fetched by"];
+  poly_relations -> liveview [label="displayed in"];
+  db_pk -> calvin_domain [label="applied in"];
+  db_pk -> sanjuan_domain [label="applied in"];
+  poly_relations -> maestro_coord [label="used in tasks"];
+  
+  // Circle Learnings
+  circle_learnings -> liveview [label="multi-select patterns"];
+  circle_learnings -> daisyui [label="tag UI"];
+  circle_learnings -> ash_resource [label="junction tables"];
+  circle_learnings -> data_modification [label="proper updates"];
+  
+  // Project coordination
+  maestro_coord -> calvin_domain [label="coordinates"];
+  maestro_coord -> sanjuan_domain [label="coordinates"];
+  maestro_coord -> git_maestro [label="assigns git tasks"];
+  
+  // Tools & Concepts
+  css_linter -> maestro_coord [label="integrated in"];
+  live_table -> sanjuan_domain [label="used in"];
+  live_table -> calvin_domain [label="used in"];
+  maestro_tool -> maestro_coord [label="provides tasks"];
+  maestro_tool -> bundles [label="tracks usage"];
+  
+  // Deployment
+  liveview -> fly [label="deployed via"];
+  ash_resource -> fly [label="deployed via"];
+  fly -> verification [label="tested after"];
+  
+  // Organization clusters
+  subgraph cluster_bootstrap {
+    label="Bootstrap Layer\n(Loaded by all agents)";
+    style=filled;
+    color=lightgrey;
+    bootstrap; guidelines; aliases; user_context; startup_json;
+  }
+  
+  subgraph cluster_coordination {
+    label="Coordination Layer\n(Maestro orchestration)";
+    style=filled;
+    color=lightgrey;
+    coordination; task_runner; git_maestro;
+  }
+  
+  subgraph cluster_git {
+    label="Git Workflow";
+    style=filled;
+    color=lightgrey;
+    git; verification; communication;
+  }
+  
+  subgraph cluster_bundles {
+    label="Bundle System\n(Task-specific loading)";
+    style=filled;
+    color=lightgrey;
+    bundles; database_bundle; ui_bundle; tools_bundle; 
+    projects_bundle; navbar_bundle; maestro_bundle;
+  }
+  
+  subgraph cluster_data {
+    label="Database Layer";
+    style=filled;
+    color=lightgrey;
+    db_pk; ash_resource; poly_relations; migrations; data_modification;
+  }
+  
+  subgraph cluster_ui {
+    label="UI Layer";
+    style=filled;
+    color=lightgrey;
+    phoenix; ui_decision; liveview; javascript; daisyui; css; markdown_editor;
+  }
+  
+  subgraph cluster_tools {
+    label="Tools & Infrastructure";
+    style=filled;
+    color=lightgrey;
+    css_linter; live_table; fly; maestro_tool;
+  }
+  
+  subgraph cluster_projects {
+    label="Projects";
+    style=filled;
+    color=lightgrey;
+    calvin_domain; sanjuan_domain; maestro_coord; circle_learnings;
+  }
+}

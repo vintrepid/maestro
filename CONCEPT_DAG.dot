@@ -1,224 +1,157 @@
-digraph GuidelineConcepts {
+digraph AgentsKnowledge {
   rankdir=LR;
   node [shape=box, style=filled];
   
-  // Bootstrap layer - Core foundations
+  // Bootstrap - Core foundations loaded by all agents
   node [fillcolor=lightblue];
-  bootstrap [label="Bootstrap Bundle\n(agents/bundles/bootstrap.json)"];
-  guidelines [label="Guidelines\n(agents/bootstrap/GUIDELINES.md)"];
-  aliases [label="Aliases\n(agents/bootstrap/ALIASES.md)"];
-  user_context [label="User Context\n(agents/bootstrap/USER_CONTEXT.md)"];
-  startup_json [label="Startup JSON\n(agents/guides/STARTUP_JSON_GUIDE)"];
+  bootstrap [label="Bootstrap\nCore Foundations\n(Loaded by all agents)" URL="/concepts/bootstrap"];
+  bootstrap_0 [label="📄 Aliases" URL="/concepts/bootstrap/ALIASES.md"];
+  bootstrap_1 [label="📄 Phoenix Agents" URL="/concepts/bootstrap/PHOENIX_AGENTS.md"];
+  bootstrap_2 [label="📄 Guidelines" URL="/concepts/bootstrap/GUIDELINES.md"];
+  bootstrap_3 [label="📄 User Context" URL="/concepts/bootstrap/USER_CONTEXT.md"];
   
-  // Coordination layer
-  node [fillcolor=lightpink];
-  task_runner [label="Task Runner\nWorkflow\n(TASK_RUNNER_WORKFLOW)"];
-  coordination [label="Agent Coordination\nPattern\n(MASTER_COORDINATOR)"];
-  git_maestro [label="Git Maestro\nSpecialized Agent\n(GIT_MAESTRO_STARTUP)"];
-  
-  // Git workflow
-  node [fillcolor=lightskyblue];
-  git [label="Git Workflow\n(agents/git/)"];
-  verification [label="Code Verification\n(guidelines)"];
-  communication [label="Communication\n(guidelines)"];
-  
-  // Bundle system
+  // Bundles - Task-specific loading
   node [fillcolor=lavender];
-  bundles [label="Bundles System\n(agents/bundles/)"];
-  database_bundle [label="Database Work Bundle"];
-  ui_bundle [label="UI Work Bundle"];
-  tools_bundle [label="Tools Bundle"];
-  projects_bundle [label="Projects Bundle"];
-  navbar_bundle [label="Navbar Setup Bundle"];
-  maestro_bundle [label="Maestro Bundle"];
+  bundles [label="Bundles\nTask-Specific Loading\n(Load only what's needed)" URL="/concepts/bundles"];
+  bundle_0 [label="📦 Dev Auth Bypass" URL="/concepts/bundles/dev_auth_bypass.json"];
+  bundle_1 [label="📦 Tools" URL="/concepts/bundles/tools.json"];
+  bundle_2 [label="📦 Database Work" URL="/concepts/bundles/database_work.json"];
+  bundle_3 [label="📦 Ui Work" URL="/concepts/bundles/ui_work.json"];
+  bundle_4 [label="📦 Projects" URL="/concepts/bundles/projects.json"];
+  bundle_5 [label="📄 Readme" URL="/concepts/bundles/README.md"];
+  bundle_6 [label=" Readme.md" URL="/concepts/bundles/README.md.bak"];
+  bundle_7 [label="📦 Schema" URL="/concepts/bundles/schema.json"];
+  bundle_8 [label="📄 Maintenance" URL="/concepts/bundles/MAINTENANCE.md"];
+  bundle_9 [label="📦 Navbar Setup" URL="/concepts/bundles/navbar_setup.json"];
+  bundle_10 [label="📦 Bootstrap" URL="/concepts/bundles/bootstrap.json"];
+  bundle_11 [label="📦 Maestro" URL="/concepts/bundles/maestro.json"];
   
-  // Database concepts
-  node [fillcolor=lightgreen];
-  db_pk [label="Primary Keys\n(guidelines)"];
-  ash_resource [label="Ash Resources\n(guidelines)"];
-  poly_relations [label="Polymorphic Relations\n(database_work)"];
-  migrations [label="Data Migrations\n(guidelines)"];
-  data_modification [label="Data Modification\n(guides/DATA_MODIFICATION)"];
-  
-  // UI/Frontend concepts
+  // Guides - How-to documentation
   node [fillcolor=lightyellow];
-  phoenix [label="Phoenix Patterns\n(ui_work)"];
-  ui_decision [label="LiveView vs JS\nDecision Point\n(guides/LIVEVIEW_VS_JS)"];
-  liveview [label="LiveView\n(ui_work)"];
-  javascript [label="JavaScript\n(guides/LIVEVIEW_VS_JS)"];
-  daisyui [label="DaisyUI Components\n(ui_work)"];
-  css [label="CSS Standards\n(ui_work)"];
-  markdown_editor [label="Markdown Editor\n(guides/MARKDOWN_EDITOR)"];
+  guides [label="Guides\nHow-To Docs\n(Reference material)" URL="/concepts/guides"];
+  guide_0 [label="📄 Guidelines Organization" URL="/concepts/guides/GUIDELINES_ORGANIZATION.md"];
+  guide_1 [label="📄 Startup Json Guide" URL="/concepts/guides/STARTUP_JSON_GUIDE.md"];
+  guide_2 [label="📄 Extraction Plan" URL="/concepts/guides/EXTRACTION_PLAN.md"];
+  guide_3 [label="📄 Knowledge Waste Analysis" URL="/concepts/guides/KNOWLEDGE_WASTE_ANALYSIS.md"];
+  guide_4 [label="📄 Session Learnings 2025 10 28" URL="/concepts/guides/SESSION_LEARNINGS_2025_10_28.md"];
+  
+  // Sessions - Cross-project learnings
+  node [fillcolor=lightpink];
+  sessions [label="Sessions\nCross-Project Learnings\n(Shared knowledge)" URL="/concepts/sessions"];
+  session_0 [label="📄 Task 37 Summary" URL="/concepts/sessions/TASK_37_SUMMARY.md"];
+  session_1 [label="📄 Session Learnings 2025 10 28 Extended" URL="/concepts/sessions/SESSION_LEARNINGS_2025_10_28_extended.md"];
+  session_2 [label="📄 Session Learnings 2025 10 28 Session2" URL="/concepts/sessions/SESSION_LEARNINGS_2025_10_28_session2.md"];
+  session_3 [label="📄 Task 34 Summary" URL="/concepts/sessions/TASK_34_SUMMARY.md"];
+  session_4 [label="📄 Learnings Task 37" URL="/concepts/sessions/LEARNINGS-TASK-37.md"];
+  session_5 [label="📄 What Went Wrong" URL="/concepts/sessions/WHAT_WENT_WRONG.md"];
+  session_6 [label="📄 Session Learnings 2025 10 29 Session3" URL="/concepts/sessions/SESSION_LEARNINGS_2025_10_29_session3.md"];
+  
+  // Database work
+  node [fillcolor=lightgreen];
+  database_work [label="Database Work\nAsh, Ecto, Migrations" URL="/concepts/database_work"];
+  db_0 [label="📄 Import Patterns" URL="/concepts/database_work/IMPORT_PATTERNS.md"];
+  db_1 [label="📄 Ash Patterns" URL="/concepts/database_work/ASH_PATTERNS.md"];
+  db_2 [label="📄 Data Modification Patterns" URL="/concepts/database_work/DATA_MODIFICATION_PATTERNS.md"];
+  
+  // UI work
+  node [fillcolor=lightcoral];
+  ui_work [label="UI Work\nLiveView, DaisyUI, CSS" URL="/concepts/ui_work"];
+  ui_0 [label="📄 Daisyui" URL="/concepts/ui_work/DAISYUI.md"];
+  ui_1 [label="📄 Navbar Setup" URL="/concepts/ui_work/NAVBAR_SETUP.md"];
+  ui_2 [label="📄 Css Cleanup Guidelines" URL="/concepts/ui_work/CSS_CLEANUP_GUIDELINES.md"];
+  ui_3 [label="📄 Liveview Patterns" URL="/concepts/ui_work/LIVEVIEW_PATTERNS.md"];
+  ui_4 [label="📄 Liveview Vs Javascript" URL="/concepts/ui_work/LIVEVIEW_VS_JAVASCRIPT.md"];
+  ui_5 [label="📄 Markdown Editor Pattern" URL="/concepts/ui_work/MARKDOWN_EDITOR_PATTERN.md"];
   
   // Tools
-  node [fillcolor=lightcoral];
-  css_linter [label="CSS Linter\n(tools)"];
-  live_table [label="LiveTable\n(tools)"];
-  fly [label="Fly Deployment\n(tools)"];
-  maestro_tool [label="Maestro Tool Package\n(tools)"];
+  node [fillcolor=lightskyblue];
+  tools [label="Tools\nDevelopment utilities" URL="/concepts/tools"];
+  tool_0 [label="📄 Tool Usage" URL="/concepts/tools/TOOL_USAGE.md"];
+  tool_1 [label="📄 Live Table Fork Management" URL="/concepts/tools/LIVE_TABLE_FORK_MANAGEMENT.md"];
+  tool_2 [label="📄 Igniter" URL="/concepts/tools/IGNITER.md"];
+  tool_3 [label="📄 Live Table" URL="/concepts/tools/LIVE_TABLE.md"];
+  tool_4 [label="📄 Fly Deployment" URL="/concepts/tools/FLY_DEPLOYMENT.md"];
+  tool_5 [label="📄 Tools" URL="/concepts/tools/TOOLS.md"];
   
-  // Project-specific
+  // Projects
   node [fillcolor=plum];
-  calvin_domain [label="Calvin Business\n(projects/calvin)"];
-  sanjuan_domain [label="SanJuan Analytics\n(projects/sanjuan)"];
-  maestro_coord [label="Maestro Coordination\n(maestro/README)"];
-  circle_learnings [label="Circle Patterns\n(guides/CIRCLE_LEARNINGS)"];
+  projects [label="Projects\nProject-specific patterns" URL="/concepts/projects"];
+  project_0 [label="📄 Circle Learnings" URL="/concepts/projects/CIRCLE_LEARNINGS.md"];
   
-  // Bootstrap relationships
-  bootstrap -> guidelines [label="contains"];
-  bootstrap -> aliases [label="contains"];
-  bootstrap -> user_context [label="contains"];
-  bootstrap -> git [label="defines"];
-  bootstrap -> verification [label="defines"];
-  bootstrap -> communication [label="defines"];
-  startup_json -> bootstrap [label="bundles"];
+  // Git workflow
+  node [fillcolor=lightgray];
+  git [label="Git Workflow\nBranching, commits, merges" URL="/concepts/git"];
+  git_0 [label="📄 Workflow" URL="/concepts/git/WORKFLOW.md"];
+  git_1 [label="📄 Git Maestro" URL="/concepts/git/GIT_MAESTRO.md"];
   
-  // Coordination relationships
-  coordination -> maestro_coord [label="implements"];
-  coordination -> task_runner [label="uses"];
-  coordination -> git_maestro [label="deploys"];
-  task_runner -> communication [label="defines handoffs"];
-  git_maestro -> git [label="executes"];
+  // Maestro coordination
+  node [fillcolor=gold];
+  maestro [label="Maestro\nOrchestration & coordination" URL="/concepts/maestro"];
+  maestro_0 [label="📄 Agent Communication" URL="/concepts/maestro/AGENT_COMMUNICATION.md"];
+  maestro_1 [label="📄 Task Runner" URL="/concepts/maestro/TASK_RUNNER.md"];
   
-  // Bundle system relationships
-  bundles -> database_bundle [label="provides"];
-  bundles -> ui_bundle [label="provides"];
-  bundles -> tools_bundle [label="provides"];
-  bundles -> projects_bundle [label="provides"];
-  bundles -> navbar_bundle [label="provides"];
-  bundles -> maestro_bundle [label="provides"];
+  // Usage rules
+  node [fillcolor=wheat];
+  usage_rules [label="Usage Rules\nLibrary-specific patterns" URL="/concepts/usage_rules"];
+  usage_0 [label="📄 Ash" URL="/concepts/usage_rules/ash.md"];
+  usage_1 [label="📄 Spark" URL="/concepts/usage_rules/spark.md"];
+  usage_2 [label="📄 Usage Rules" URL="/concepts/usage_rules/usage_rules.md"];
+  usage_3 [label="📄 Ash Oban" URL="/concepts/usage_rules/ash_oban.md"];
+  usage_4 [label="📄 Css Linter" URL="/concepts/usage_rules/css_linter.md"];
+  usage_5 [label="📄 Ash Json Api" URL="/concepts/usage_rules/ash_json_api.md"];
+  usage_6 [label="📄 Readme" URL="/concepts/usage_rules/README.md"];
+  usage_7 [label="📄 Ash Postgres" URL="/concepts/usage_rules/ash_postgres.md"];
+  usage_8 [label="📄 Reactor" URL="/concepts/usage_rules/reactor.md"];
+  usage_9 [label="📄 Igniter" URL="/concepts/usage_rules/igniter.md"];
+  usage_10 [label="📄 Ash Phoenix" URL="/concepts/usage_rules/ash_phoenix.md"];
+  usage_11 [label="📄 Live Table" URL="/concepts/usage_rules/live_table.md"];
+  usage_12 [label="📄 Ash Ai" URL="/concepts/usage_rules/ash_ai.md"];
+  usage_13 [label="📄 Maestro Tool" URL="/concepts/usage_rules/maestro_tool.md"];
+  usage_14 [label="📄 Ash Authentication" URL="/concepts/usage_rules/ash_authentication.md"];
   
-  database_bundle -> ash_resource [label="contains"];
-  database_bundle -> poly_relations [label="contains"];
-  database_bundle -> migrations [label="contains"];
+  // Knowledge flow relationships
+  bootstrap -> bundles [label="defines loading"];
+  bundles -> database_work [label="contains"];
+  bundles -> ui_work [label="contains"];
+  bundles -> tools [label="contains"];
+  bundles -> projects [label="contains"];
+  bundles -> guides [label="references"];
   
-  ui_bundle -> phoenix [label="contains"];
-  ui_bundle -> liveview [label="contains"];
-  ui_bundle -> daisyui [label="contains"];
+  sessions -> guides [label="documents learnings"];
+  sessions -> bundles [label="informs optimization"];
   
-  tools_bundle -> css_linter [label="contains"];
-  tools_bundle -> live_table [label="contains"];
-  tools_bundle -> maestro_tool [label="contains"];
+  git -> bootstrap [label="defined in"];
+  maestro -> bundles [label="loads"];
+  maestro -> sessions [label="creates"];
   
-  // Database flow
-  db_pk -> ash_resource [label="used in"];
-  ash_resource -> poly_relations [label="implements"];
-  ash_resource -> migrations [label="creates"];
-  ash_resource -> data_modification [label="ALWAYS use\nnever SQL"];
-  poly_relations -> migrations [label="requires"];
-  migrations -> verification [label="requires"];
-  data_modification -> verification [label="ensures validity"];
+  usage_rules -> bundles [label="included in"];
   
-  // UI decision flow
-  phoenix -> ui_decision [label="FIRST decide"];
-  ui_decision -> liveview [label="if real-time\nor multi-user"];
-  ui_decision -> javascript [label="if client-side\nor simple"];
-  
-  // UI flow
-  liveview -> daisyui [label="styles with"];
-  javascript -> daisyui [label="styles with"];
-  daisyui -> css [label="defines"];
-  css -> css_linter [label="analyzed by"];
-  
-  // Markdown Editor
-  liveview -> markdown_editor [label="can use"];
-  ash_resource -> markdown_editor [label="field type"];
-  markdown_editor -> daisyui [label="styled with"];
-  
-  // LiveView patterns
-  liveview -> live_table [label="can use"];
-  live_table -> daisyui [label="styled with"];
-  
-  // Development flow
-  git -> verification [label="before merge"];
-  verification -> communication [label="report via"];
-  
-  // Database & UI intersection
-  ash_resource -> liveview [label="displayed in"];
-  ash_resource -> javascript [label="fetched by"];
-  poly_relations -> liveview [label="displayed in"];
-  db_pk -> calvin_domain [label="applied in"];
-  db_pk -> sanjuan_domain [label="applied in"];
-  poly_relations -> maestro_coord [label="used in tasks"];
-  
-  // Circle Learnings
-  circle_learnings -> liveview [label="multi-select patterns"];
-  circle_learnings -> daisyui [label="tag UI"];
-  circle_learnings -> ash_resource [label="junction tables"];
-  circle_learnings -> data_modification [label="proper updates"];
-  
-  // Project coordination
-  maestro_coord -> calvin_domain [label="coordinates"];
-  maestro_coord -> sanjuan_domain [label="coordinates"];
-  maestro_coord -> git_maestro [label="assigns git tasks"];
-  
-  // Tools & Concepts
-  css_linter -> maestro_coord [label="integrated in"];
-  live_table -> sanjuan_domain [label="used in"];
-  live_table -> calvin_domain [label="used in"];
-  maestro_tool -> maestro_coord [label="provides tasks"];
-  maestro_tool -> bundles [label="tracks usage"];
-  
-  // Deployment
-  liveview -> fly [label="deployed via"];
-  ash_resource -> fly [label="deployed via"];
-  fly -> verification [label="tested after"];
-  
-  // Organization clusters
-  subgraph cluster_bootstrap {
-    label="Bootstrap Layer\n(Loaded by all agents)";
+  // Clusters showing organization
+  subgraph cluster_core {
+    label="Core Knowledge\n(Always loaded)";
     style=filled;
     color=lightgrey;
-    bootstrap; guidelines; aliases; user_context; startup_json;
-  }
-  
-  subgraph cluster_coordination {
-    label="Coordination Layer\n(Maestro orchestration)";
-    style=filled;
-    color=lightgrey;
-    coordination; task_runner; git_maestro;
-  }
-  
-  subgraph cluster_git {
-    label="Git Workflow";
-    style=filled;
-    color=lightgrey;
-    git; verification; communication;
+    bootstrap; git;
   }
   
   subgraph cluster_bundles {
     label="Bundle System\n(Task-specific loading)";
     style=filled;
     color=lightgrey;
-    bundles; database_bundle; ui_bundle; tools_bundle; 
-    projects_bundle; navbar_bundle; maestro_bundle;
+    bundles; database_work; ui_work; tools; projects;
   }
   
-  subgraph cluster_data {
-    label="Database Layer";
+  subgraph cluster_learning {
+    label="Learning & Documentation";
     style=filled;
     color=lightgrey;
-    db_pk; ash_resource; poly_relations; migrations; data_modification;
+    guides; sessions; usage_rules;
   }
   
-  subgraph cluster_ui {
-    label="UI Layer";
+  subgraph cluster_orchestration {
+    label="Orchestration";
     style=filled;
     color=lightgrey;
-    phoenix; ui_decision; liveview; javascript; daisyui; css; markdown_editor;
-  }
-  
-  subgraph cluster_tools {
-    label="Tools & Infrastructure";
-    style=filled;
-    color=lightgrey;
-    css_linter; live_table; fly; maestro_tool;
-  }
-  
-  subgraph cluster_projects {
-    label="Projects";
-    style=filled;
-    color=lightgrey;
-    calvin_domain; sanjuan_domain; maestro_coord; circle_learnings;
+    maestro;
   }
 }

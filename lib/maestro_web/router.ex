@@ -42,6 +42,8 @@ defmodule MaestroWeb.Router do
       live "/projects", DashboardLive, :projects
       live "/projects/:slug", ProjectDetailLive, :show
       live "/concepts", ConceptsLive, :index
+      live "/concepts/:dir", ConceptsLive, :directory
+      live "/concepts/:dir/:file", ConceptsLive, :file
       live "/resources", ResourcesLive, :index
       live "/resources/new", ResourceFormLive, :new
       live "/resources/:id/edit", ResourceFormLive, :edit

@@ -11,7 +11,32 @@ defmodule MaestroWeb.ConceptsLive do
      socket
      |> assign(:page_title, "Guideline Concepts")
      |> assign(:svg_exists, svg_exists)
-     |> assign(:fullscreen, false)}
+     |> assign(:fullscreen, false)
+     |> assign(:current_dir, nil)
+     |> assign(:current_file, nil)}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_action(socket, :index, _params) do
+    socket
+    |> assign(:current_dir, nil)
+    |> assign(:current_file, nil)
+  end
+
+  defp apply_action(socket, :directory, %{"dir" => dir}) do
+    socket
+    |> assign(:current_dir, dir)
+    |> assign(:current_file, nil)
+  end
+
+  defp apply_action(socket, :file, %{"dir" => dir, "file" => file}) do
+    socket
+    |> assign(:current_dir, dir)
+    |> assign(:current_file, URI.decode(file))
   end
 
   @impl true
@@ -199,3 +224,64 @@ defmodule MaestroWeb.ConceptsLive do
     """
   end
 end
+
+  defp render_directory_content(assigns) do
+    agents_dir = Path.expand("~/dev/agents")
+    dir_path = Path.join(agents_dir, assigns.current_dir)
+    
+    if File.dir?(dir_path) do
+      files = File.ls!(dir_path)
+      |> Enum.filter(&(!String.starts_with?(&1, ".")))
+      |> Enum.sort()
+      
+      assigns = assign(assigns, :files, files)
+      
+      ~H"""
+      <div class="grid grid-cols-1 gap-2">
+        <%= for file <- @files do %>
+          <.link 
+            navigate={"/concepts/#{@current_dir}/#{URI.encode(file)}"} 
+            class="card bg-base-100 shadow hover:shadow-lg transition-shadow"
+          >
+            <div class="card-body p-4">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">
+                  <%= if String.ends_with?(file, ".json"), do: "📦", else: if String.ends_with?(file, ".md"), do: "📄", else: "📁" %>
+                </span>
+                <span class="font-medium"><%= file %></span>
+              </div>
+            </div>
+          </.link>
+        <% end %>
+      </div>
+      """
+    else
+      ~H"""
+      <div class="alert alert-warning">
+        Directory not found: <%= @current_dir %>
+      </div>
+      """
+    end
+  end
+
+  defp render_file_content(assigns) do
+    agents_dir = Path.expand("~/dev/agents")
+    file_path = Path.join([agents_dir, assigns.current_dir, assigns.current_file])
+    
+    if File.exists?(file_path) do
+      content = File.read!(file_path)
+      assigns = assign(assigns, :content, content)
+      
+      ~H"""
+      <div class="prose prose-sm max-w-none">
+        <pre class="bg-base-200 p-4 rounded overflow-x-auto"><%= @content %></pre>
+      </div>
+      """
+    else
+      ~H"""
+      <div class="alert alert-warning">
+        File not found: <%= @current_file %>
+      </div>
+      """
+    end
+  end
