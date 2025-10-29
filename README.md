@@ -53,6 +53,26 @@ Project orchestration and agent coordination hub.
 - **Web App**: http://localhost:4004
 - **Live Debugger**: http://localhost:4012
 
+## Managing the Agents Directory
+
+Maestro is responsible for managing `~/dev/agents/` - the central repository of shared knowledge for all projects.
+
+**What Maestro manages:**
+- **Guidelines** (`bootstrap/`, `ui_work/`, `database_work/`, etc.) - Core patterns and best practices
+- **Usage Rules** (`usage_rules/`) - Package-specific guidelines from dependencies and our forks
+- **Bundles** (`bundles/`) - Consolidated guideline sets for efficient loading
+- **Sessions** (`sessions/`) - Archived learnings from agent sessions
+- **Logs** (`logs/`) - Session tracking data for optimization
+
+**Key responsibilities:**
+- Sync upstream changes from frameworks (e.g., Phoenix AGENTS.md → `bootstrap/PHOENIX_AGENTS.md`)
+- Build and maintain usage_rules bundles using `mix usage_rules.sync`
+- Extract learnings from sessions using `mix session.learn`
+- Generate concept maps and relationships between guidelines
+- Track guideline usage to optimize startup bundles
+
+**Why this matters:** Other projects consume from this directory but Maestro is the orchestrator that maintains it. This ensures all projects have access to current, well-organized knowledge without duplication.
+
 ## Orchestration Features
 
 Current features:
