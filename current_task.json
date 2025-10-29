@@ -59,7 +59,9 @@
     "read_code": "Read concepts_live.ex to understand current implementation",
     "fix_code": "Edit concepts_live.ex to fix the generation logic",
     "test": "Navigate to /concepts/sessions to see if your fix worked",
-    "reference": "Look at how the main concept_dag is generated for patterns"
+    "reference": "Look at how the main concept_dag is generated for patterns",
+    "NEW_TOOL": "mix concept.generate - Use this tool to generate concept maps for any directory!",
+    "example": "mix concept.generate ~/dev/agents/sessions"
   },
   
   "remember": "You are a developer fixing a bug in the diagram generation code. You do NOT edit the diagrams themselves. You edit the CODE that generates the diagrams."
