@@ -46,19 +46,27 @@ defmodule MaestroWeb.TaskFormLive do
 
   def handle_event("save", %{"form" => params}, socket) do
     form = socket.assigns.form.source
+    is_new_task = socket.assigns.task == nil
     
     case AshPhoenix.Form.submit(form, params: params) do
       {:ok, task} ->
-        task = Task.by_id!(task.id, load: [:display_name])
-        form = AshPhoenix.Form.for_update(task, :update)
-        
-        {:noreply,
-         socket
-         |> assign(:task, task)
-         |> assign(:form, to_form(form))
-         |> assign(:editing_notes, false)
-         |> assign(:editing_description, false)
-         |> put_flash(:info, "Task saved successfully")}
+        if is_new_task do
+          {:noreply,
+           socket
+           |> put_flash(:info, "Task created successfully")
+           |> push_navigate(to: ~p"/tasks/#{task.id}/edit")}
+        else
+          task = Task.by_id!(task.id, load: [:display_name])
+          form = AshPhoenix.Form.for_update(task, :update)
+          
+          {:noreply,
+           socket
+           |> assign(:task, task)
+           |> assign(:form, to_form(form))
+           |> assign(:editing_notes, false)
+           |> assign(:editing_description, false)
+           |> put_flash(:info, "Task saved successfully")}
+        end
       
       {:error, form} ->
         {:noreply, assign(socket, :form, to_form(form))}
