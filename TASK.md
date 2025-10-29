@@ -13,12 +13,12 @@ We established the complete pattern for agent-user communication through tasks.
    - Format description markdown
    - Read request (description field)
    - Plan and execute
-   - Document completion (notes field)
-   - Mark complete if done
+   - **Document completion (notes field) BEFORE marking complete!**
+   - Mark complete if done (only after notes are written)
    - Learn and capture patterns
 
 **Key Files:**
-- `TASK_RUNNER_WORKFLOW.md` - Complete workflow guide
+- `TASK_RUNNER_WORKFLOW.md` - Complete workflow guide (includes completion checklist!)
 - `WHAT_WENT_WRONG.md` - Session 2 learning (ALWAYS USE ASH)
 - `bootstrap/GUIDELINES.md` - Core principle added (front and center)
 - `current_task.json` - Crash recovery state
@@ -151,8 +151,9 @@ Or look at Maestro UI: http://localhost:4004/tasks
 **When you work:**
 - ALWAYS use Ash for data modifications
 - Format description markdown
-- Document completion in notes
-- Mark complete if appropriate
+- **Document completion in notes BEFORE marking complete**
+- Follow the completion checklist in TASK_RUNNER_WORKFLOW.md
+- Mark complete only when truly done AND notes are written
 - Learn and capture patterns
 
 **When you finish:**
@@ -167,7 +168,7 @@ Read `current_task.json` first - it has everything you need to continue.
 
 ## The Pattern That Works
 
-**Description → Notes via Ash**
+**Description → Notes via Ash → Mark Complete**
 
 ```elixir
 # 1. Read
@@ -177,11 +178,31 @@ IO.puts(task.description)  # The request
 # 2. Do work
 result = do_the_work()
 
-# 3. Write response
+# 3. Write response (FIRST!)
+completion_notes = """
+## Completion Note - [Task Name]
+
+**Status:** ✅ Complete
+
+### What Was Done
+[Details...]
+
+### Files Modified  
+[List...]
+
+### Learnings
+[What to remember...]
+"""
+
+# 4. Update notes BEFORE marking complete
 {:ok, updated} = Maestro.Ops.Task.update(task, %{
-  notes: "## Completion Note\n\nWhat I did...",
-  status: :done  # if complete
+  notes: completion_notes,
+  status: :done  # Only AFTER notes are written!
 })
 ```
+
+**Remember:** Notes come BEFORE marking complete!
+
+See `TASK_RUNNER_WORKFLOW.md` for the full completion checklist.
 
 This is the way. 🎯

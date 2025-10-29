@@ -102,8 +102,7 @@ defmodule MaestroWeb.TaskFormLive do
       
       {:noreply,
        socket
-       |> put_flash(:info, "Task #{task.title} is now active")
-       |> push_navigate(to: ~p"/")}
+       |> put_flash(:info, "Task #{task.title} is now active")}
     else
       {:noreply, put_flash(socket, :error, "Cannot run unsaved task")}
     end

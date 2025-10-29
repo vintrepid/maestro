@@ -1,24 +1,24 @@
 # Session Capacity Information
 
-**Last Updated:** 2025-10-28 21:02:53.060783Z
+**Last Updated:** 2025-10-28 22:24:45.292485Z
 
 ## Current Session Statistics
 
 - **Total Token Budget:** 200,000 tokens
-- **Tokens Used:** 93,507 tokens
-- **Tokens Remaining:** 106,493 tokens
-- **Capacity Used:** 46%
-- **Capacity Remaining:** 54%
+- **Tokens Used:** 150,113 tokens
+- **Tokens Remaining:** 49,887 tokens
+- **Capacity Used:** 75%
+- **Capacity Remaining:** 25%
 
 ## Session Status
 
-✅ **HEALTHY** - Over 50% capacity remaining
+⚠️ **MODERATE** - 25-50% capacity remaining
 
 ## Recommendations
 
-- ✅ **Continue working** - Plenty of capacity for additional tasks
-- Session is efficient and productive
-- No need to start a new session yet
+- ⚠️ **Monitor usage** - Moderate capacity remaining
+- Consider wrapping up current task
+- Plan to start new session soon
 
 
 ## Notes

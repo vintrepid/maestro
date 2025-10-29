@@ -41,6 +41,9 @@ Maestro.Ops.Task.update(task, %{description: cleaned})
 - **Always use Ash for data modifications**
 
 #### Step 5: Document Completion
+
+🚨 **CRITICAL: Notes come BEFORE marking complete!** 🚨
+
 ```elixir
 completion_notes = """
 ## Completion Note - [Task Name]
@@ -49,21 +52,196 @@ completion_notes = """
 
 ### What Was Done
 - Bullet list of actions taken
+- Key decisions made
+- Problems solved
+
+### How It Works
+[Brief explanation of the solution]
+
+### Testing
+[What was tested and results]
 
 ### Files Modified
-- List of changed files
+- path/to/file.ex - [what changed]
+- path/to/another.ex - [what changed]
 
-### Questions/Issues
-- Any blockers or decisions needed
+### Learnings
+- What went well
+- What didn't work initially
+- What to remember for next time
 
 ### Next Steps
-- What remains (if incomplete)
+[If incomplete or blocked, what's needed next]
 """
 
+# Update notes FIRST
 Maestro.Ops.Task.update(task, %{
   notes: completion_notes,
-  status: :done  # if complete
+  status: :done  # only if truly complete
 })
+```
+
+### Completion Checklist
+
+Before marking any task as complete, verify:
+
+- [ ] **Updated task.notes** with completion report (using Ash!)
+- [ ] **Verified all success criteria** from description are met
+- [ ] **Marked task.status** appropriately:
+  - `:done` - Fully complete, tested, working
+  - `:in_progress` - Started but not finished
+  - `:blocked` - Can't proceed, needs user input
+- [ ] **Set completed_at** if marking as done
+- [ ] **Committed code changes** with clear messages
+- [ ] **Updated current_task.json** for next session (if applicable)
+- [ ] **Logged guideline usage** (`mix bundles.track summary`)
+
+**DO NOT mark task complete until notes are written!**
+
+### Why Completion Notes Matter
+
+Completion notes are **critical** for:
+- **Future sessions** understanding what happened
+- **Coordinator** tracking progress across projects
+- **Learning** from successes and failures
+- **Maintaining context** across session boundaries
+- **User visibility** - seeing what was done without digging into code
+
+**Without notes:**
+- Future sessions don't know what happened ❌
+- Can't learn from the work ❌
+- Risk duplicate effort ❌
+- Context is lost ❌
+- Pattern breaks down ❌
+
+### Good Completion Notes Examples
+
+#### Example 1: Code Task (Complete)
+```markdown
+## Completion Note - Create Mix Tasks for Task Management
+
+**Status:** ✅ Complete
+
+### What Was Done
+
+1. Created 4 new mix tasks in `lib/mix/tasks/maestro/`:
+   - `maestro.task.read` - Read task details
+   - `maestro.task.update` - Update task fields via Ash
+   - `maestro.task.list` - List/filter tasks
+   - `maestro.task.complete` - Mark task complete
+
+2. All tasks use Ash framework (not browser manipulation)
+3. Added clear documentation and examples
+4. Tested all commands successfully
+
+### How It Works
+
+Tasks use `Maestro.Ops.Task` Ash resource:
+- `by_id!/1` to fetch tasks
+- `update/2` to modify via Ash actions
+- `read_all!/1` with filters for listing
+
+### Testing
+
+```bash
+mix maestro.task.read 21  # ✓ Shows task details
+mix maestro.task.update 21 status done  # ✓ Updates via Ash
+mix maestro.task.list --status todo  # ✓ Filters working
+```
+
+### Files Modified
+
+- `lib/mix/tasks/maestro/task.read.ex` - New file
+- `lib/mix/tasks/maestro/task.update.ex` - New file  
+- `lib/mix/tasks/maestro/task.list.ex` - New file
+- `lib/mix/tasks/maestro/task.complete.ex` - New file
+
+### Learnings
+
+- Using Ash for updates ensures validations run
+- Mix tasks need `Mix.Task.run("app.start")` for Ash
+- Clear help text prevents user confusion
+
+### Next Steps
+
+None - task complete!
+```
+
+#### Example 2: Blocked Task
+```markdown
+## Completion Note - Fix Navigation Bug
+
+**Status:** ⚠️ Blocked
+
+### What Was Done
+
+1. Identified root cause: LiveView assigns not persisting
+2. Tested multiple approaches:
+   - Socket assigns ❌ (cleared on navigation)
+   - Session storage ❌ (security concerns)
+   - Database ❓ (need user decision)
+
+3. Prepared three solutions with trade-offs
+
+### Questions for User
+
+**Which approach should we use?**
+
+A) Store in database (persistent, slower)
+B) Use ETS cache (fast, lost on restart)  
+C) Rethink the feature requirement
+
+I recommend A for reliability.
+
+### Files Modified
+
+None yet - waiting for decision.
+
+### Next Steps
+
+1. User decides on approach
+2. Implement chosen solution
+3. Test thoroughly
+4. Update this task when complete
+```
+
+#### Example 3: In Progress Task
+```markdown
+## Completion Note - Implement User Authentication
+
+**Status:** 🔄 In Progress (70% complete)
+
+### What Was Done
+
+1. ✅ Set up AshAuthentication with password strategy
+2. ✅ Created User resource with authentication
+3. ✅ Added login/register LiveViews
+4. 🔄 Working on session management
+5. ⏳ TODO: Password reset flow
+6. ⏳ TODO: Email confirmation
+
+### Files Modified
+
+- `lib/myapp/accounts/user.ex` - Ash resource with auth
+- `lib/myapp_web/live/auth/login_live.ex` - New
+- `lib/myapp_web/live/auth/register_live.ex` - New
+- `lib/myapp_web/router.ex` - Added auth routes
+
+### Current Issue
+
+Session token not persisting across page refreshes. Need to:
+1. Store token in secure cookie
+2. Load user from token on mount
+3. Add logout functionality
+
+### Next Steps
+
+1. Fix session persistence (next session)
+2. Add password reset flow
+3. Add email confirmation
+4. Write tests
+
+Estimate: 2-3 more sessions to complete.
 ```
 
 #### Step 6: Learn
@@ -116,9 +294,10 @@ Maestro.Ops.Task.update(task, %{
 1. **Always use Ash** for data modifications
 2. **Format markdown** to make descriptions readable
 3. **Ask questions** when unclear
-4. **Document thoroughly** in notes
+4. **Document thoroughly** in notes (BEFORE marking complete!)
 5. **Learn and capture** patterns
-6. **Mark complete** when appropriate
+6. **Mark complete** only when truly done AND notes are written
+7. **Never skip completion notes** - they're not optional
 
 ## Example Session
 
