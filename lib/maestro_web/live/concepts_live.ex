@@ -13,7 +13,8 @@ defmodule MaestroWeb.ConceptsLive do
      |> assign(:svg_exists, svg_exists)
      |> assign(:fullscreen, false)
      |> assign(:current_dir, nil)
-     |> assign(:current_file, nil)}
+     |> assign(:current_file, nil)
+     |> assign(:svg_cache, %{})}
   end
 
   @impl true
@@ -28,9 +29,18 @@ defmodule MaestroWeb.ConceptsLive do
   end
 
   defp apply_action(socket, :directory, %{"dir" => dir}) do
+    agents_dir = Path.expand("~/dev/agents")
+    dir_path = Path.join(agents_dir, dir)
+    
+    # Always regenerate for now during development
+    if File.dir?(dir_path) do
+      generate_directory_dag(dir, dir_path)
+    end
+    
     socket
     |> assign(:current_dir, dir)
     |> assign(:current_file, nil)
+    |> update(:svg_cache, &Map.put(&1, dir, true))
   end
 
   defp apply_action(socket, :file, %{"dir" => dir, "file" => file}) do
@@ -90,16 +100,18 @@ defmodule MaestroWeb.ConceptsLive do
                     </div>
                   </div>
                   <div class="flex-1 overflow-auto p-8">
-                    <%= raw(load_svg_content()) %>
+                    <div class="[&>svg]:w-full [&>svg]:h-auto">
+                      <%= raw(load_svg_content()) %>
+                    </div>
                   </div>
                 </div>
               <% else %>
                 <div class="card bg-base-100 shadow-xl card-compact">
-                  <div class="card-body p-0">
+                  <div class="card-body p-4 overflow-auto max-h-[80vh]">
                     <div 
                       phx-hook="ShiftClickHook"
                       id="concept-svg-container"
-                      class="cursor-pointer hover:opacity-80 transition-opacity"
+                      class="cursor-pointer [&>svg]:w-full [&>svg]:h-auto"
                     >
                       <%= raw(load_svg_content()) %>
                     </div>
@@ -127,15 +139,12 @@ defmodule MaestroWeb.ConceptsLive do
     dir_path = Path.join(agents_dir, assigns.current_dir)
     
     if File.dir?(dir_path) do
-      # Generate sub-DAG for this directory
-      generate_directory_dag(assigns.current_dir, dir_path)
-      
       ~H"""
       <div class="mb-4">
         <p class="text-sm text-base-content/70">Concept map showing relationships between files in this directory. Click nodes to view files.</p>
       </div>
       <div class="card bg-base-100 shadow-xl card-compact">
-        <div class="card-body p-0">
+        <div class="card-body p-0 overflow-auto">
           <div class="hover:opacity-80 transition-opacity">
             <%= raw(load_directory_svg(assigns.current_dir)) %>
           </div>
@@ -183,6 +192,9 @@ defmodule MaestroWeb.ConceptsLive do
   end
 
   defp generate_directory_dag(dir_name, dir_path) do
+    require Logger
+    Logger.info("Generating directory DAG for: #{dir_name}")
+    
     files = File.ls!(dir_path)
     |> Enum.filter(&(!String.starts_with?(&1, ".")))
     |> Enum.sort()
@@ -216,23 +228,16 @@ defmodule MaestroWeb.ConceptsLive do
   end
 
   defp generate_session_relationships(files) do
-    # Group related files
-    session_learnings = Enum.filter(files, &String.contains?(&1, "SESSION_LEARNINGS"))
-    task_summaries = Enum.filter(files, &String.contains?(&1, "TASK"))
-    
-    relationships = []
-    
-    # Connect session learnings chronologically
-    session_learnings
+    files
+    |> Enum.filter(&String.contains?(&1, "SESSION_LEARNINGS"))
     |> Enum.sort()
     |> Enum.chunk_every(2, 1, :discard)
-    |> Enum.each(fn [file1, file2] ->
+    |> Enum.map(fn [file1, file2] ->
       id1 = String.replace(file1, ~r/[^a-zA-Z0-9]/, "_")
       id2 = String.replace(file2, ~r/[^a-zA-Z0-9]/, "_")
-      relationships = ["  #{id1} -> #{id2} [label=\"followed by\"];" | relationships]
+      "  #{id1} -> #{id2} [label=\"followed by\"];"
     end)
-    
-    Enum.join(relationships, "\n")
+    |> Enum.join("\n")
   end
 
   defp load_directory_svg(dir_name) do

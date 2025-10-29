@@ -1,0 +1,39 @@
+<Layouts.app flash={@flash} current_user={assigns[:current_user]}>
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="mb-4">
+      <a href="/concepts" class="btn btn-sm btn-ghost">← Back to map</a>
+    </div>
+    
+    <h1 class="text-2xl font-bold mb-4"><%= String.capitalize(@dir) %> Directory</h1>
+    
+    <div class="mb-4">
+      <p class="text-sm text-base-content/70">
+        Concept map showing relationships between files in this directory. Click nodes to view files.
+      </p>
+    </div>
+    
+    <%= if File.exists?(Path.join([Application.app_dir(:maestro), "priv", "static", "images", "bundle_#{@dir}.svg"])) do %>
+      <div class="alert alert-info mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div>
+          <p>Concept bundle available - see consolidated learnings</p>
+          <a href={"/concepts/bundles/#{@dir}/graph"} class="btn btn-sm btn-primary mt-2">View Bundle Graph →</a>
+        </div>
+      </div>
+    <% end %>
+    
+    <%= if @svg_content do %>
+      <div class="card bg-base-100 shadow-xl card-compact">
+        <div class="card-body p-4 overflow-auto max-h-[80vh]">
+          <div class="[&>svg]:w-full [&>svg]:h-auto">
+            <%= raw(@svg_content) %>
+          </div>
+        </div>
+      </div>
+    <% else %>
+      <div class="alert alert-warning">
+        <p>Loading diagram...</p>
+      </div>
+    <% end %>
+  </div>
+</Layouts.app>

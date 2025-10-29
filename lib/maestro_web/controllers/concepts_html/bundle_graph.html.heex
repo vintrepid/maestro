@@ -1,0 +1,23 @@
+<Layouts.app flash={@flash} current_user={assigns[:current_user]}>
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="mb-4">
+      <a href="/concepts" class="btn btn-sm btn-ghost">← Back to concepts</a>
+    </div>
+    
+    <h1 class="text-2xl font-bold mb-4"><%= String.capitalize(@bundle) %> Bundle</h1>
+    
+    <div class="mb-4">
+      <p class="text-sm text-base-content/70">
+        Concept graph showing relationships between learned patterns.
+      </p>
+    </div>
+    
+    <div class="card bg-base-100 shadow-xl card-compact">
+      <div class="card-body p-4 overflow-auto max-h-[80vh]">
+        <div class="[&>svg]:w-full [&>svg]:h-auto">
+          <%= raw(@svg_content) %>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layouts.app>

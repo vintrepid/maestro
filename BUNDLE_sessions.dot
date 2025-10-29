@@ -1,0 +1,20 @@
+digraph sessions {
+  rankdir=LR;
+  node [shape=box, style=filled, fillcolor=lightblue];
+  label="Cross-project learnings from actual agent work sessions";
+  labelloc=t;
+  
+  // Concepts
+  
+  
+  // Relationships
+    always_use_ash -> task_runner_pattern [label="required_by"];
+  guideline_usage_tracking -> minimal_loading [label="enables"];
+  task_runner_pattern -> completion_checklist [label="uses"];
+  task_runner_pattern -> guideline_usage_tracking [label="requires"];
+  
+  // Connect to source files
+  
+  
+  
+}

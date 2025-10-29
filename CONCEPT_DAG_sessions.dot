@@ -1,15 +1,20 @@
-digraph sessionsDirectory {
+digraph sessions {
   rankdir=LR;
   node [shape=box, style=filled, fillcolor=lightblue];
   
-    LEARNINGS_TASK_37_md [label="LEARNINGS-TASK-37.md" URL="/concepts/sessions/LEARNINGS-TASK-37.md"];
-  SESSION_LEARNINGS_2025_10_28_extended_md [label="SESSION LEARNINGS 2025 10 28 extended.md" URL="/concepts/sessions/SESSION_LEARNINGS_2025_10_28_extended.md"];
-  SESSION_LEARNINGS_2025_10_28_session2_md [label="SESSION LEARNINGS 2025 10 28 session2.md" URL="/concepts/sessions/SESSION_LEARNINGS_2025_10_28_session2.md"];
-  SESSION_LEARNINGS_2025_10_29_session3_md [label="SESSION LEARNINGS 2025 10 29 session3.md" URL="/concepts/sessions/SESSION_LEARNINGS_2025_10_29_session3.md"];
-  TASK_34_SUMMARY_md [label="TASK 34 SUMMARY.md" URL="/concepts/sessions/TASK_34_SUMMARY.md"];
-  TASK_37_SUMMARY_md [label="TASK 37 SUMMARY.md" URL="/concepts/sessions/TASK_37_SUMMARY.md"];
-  WHAT_WENT_WRONG_md [label="WHAT WENT WRONG.md" URL="/concepts/sessions/WHAT_WENT_WRONG.md"];
+  // Files
+  LEARNINGS_TASK_37_md [label="📄 LEARNINGS-TASK-37.md"];
+  LEARNING_2025_10_29T14_08_09_558919Z_md [label="📄 LEARNING 2025-10-29T14-08-09.558919Z.md"];
+  SESSION_LEARNINGS_2025_10_28_extended_md [label="📄 SESSION LEARNINGS 2025 10 28 extended.md"];
+  SESSION_LEARNINGS_2025_10_28_session2_md [label="📄 SESSION LEARNINGS 2025 10 28 session2.md"];
+  SESSION_LEARNINGS_2025_10_29_session3_md [label="📄 SESSION LEARNINGS 2025 10 29 session3.md"];
+  TASK_34_SUMMARY_md [label="📄 TASK 34 SUMMARY.md"];
+  TASK_37_SUMMARY_md [label="📄 TASK 37 SUMMARY.md"];
+  WHAT_WENT_WRONG_md [label="📄 WHAT WENT WRONG.md"];
   
-  // Show temporal relationships for session files
-  
+  // Relationships
+  LEARNING_2025_10_29T14_08_09_558919Z_md -> SESSION_LEARNINGS_2025_10_28_extended_md [label="followed by"];
+  SESSION_LEARNINGS_2025_10_28_extended_md -> SESSION_LEARNINGS_2025_10_28_session2_md [label="followed by"];
+  SESSION_LEARNINGS_2025_10_28_session2_md -> SESSION_LEARNINGS_2025_10_29_session3_md [label="followed by"];
+  LEARNINGS_TASK_37_md -> TASK_37_SUMMARY_md [label="same task"];
 }

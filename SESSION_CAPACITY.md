@@ -1,14 +1,14 @@
 # Session Capacity Information
 
-**Last Updated:** 2025-10-29 13:23:15.869113Z
+**Last Updated:** 2025-10-29 14:11:15.891023Z
 
 ## Current Session Statistics
 
 - **Total Token Budget:** 200,000 tokens
-- **Tokens Used:** 145,000 tokens
-- **Tokens Remaining:** 55,000 tokens
-- **Capacity Used:** 72%
-- **Capacity Remaining:** 28%
+- **Tokens Used:** 107,484 tokens
+- **Tokens Remaining:** 92,516 tokens
+- **Capacity Used:** 53%
+- **Capacity Remaining:** 47%
 
 ## Session Status
 

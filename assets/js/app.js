@@ -161,7 +161,7 @@ const GitDropdownHook = {
 const ShiftClickHook = {
   mounted() {
     this.el.addEventListener('click', (e) => {
-      if (e.shiftKey) {
+      if (e.shiftKey && !e.target.closest('a')) {
         e.preventDefault();
         this.pushEvent('toggle_fullscreen', {});
       }
