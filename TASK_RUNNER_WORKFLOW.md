@@ -94,9 +94,13 @@ Before marking any task as complete, verify:
 - [ ] **Set completed_at** if marking as done
 - [ ] **Committed code changes** with clear messages
 - [ ] **Updated current_task.json** for next session (if applicable)
-- [ ] **Logged guideline usage** (`mix bundles.track summary`)
+- [ ] **Logged guideline usage** properly:
+  - Start session: `mix bundles.track init <project> <branch> <bundles>`
+  - Log each guideline you reference: `mix bundles.track ref <guideline_id> "context"`
+  - Log task completions: `mix bundles.track task_complete <task_id>`
+  - End session: `mix bundles.track summary`
 
-**DO NOT mark task complete until notes are written!**
+**DO NOT mark task complete until notes are written AND logging is done!**
 
 ### Why Completion Notes Matter
 
@@ -295,9 +299,10 @@ Estimate: 2-3 more sessions to complete.
 2. **Format markdown** to make descriptions readable
 3. **Ask questions** when unclear
 4. **Document thoroughly** in notes (BEFORE marking complete!)
-5. **Learn and capture** patterns
-6. **Mark complete** only when truly done AND notes are written
-7. **Never skip completion notes** - they're not optional
+5. **Log guideline usage** throughout session (`mix bundles.track`)
+6. **Learn and capture** patterns
+7. **Mark complete** only when truly done AND notes are written
+8. **Never skip completion notes or logging** - they're not optional
 
 ## Example Session
 
@@ -337,8 +342,10 @@ Estimate: 2-3 more sessions to complete.
 ✅ Work is completed or blocker is documented
 ✅ Completion notes are detailed and clear
 ✅ Ash was used for all data modifications
+✅ **Guideline usage logged throughout session**
 ✅ Learning was captured if applicable
 ✅ Task status reflects reality (done/in_progress/blocked)
+✅ **Session logged with `mix bundles.track` (init/ref/task_complete/summary)**
 
 ## For Future Sessions
 
