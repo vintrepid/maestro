@@ -90,7 +90,7 @@ defmodule MaestroWeb.ConceptsLive do
                     </div>
                   </div>
                   <div class="flex-1 overflow-auto p-8">
-                    <img src="/images/concept_dag.svg" alt="Concept Dependency Graph" class="w-full h-full object-contain" />
+                    <%= raw(load_svg_content()) %>
                   </div>
                 </div>
               <% else %>
@@ -101,7 +101,7 @@ defmodule MaestroWeb.ConceptsLive do
                       id="concept-svg-container"
                       class="cursor-pointer hover:opacity-80 transition-opacity"
                     >
-                      <img src="/images/concept_dag.svg" alt="Concept Dependency Graph" class="w-full" />
+                      <%= raw(load_svg_content()) %>
                     </div>
                   </div>
                 </div>
@@ -183,3 +183,12 @@ defmodule MaestroWeb.ConceptsLive do
     end
   end
 end
+
+  defp load_svg_content do
+    svg_path = Path.join([Application.app_dir(:maestro), "priv", "static", "images", "concept_dag.svg"])
+    if File.exists?(svg_path) do
+      File.read!(svg_path)
+    else
+      ""
+    end
+  end
