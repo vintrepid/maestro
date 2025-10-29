@@ -57,6 +57,12 @@ Project orchestration and agent coordination hub.
 
 Maestro is responsible for managing `~/dev/agents/` - the central repository of shared knowledge for all projects.
 
+**Directory structure:**
+- The `agents/` directory is **symlinked into each project** (e.g., `maestro/agents -> ~/dev/agents`)
+- This allows all projects to share the same guidelines without duplication
+- Changes made in one project's agents directory affect all projects
+- The canonical version lives at `~/dev/agents/` and is a git repository
+
 **What Maestro manages:**
 - **Guidelines** (`bootstrap/`, `ui_work/`, `database_work/`, etc.) - Core patterns and best practices
 - **Usage Rules** (`usage_rules/`) - Package-specific guidelines from dependencies and our forks
