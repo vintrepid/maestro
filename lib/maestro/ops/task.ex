@@ -65,7 +65,7 @@ defmodule Maestro.Ops.Task do
     end
 
     update :update do
-      accept [:title, :description, :notes, :due_at, :completed_at, :task_type, :status]
+      accept [:title, :description, :notes, :due_at, :completed_at, :task_type, :status, :entity_type, :entity_id]
     end
 
     update :mark_complete do
