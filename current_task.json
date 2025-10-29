@@ -1,94 +1,124 @@
 {
-  "for_next_maestro_session": true,
-  "task": "update_bundles_track_json",
-  "version": "4.1.0",
+  "for_future_maestro_coordinator": true,
+  "session": "coordinator_takeover",
+  "version": "5.0.0",
   "project": "Maestro",
-  "session": "session_4_ready",
-  "status": "queued",
+  "status": "ready_for_coordinator",
   "branch": "feature/task-runner",
   
-  "your_task": {
-    "task_id": 27,
-    "title": "Update bundles.track to JSON format",
-    "parent_task": 25,
-    "maestro_url": "http://localhost:4004/tasks/27/edit",
-    "estimated_time": "40 minutes",
-    "priority": "high",
-    "context": "Phase 2 of centralized logging. Phase 1 (directory structure + docs) is complete."
+  "critical_message": "READ TASK #29 - It's your coordinator handoff guide. Everything you need to take over as master coordinator for all projects.",
+  
+  "coordinator_prep": {
+    "task_id": 29,
+    "title": "Master Coordinator Handoff - Future Maestro Takes Over",
+    "url": "http://localhost:4004/tasks/29/edit",
+    "purpose": "Learn to become master coordinator for all projects",
+    "read_this_task_first": true
   },
   
-  "what_session_3_learned": {
-    "task_25_completed": "Directory structure + README done",
-    "task_25_failed": "Tried to rewrite bundles.track without reading code first",
-    "lesson": "Read existing code BEFORE modifying. Make incremental changes. Test each step.",
-    "what_worked": "Created comprehensive log format documentation",
-    "what_didnt": "Jumped to implementation without understanding current code"
-  },
-  
-  "critical_guidance": {
-    "read_code_first": [
-      "lib/mix/tasks/bundles.track.ex - Current implementation",
-      "~/dev/maestro/.bundles_track_session - Current session state", 
-      "~/dev/maestro/GUIDELINE_USAGE_TRACKER.md - Current log format"
-    ],
-    "approach": "INCREMENTAL - Add JSON alongside existing, don't rewrite",
-    "test_strategy": "Test JSON manually first, then automate",
-    "if_stuck": "Read code again. Test manually. Ask user."
-  },
-  
-  "task_27_steps": [
-    "1. READ lib/mix/tasks/bundles.track.ex thoroughly",
-    "2. Document how current code works",
-    "3. Test JSON output manually (create file by hand)",
-    "4. Add JSON output function (keep old format)",
-    "5. Test all commands (init, ref, summary)",
-    "6. Verify JSON with jq",
-    "7. Only then remove old format (optional)"
-  ],
-  
-  "success_criteria_task_27": [
-    "mix bundles.track init creates JSON file",
-    "mix bundles.track ref appends to JSON",
-    "mix bundles.track summary updates JSON",
-    "JSON validates with jq",
-    "All existing functionality still works"
-  ],
-  
-  "files_already_created": {
-    "by_task_25": [
-      "~/dev/agents/logs/{maestro,circle,ready,calvin,san_juan,new_project}/",
-      "~/dev/agents/logs/README.md (comprehensive log format spec)"
-    ]
-  },
-  
-  "queue_after_27": [
+  "immediate_queue": [
+    {
+      "task_id": 27,
+      "priority": 1,
+      "title": "Update bundles.track to JSON",
+      "type": "implementation",
+      "time": "40 min",
+      "note": "Practice being an agent (execute this yourself)"
+    },
     {
       "task_id": 26,
-      "title": "Run Task button should stay on page",
-      "type": "simple UI fix",
-      "time": "~5 minutes"
+      "priority": 2,
+      "title": "Run Task button stay on page",
+      "type": "simple fix",
+      "time": "5 min",
+      "note": "Quick win or assign to another session (practice coordinating)"
     },
     {
-      "task_id": 28,
-      "title": "Selective usage_rules for smaller startup",
-      "type": "discussion",
-      "note": "Analyze if we should split USAGE_RULES.md"
-    },
-    {
-      "task_id": 23,
-      "title": "Coordination efficiency discussion",
-      "type": "discussion",
-      "note": "When Maestro does work vs assigns to other projects"
+      "task_id": 29,
+      "priority": 0,
+      "title": "Master Coordinator Handoff",
+      "type": "READ THIS FIRST",
+      "note": "Your guide to becoming coordinator"
     }
   ],
   
-  "the_pattern_so_far": {
-    "session_2": "Established Task Runner Pattern, created mix tasks, validated coordination",
-    "session_3": "Attempted logging Phase 2, learned to read code first, completed Phase 1",
-    "session_4": "Your turn - implement bundles.track JSON output incrementally",
-    "working": true,
-    "improving": true
+  "what_youre_taking_over": {
+    "established_patterns": [
+      "Task Runner Pattern (works!)",
+      "Coordination Pattern (validated with Circle)",
+      "Multi-session handoff (Session 2 → 3 → 4 worked)",
+      "Mix tasks for common operations",
+      "Logging foundation (structure ready)"
+    ],
+    "your_new_role": "Master coordinator for all projects",
+    "your_responsibilities": [
+      "Assign tasks to appropriate projects",
+      "Handle git for all projects",
+      "Read completion reports",
+      "Update tasks with results",
+      "Orchestrate multiple agents",
+      "Coordinate concurrent work"
+    ]
   },
   
-  "reminder": "The Task #27 description has DETAILED guidance. Read it carefully. It tells you exactly what to read and what order to do things. Don't skip steps!"
+  "foundation_built": {
+    "sessions_so_far": 2.5,
+    "tasks_completed": [20, 21, 22, 25],
+    "tasks_created": [23, 24, 26, 27, 28, 29],
+    "patterns_validated": [
+      "Task Runner (Task #20, #21, #22)",
+      "Coordination (Task #22 - Maestro → Circle)",
+      "Multi-session handoff (Task #25 → #27)"
+    ],
+    "token_usage": "~143k / 200k (72% - this was extended session)"
+  },
+  
+  "read_before_coordinating": [
+    "current_task.json (this file - overview)",
+    "Task #29 (your comprehensive handoff guide)",
+    "SESSION_LEARNINGS_2025_10_28_session2.md",
+    "SESSION_LEARNINGS_2025_10_28_extended.md",
+    "TASK_RUNNER_WORKFLOW.md",
+    "Task #22 completion notes (successful coordination example)",
+    "Task #24 discussion (multi-agent architecture)"
+  ],
+  
+  "suggested_first_session": {
+    "step_1": "Read Task #29 completely",
+    "step_2": "Read all suggested learnings files",
+    "step_3": "Execute Task #27 yourself (practice being agent)",
+    "step_4": "Assign Task #26 to another session (practice coordinating)",
+    "step_5": "Document your experience",
+    "step_6": "Take over as master coordinator"
+  },
+  
+  "the_vision": {
+    "current_state": "Single Maestro executing tasks",
+    "next_state": "Maestro coordinating multiple concurrent agents",
+    "future_state": "Full multi-agent orchestra with Maestro conducting",
+    "your_role": "Learn to conduct, then conduct"
+  },
+  
+  "git_workflow_change": {
+    "current": "Each project manages own git",
+    "future": "Maestro handles git for all projects",
+    "why": "Other agents focus on code, you handle ceremony",
+    "your_job": "Learn to commit for other projects using their completion reports"
+  },
+  
+  "if_youre_confused": {
+    "read": "Task #29 - it explains everything",
+    "study": "Task #22 - successful coordination example",
+    "learn_from": "Task #25 - what not to do (too complex at once)",
+    "ask": "User is available for questions",
+    "remember": "You have everything you need. Patterns work. Trust them."
+  },
+  
+  "success_metrics": {
+    "phase_1": "You understand the coordination pattern",
+    "phase_2": "You execute a task yourself (be the agent)",
+    "phase_3": "You assign a task and track completion (be the coordinator)",
+    "phase_4": "You're orchestrating multiple agents confidently",
+    "final": "You ARE the master coordinator"
+  }
 }
