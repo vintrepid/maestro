@@ -1,124 +1,152 @@
 {
-  "task": "task_runner_pattern_learning",
-  "version": "2.0.0",
+  "task": "session_2_complete",
+  "version": "3.0.0",
   "project": "Maestro",
-  "session": "current",
-  "status": "learning_captured",
-  "context": {
-    "branch": "feature/task-runner",
-    "last_completed": "Task #20 - Markdown cleanup via Ash",
-    "critical_learning": "ALWAYS USE ASH FOR DATA MODIFICATIONS"
+  "session": "ended",
+  "status": "ready_for_next",
+  "branch": "feature/task-runner",
+  
+  "session_2_summary": {
+    "critical_breakthrough": "Task Runner Pattern established and working",
+    "token_usage": "~113k / 200k (56%)",
+    "tasks_completed": 3,
+    "tasks_created": 1,
+    "key_learning": "ALWAYS USE ASH for data modifications"
   },
   
-  "what_we_learned": {
-    "the_pattern": {
-      "description_field": "Request - what user wants",
-      "notes_field": "Response - what agent completed",
-      "data_layer": "Ash resources - ALWAYS",
-      "verification": "browser_eval - for viewing only"
-    },
-    
-    "the_mistake": {
-      "what_happened": "Tried to update task via browser_eval UI manipulation",
-      "why_it_failed": "Browser changes don't persist, LiveView manages own state",
-      "the_correction": "User said: Use Ash framework, read and write with resource",
-      "time_wasted": "10+ tool calls vs 1 correct Ash update call"
-    },
-    
-    "the_correct_code": {
-      "pattern": "task = Task.by_id!(id); Task.update(task, %{field: value})",
-      "example": "Task.update(task, %{description: cleaned, notes: completion})",
-      "result": "Immediate success, data persists, UI updates on refresh"
-    }
+  "what_was_accomplished": {
+    "task_20": "Agent training pattern - captured Always Use Ash learning",
+    "task_21": "Created 4 mix tasks to replace shell commands",
+    "task_22": "Validated Maestro → Circle coordination pattern",
+    "task_23": "Created for coordination efficiency discussion"
   },
   
-  "core_principle_added": {
-    "rule": "🚨 ALWAYS USE ASH FOR DATA MODIFICATIONS 🚨",
-    "applies_to": ["Creating records", "Updating records", "Deleting records", "Reading records"],
-    "exceptions": "Only if user explicitly requests SQL for analysis",
-    "documented_in": [
-      "WHAT_WENT_WRONG.md (updated with Session 2 learning)",
-      "USAGE_RULES.md (Ash section - already existed, wasn't consulted)",
-      "current_task.json (this file - for crash recovery)"
-    ]
+  "infrastructure_built": {
+    "documentation": [
+      "TASK_RUNNER_WORKFLOW.md - Complete execution guide",
+      "WHAT_WENT_WRONG.md - Session 1 & 2 learnings",
+      "SESSION_LEARNINGS_2025_10_28_session2.md - This session",
+      "TASK.md - Updated with current state"
+    ],
+    "mix_tasks": [
+      "mix maestro.task.read TASK_ID",
+      "mix maestro.task.update TASK_ID FIELD VALUE",
+      "mix maestro.task.list [OPTIONS]",
+      "mix agents.update FILE MESSAGE"
+    ],
+    "ash_enhancement": "Added entity_type and entity_id to Task :update action",
+    "agents_repo": "Added 'ALWAYS USE ASH' as #1 core principle in GUIDELINES.md"
   },
   
-  "the_irony": {
-    "we_have": "38KB USAGE_RULES.md with Ash patterns",
-    "in_startup": "Yes, bundled in startup.json",
-    "was_it_read": "No, before attempting the task",
-    "pattern_repeats": "Same as previous session - docs exist, agent doesn't use them"
+  "coordination_pattern_validated": {
+    "task_22_flow": [
+      "1. Maestro created task in UI",
+      "2. Maestro generated task package (JSON + TASK.md)",
+      "3. Maestro copied to ~/dev/circle/current_task.json",
+      "4. Circle agent executed",
+      "5. Circle created COMPLETION-ui-cleanup.md",
+      "6. Maestro read completion and updated task",
+      "7. SUCCESS - Pattern works!"
+    ],
+    "time_taken": "~10 minutes total",
+    "result": "Clean coordination, clear handoff, good documentation"
   },
   
-  "for_future_you": {
-    "when_task_involves_data": [
-      "1. STOP",
-      "2. Read USAGE_RULES.md Ash section",
-      "3. Use Ash resource (Task.by_id!, Task.update, etc.)",
-      "4. Verify in browser if needed"
+  "the_golden_rule": "🚨 ALWAYS USE ASH FOR DATA MODIFICATIONS 🚨",
+  
+  "for_next_session": {
+    "must_read_first": [
+      "startup.json - Has everything bundled",
+      "current_task.json - This file (crash recovery)",
+      "TASK.md - Current session state",
+      "TASK_RUNNER_WORKFLOW.md - How to execute tasks"
     ],
     
-    "task_runner_workflow": [
-      "1. User clicks 'Run Task' button in Maestro",
-      "2. Sets task as active in AppState",
-      "3. Agent reads task.description (the Request)",
-      "4. Agent does the work",
-      "5. Agent writes task.notes (the Response)",
-      "6. Uses Ash: Task.update(task, %{notes: completion})"
+    "available_tools": [
+      "mix maestro.task.read TASK_ID - Read task details",
+      "mix maestro.task.update TASK_ID FIELD VALUE - Update via Ash",
+      "mix maestro.task.list [OPTIONS] - List/filter tasks",
+      "mix agents.update FILE MESSAGE - Update agents repo",
+      "mix bundles.track ref ID 'context' - Log usage",
+      "mix startup.build - Update startup.json"
     ],
     
-    "never_do": [
-      "Don't use browser_eval for data modification",
-      "Don't manipulate UI to change data",
-      "Don't bypass Ash with direct SQL (except for analysis)",
-      "Don't guess when docs exist"
+    "when_user_says_run": [
+      "1. Read task with mix maestro.task.read TASK_ID",
+      "2. Format description if needed (make it pretty)",
+      "3. Read request (description = what user wants)",
+      "4. Plan and execute",
+      "5. Document completion (notes = what you did, via Ash)",
+      "6. Mark complete if done",
+      "7. Learn from the work"
+    ],
+    
+    "outstanding_tasks": {
+      "task_19": "Circle UI alignment - still todo",
+      "task_23": "Coordination efficiency discussion - ready to discuss",
+      "task_20": "Has more instructions for future sessions"
+    }
+  },
+  
+  "if_i_crash": {
+    "read_this_first": "You're reading it - current_task.json",
+    "then_read": [
+      "startup.json",
+      "TASK.md", 
+      "TASK_RUNNER_WORKFLOW.md"
+    ],
+    "key_pattern": "Description=Request, Notes=Response, Ash=API",
+    "check_for": "Look for active tasks with: mix maestro.task.list --status todo"
+  },
+  
+  "critical_files_updated": {
+    "maestro": [
+      "TASK.md",
+      "startup.json", 
+      "current_task.json",
+      "TASK_RUNNER_WORKFLOW.md",
+      "WHAT_WENT_WRONG.md",
+      "SESSION_LEARNINGS_2025_10_28_session2.md",
+      "lib/maestro/ops/task.ex",
+      "lib/mix/tasks/maestro/*.ex"
+    ],
+    "agents_repo": [
+      "bootstrap/GUIDELINES.md - ALWAYS USE ASH added as #1 principle"
+    ],
+    "circle": [
+      "task_ui_cleanup.json",
+      "current_task.json",
+      "TASK.md",
+      "COMPLETION-ui-cleanup.md"
     ]
-  },
-  
-  "what_was_completed": {
-    "task_20": {
-      "request": "Cleanup this markdown for me",
-      "response": "Added proper markdown formatting (H1, H2, H3, bold, structure)",
-      "method": "Ash: Task.update(task, %{description: cleaned, notes: completion})",
-      "result": "Success - data persisted, UI shows formatted markdown",
-      "learning_captured": "Yes - in task notes, WHAT_WENT_WRONG.md, this file"
-    }
-  },
-  
-  "next_steps": {
-    "user_will": "Finish the instructions in Task #20 description",
-    "instructions_say": "Have Circle remove 'Edit Interest' title and breadcrumb",
-    "awaiting": "User to complete instructions before proceeding",
-    "when_ready": "User will give next task or continue orchestration work"
-  },
-  
-  "crash_recovery": {
-    "if_i_crash": {
-      "read_this_file": "You're reading it now",
-      "key_learning": "ALWAYS USE ASH - never browser_eval for data",
-      "last_task": "Task #20 complete - markdown cleanup via Ash",
-      "pattern_learned": "Description=Request, Notes=Response, Ash=API",
-      "awaiting": "User instructions to continue"
-    }
   },
   
   "session_stats": {
-    "guidelines_logged": [
-      "git_feature_branch",
-      "daisyui_for_components", 
-      "use_ash_for_data",
-      "usage_tracking"
-    ],
-    "critical_learning": "Task Runner Pattern + Always Use Ash",
-    "files_updated": [
-      "WHAT_WENT_WRONG.md",
-      "current_task.json",
-      "Task #20 (description + notes via Ash)"
-    ],
-    "next_session_must_read": [
-      "current_task.json (this file)",
-      "WHAT_WENT_WRONG.md (Session 2 section)",
-      "USAGE_RULES.md (Ash section - BEFORE attempting data tasks)"
-    ]
-  }
+    "commits_maestro": 7,
+    "commits_agents": 1,
+    "commits_circle": 1,
+    "files_created": 8,
+    "files_modified": 12,
+    "mix_tasks_created": 4,
+    "guidelines_logged": 8,
+    "token_efficiency": "56% (better than Session 1's 72%)"
+  },
+  
+  "next_session_priorities": [
+    "Discuss Task #23 - When Maestro does work vs. assigns",
+    "Create automation - mix maestro.task.trigger for 'run' command",
+    "Test coordination pattern again with another task",
+    "Consider Task #19 - Might be simple enough for Maestro"
+  ],
+  
+  "success_indicators": {
+    "pattern_established": true,
+    "coordination_validated": true,
+    "tools_created": true,
+    "learning_captured": true,
+    "future_ready": true,
+    "no_context_lost": true
+  },
+  
+  "reminder": "Read USAGE_RULES.md BEFORE attempting data modifications. It has the Ash patterns. Don't repeat Session 2's initial mistake!"
 }
