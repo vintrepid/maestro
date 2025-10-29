@@ -5,9 +5,12 @@ digraph GuidelineConcepts {
   // Core concepts
   node [fillcolor=lightblue];
   git [label="Git Workflow\n(GUIDELINES)"];
+  git_maestro [label="Git Maestro\nSpecialized Agent\n(GIT_MAESTRO_STARTUP)"];
   verification [label="Code Verification\n(GUIDELINES)"];
   communication [label="Communication\n(GUIDELINES)"];
   startup_json [label="Startup JSON\n(guides/STARTUP_JSON)"];
+  task_runner [label="Task Runner\nWorkflow\n(TASK_RUNNER_WORKFLOW)"];
+  coordination [label="Agent Coordination\nPattern\n(MASTER_COORDINATOR)"];
   
   // Database concepts
   node [fillcolor=lightgreen];
@@ -91,7 +94,11 @@ digraph GuidelineConcepts {
   // Project coordination
   maestro_coord -> calvin_domain [label="coordinates"];
   maestro_coord -> sanjuan_domain [label="coordinates"];
-  maestro_coord -> git [label="manages via"];
+  maestro_coord -> git_maestro [label="assigns git tasks"];
+  git_maestro -> git [label="executes"];
+  coordination -> maestro_coord [label="implements"];
+  coordination -> task_runner [label="uses"];
+  task_runner -> communication [label="defines handoffs"];
   
   // Tools & Concepts
   css_linter -> maestro_coord [label="integrated in"];
@@ -108,7 +115,7 @@ digraph GuidelineConcepts {
     label="Core Guidelines";
     style=filled;
     color=lightgrey;
-    git; verification; communication; startup_json;
+    git; git_maestro; verification; communication; startup_json; task_runner; coordination;
   }
   
   subgraph cluster_data {
