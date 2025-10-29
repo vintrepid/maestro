@@ -10,11 +10,15 @@ We established the complete pattern for agent-user communication through tasks.
 1. User clicks "Run Task" button → Task becomes active
 2. User says "run" → Agent executes
 3. Agent follows workflow:
+   - **START SESSION: `mix bundles.track init <project> <branch> <bundles>`**
    - Format description markdown
    - Read request (description field)
    - Plan and execute
+   - **Log guideline refs as you work: `mix bundles.track ref <id> "context"`**
    - **Document completion (notes field) BEFORE marking complete!**
+   - **Log task completion: `mix bundles.track task_complete <id>`**
    - Mark complete if done (only after notes are written)
+   - **END SESSION: `mix bundles.track summary`**
    - Learn and capture patterns
 
 **Key Files:**
