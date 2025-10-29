@@ -9,322 +9,78 @@
   ],
   "bootstrap": {
     "content": {
-      "anti_patterns": [
-        {
-          "instead": "Always use feature branches",
-          "pattern": "Committing directly to main/master",
-          "why": "No review process, hard to rollback"
-        },
-        {
-          "instead": "Only restart for deps/config/supervision changes",
-          "pattern": "Restarting server for regular code changes",
-          "why": "Wastes time, Phoenix reloads automatically"
-        },
-        {
-          "instead": "Always read README first",
-          "pattern": "Making changes without reading project README",
-          "why": "Miss project-specific context and conventions"
-        },
-        {
-          "instead": "Try 1-2 times, then ask user",
-          "pattern": "Continuing when stuck instead of asking",
-          "why": "Wastes cycles on wrong approach"
-        },
-        {
-          "instead": "Log each guideline application with mix bundles.track",
-          "pattern": "Not tracking guideline usage",
-          "why": "Prevents bundle optimization"
-        },
-        {
-          "instead": "Use 'agents/bundles/*.json' or verify with 'ls -la agents'",
-          "pattern": "Looking for agents directory in wrong location",
-          "why": "It's a symlink to ~/dev/agents, not a real directory"
-        },
-        {
-          "instead": "Read startup.json which has everything bundled",
-          "pattern": "Reading agents/* files at startup",
-          "why": "Symlink causes confusion, content already in startup.json"
-        }
-      ],
-      "bootstrap_workflow": {
-        "new_project_session": [
-          "1. Read startup.json (contains README, bootstrap, aliases bundled inline)",
-          "2. DO NOT try to read agents/* files - already bundled in startup.json",
-          "3. Check current git branch",
-          "3. Check current git branch",
-          "4. Load this bootstrap bundle for core rules",
-          "5. Initialize tracking: mix bundles.track init <project> <branch> bootstrap",
-          "6. Ask user what task to work on",
-          "7. Load additional bundles as needed for task",
-          "8. Log guideline usage throughout work",
-          "9. End session: mix bundles.track summary"
-        ]
-      },
       "bundle": "bootstrap",
-      "decision_trees": {
-        "when_to_ask": [
-          {
-            "no": "Ask for clarification",
-            "question": "Are requirements clear?",
-            "yes": "next_question"
-          },
-          {
-            "no": "next_question",
-            "question": "Is this a common pattern with established solution?",
-            "yes": "Proceed with implementation"
-          },
-          {
-            "no": "Proceed with best solution",
-            "question": "Are there multiple valid approaches?",
-            "yes": "Ask which approach preferred"
-          }
-        ],
-        "when_to_restart": [
-          {
-            "no": "next_question",
-            "question": "Did you modify mix.exs dependencies?",
-            "yes": "Restart with reason: deps_changed"
-          },
-          {
-            "no": "next_question",
-            "question": "Did you modify config files?",
-            "yes": "Restart with reason: config_changed"
-          },
-          {
-            "no": "Do NOT restart - Phoenix reloads automatically",
-            "question": "Did you modify supervision tree?",
-            "yes": "Restart with reason: supervision_tree_changed"
-          }
-        ]
-      },
-      "description": "Minimal guidelines for new projects - just the essentials",
+      "description": "Core guidelines for all projects - loaded at startup",
+      "generated_at": "2025-10-29T08:12:11.466273Z",
       "includes": [
-        "GUIDELINES.md (core only)",
-        "AGENTS.md"
+        "ALIASES.md",
+        "GUIDELINES.md",
+        "PHOENIX_AGENTS.md",
+        "USER_CONTEXT.md"
       ],
-      "patterns": {
-        "git_workflow": {
-          "start_task": [
-            "Read project README",
-            "Check current branch: git branch --show-current",
-            "Create feature branch: git checkout -b feature/description",
-            "Log: mix bundles.track ref git_feature_branch \"Starting task\"",
-            "Make changes with frequent commits",
-            "Push branch: git push origin feature/description",
-            "Wait for user approval before merging"
-          ]
-        },
-        "verification_checklist": {
-          "before_completing": [
-            "Run tests: mix test",
-            "Run precommit: mix precommit",
-            "Verify UI changes in browser (if applicable)",
-            "Check for errors in logs",
-            "Ensure all files are committed",
-            "Log: mix bundles.track summary"
-          ]
-        }
-      },
-      "quick_reference": {
-        "agents_directory": {
-          "access": "Both relative (agents/) and absolute (~/dev/agents/) paths work",
-          "bundles": "agents/bundles/*.json",
-          "location": "~/dev/agents (symlinked as ./agents)",
-          "verify": "ls -la agents"
-        },
-        "available_bundles": {
-          "bootstrap": "Core guidelines (you're reading this)",
-          "database_work": "Ash resources, migrations, polymorphic relations",
-          "dev_auth_bypass": "Development auth bypass for Ash Authentication",
-          "navbar_setup": "Complete navbar setup with logo and user menu",
-          "ui_work": "LiveView, DaisyUI, Phoenix components"
-        },
-        "common_commands": {
-          "migrate": "mix ecto.migrate",
-          "precommit": "mix precommit",
-          "reset_db": "mix ecto.reset",
-          "server": "mix phx.server",
-          "test": "mix test"
-        },
-        "restart_reasons": [
-          "deps_changed",
-          "config_changed",
-          "supervision_tree_changed"
-        ],
-        "startup_process": {
-          "bundled_content": [
-            "README",
-            "bootstrap guidelines",
-            "aliases",
-            "workflow"
-          ],
-          "never_read": [
-            "agents/bundles/*.json",
-            "agents/ALIASES.md",
-            "README.md separately"
-          ],
-          "read": "startup.json only",
-          "rebuild_command": "mix startup.build"
-        },
-        "tracking_commands": {
-          "end_session": "mix bundles.track summary",
-          "log_usage": "mix bundles.track ref <guideline_id> \"context\""
-        }
-      },
       "rules": [
         {
-          "category": "meta",
-          "context": "All projects share the same agents directory via symlink",
-          "examples": {
-            "access_bundles": [
-              "cat agents/bundles/bootstrap.json",
-              "File.read!(\"agents/bundles/bootstrap.json\")",
-              "cat ~/dev/agents/bundles/bootstrap.json"
-            ],
-            "reads_as": "agents -> /Users/vince/dev/agents",
-            "verify_symlink": "ls -la agents"
-          },
-          "id": "agents_directory_location",
-          "pattern": {
-            "absolute_path": "~/dev/agents/bundles/*.json",
-            "both_work": "Use either relative or absolute paths",
-            "relative_path": "agents/bundles/*.json"
-          },
-          "priority": "critical",
-          "rule": "The agents directory is a symlink to ~/dev/agents"
+          "category": "extracted",
+          "description": "Requirements unclear, multiple approaches, unknown logic",
+          "id": "ask_when",
+          "rule": "Ask when",
+          "source": "GUIDELINES.md:31"
         },
         {
-          "category": "meta",
-          "context": "Never try to read agents/* files at startup - everything is already in startup.json",
-          "examples": {
-            "correct_startup": [
-              "Read startup.json (has README, bootstrap, aliases bundled)",
-              "Access content via: startup[\"readme\"][\"content\"]",
-              "Access bootstrap via: startup[\"bootstrap\"][\"content\"]"
-            ],
-            "incorrect_startup": [
-              "Read README.md separately",
-              "Try to read agents/bundles/bootstrap.json",
-              "Try to read agents/ALIASES.md"
-            ]
-          },
-          "id": "startup_json_bundled",
-          "pattern": {
-            "end_of_session": "Always run: mix startup.build",
-            "next_session_gets": "Fully bundled startup.json with all content",
-            "workflow_step": "Step 7 in workflow: mix startup.build"
-          },
-          "priority": "critical",
-          "rationale": "Avoids symlink confusion and failed file reads",
-          "rule": "startup.json contains all startup content bundled inline"
+          "category": "extracted",
+          "description": "Task clear, work verifiable",
+          "id": "proceed_when",
+          "rule": "Proceed when",
+          "source": "GUIDELINES.md:32"
         },
         {
-          "category": "meta",
-          "context": "Log when you actively apply a guideline, not just read it. This data improves bundle optimization.",
-          "examples": {
-            "good": [
-              "mix bundles.track ref git_feature_branch \"Creating feature branch for user profiles\"",
-              "mix bundles.track ref daisyui_philosophy \"Choosing semantic button classes\""
-            ]
-          },
-          "id": "usage_tracking",
-          "pattern": "mix bundles.track ref <guideline_id> \"<context>\"",
-          "priority": "high",
-          "rule": "Log guideline usage for optimization"
+          "category": "extracted",
+          "description": "1-3 sentences when possible",
+          "id": "concise",
+          "rule": "Concise",
+          "source": "USER_CONTEXT.md:28"
         },
         {
-          "category": "git",
-          "examples": {
-            "bad": "git commit -m 'add feature' (on main)",
-            "good": "git checkout -b feature/user-profiles"
-          },
-          "id": "git_feature_branch",
-          "priority": "critical",
-          "rule": "Always work on feature branches, never on master/main"
+          "category": "extracted",
+          "description": "Don't explain what you're about to do, just do it",
+          "id": "no_preamble",
+          "rule": "No preamble",
+          "source": "USER_CONTEXT.md:29"
         },
         {
-          "category": "git",
-          "context": "Explain 'why' not just 'what'",
-          "id": "git_commit_frequently",
-          "priority": "high",
-          "rule": "Make frequent commits with clear messages"
+          "category": "extracted",
+          "description": "Don't summarize what you just did",
+          "id": "no_postamble",
+          "rule": "No postamble",
+          "source": "USER_CONTEXT.md:30"
         },
         {
-          "category": "git",
-          "id": "git_never_merge",
-          "priority": "critical",
-          "rule": "Never merge without user approval"
+          "category": "extracted",
+          "description": "Code changes, file outputs, verification",
+          "id": "show_results",
+          "rule": "Show results",
+          "source": "USER_CONTEXT.md:31"
         },
         {
-          "category": "git",
-          "id": "git_never_delete_branches",
-          "priority": "critical",
-          "rule": "Never delete branches without approval"
-        },
-        {
-          "category": "verification",
-          "context": "If available in project",
-          "id": "verify_before_complete",
-          "priority": "high",
-          "rule": "Run mix precommit before marking work complete"
-        },
-        {
-          "category": "verification",
-          "id": "test_appropriately",
-          "priority": "high",
-          "rule": "Test changes appropriately (code tests, UI verification)"
-        },
-        {
-          "category": "communication",
-          "context": "Don't waste cycles guessing",
+          "category": "extracted",
+          "description": "1-2 attempts, then ask",
           "id": "ask_when_stuck",
-          "priority": "high",
-          "rule": "Take 1-2 fix attempts, then ask user if stuck"
-        },
-        {
-          "category": "communication",
-          "context": "No unnecessary preamble or postamble",
-          "id": "concise_responses",
-          "priority": "medium",
-          "rule": "Keep responses concise (1-3 sentences when possible)"
-        },
-        {
-          "category": "communication",
-          "id": "ask_vs_proceed",
-          "priority": "high",
-          "rule": "Ask when requirements unclear, proceed when clear"
-        },
-        {
-          "category": "code_quality",
-          "context": "Avoid :httpoison, :tesla, :httpc",
-          "id": "use_req_library",
-          "priority": "medium",
-          "rule": "Use :req library for HTTP requests"
-        },
-        {
-          "category": "code_quality",
-          "id": "daisyui_for_components",
-          "priority": "high",
-          "rule": "Use DaisyUI for components, Tailwind for layout"
-        },
-        {
-          "category": "code_quality",
-          "context": "Only restart for: deps_changed, config_changed, supervision_tree_changed",
-          "id": "never_restart_unnecessarily",
-          "priority": "high",
-          "rule": "Never restart server for regular changes (Phoenix reloads automatically)"
+          "rule": "Ask when stuck",
+          "source": "USER_CONTEXT.md:32"
         }
       ],
-      "usage_tracking": {
-        "enabled": true,
-        "instructions": "When you apply a guideline during work, log it immediately using: `mix bundles.track ref <guideline_id> \"<brief context>\"`. This helps optimize future sessions."
+      "source_files": {
+        "ALIASES.md": "# Conversational Aliases\n\nShorthand commands for agent behaviors.\n\n## Session\n\n**hi** - Start session\n- Read startup.json\n- Init tracking: `mix bundles.track init`\n- Check current_task.json\n- Report ready\n\n**bye** - End session\n- Save work, commit if appropriate\n- `mix bundles.track summary`\n- `mix session.capacity <used> 200000`\n- Report capacity\n\n## Git (always start with 'g')\n\n**gpb/gcb** - Push/create branch\n- Check current branch\n- Create feature branch if on master\n- Push to origin\n\n**merge** - Discussion only (not a command)\n- Ask for confirmation\n- DO NOT merge without explicit approval\n\n## Dev\n\n**wip** - Open modified files\n- Identify files changed this session\n- Open in VSCodium (`codium`)\n\n## Coordination\n\n**ci** - Check-in with other agent\n- Look for `~/dev/<project>/COMPLETION*.md`\n- Read completion report\n- Update relevant task notes in Maestro\n- Report what other agent completed\n\n**Where to look:**\n- `~/dev/<project>/COMPLETION-*.md`\n- Most recent file\n\n**What to extract:**\n- Status, time, issues, learnings\n- Copy to Maestro task notes\n",
+        "GUIDELINES.md": "# Agent Guidelines - Core Essentials\n\n**The absolute minimum every agent must know.**\n\n## Critical Rules\n\n### Use Ash for Data\n\n```elixir\n# Read\nresource = MyApp.Resource.by_id!(id)\n\n# Update\n{:ok, updated} = MyApp.Resource.update(resource, %{field: value})\n\n# Create  \n{:ok, new} = MyApp.Resource.create(%{field: value})\n```\n\nNever bypass with: direct SQL, Ecto, LiveView assigns, browser manipulation.\n\n### Log Sessions\n\n```bash\nmix bundles.track init <project> <branch> <bundle>\nmix bundles.track ref <guideline_id> \"what you did\"\nmix bundles.track summary\n```\n\n## Communication\n\n- **Ask when:** Requirements unclear, multiple approaches, unknown logic\n- **Proceed when:** Task clear, work verifiable\n\n## Workflow\n\n1. Read task\n2. Plan (share if complex)\n3. Make changes\n4. Test\n5. Report\n\n## Testing\n\nBefore marking complete:\n- Run: `mix test`\n- Verify in browser (if UI)\n- Check logs\n- Handle edge cases\n\n## Load Bundles as Needed\n\n- `database_work/` - Ash patterns, migrations\n- `ui_work/` - LiveView, DaisyUI, components\n- `data_import/` - Import scripts, idempotency\n- `testing/` - Test patterns, precommit\n- `tools/` - Dev tools, operations\n",
+        "PHOENIX_AGENTS.md": "This is a web application written using the Phoenix web framework.\n\n## Project guidelines\n\n- Use `mix precommit` alias when you are done with all changes and fix any pending issues\n- Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps\n\n### Phoenix v1.8 guidelines\n\n- **Always** begin your LiveView templates with `<Layouts.app flash={@flash} ...>` which wraps all inner content\n- The `MyAppWeb.Layouts` module is aliased in the `my_app_web.ex` file, so you can use it without needing to alias it again\n- Anytime you run into errors with no `current_scope` assign:\n  - You failed to follow the Authenticated Routes guidelines, or you failed to pass `current_scope` to `<Layouts.app>`\n  - **Always** fix the `current_scope` error by moving your routes to the proper `live_session` and ensure you pass `current_scope` as needed\n- Phoenix v1.8 moved the `<.flash_group>` component to the `Layouts` module. You are **forbidden** from calling `<.flash_group>` outside of the `layouts.ex` module\n- Out of the box, `core_components.ex` imports an `<.icon name=\"hero-x-mark\" class=\"w-5 h-5\"/>` component for for hero icons. **Always** use the `<.icon>` component for icons, **never** use `Heroicons` modules or similar\n- **Always** use the imported `<.input>` component for form inputs from `core_components.ex` when available. `<.input>` is imported and using it will will save steps and prevent errors\n- If you override the default input classes (`<.input class=\"myclass px-2 py-1 rounded-lg\">)`) class with your own values, no default classes are inherited, so your\ncustom classes must fully style the input\n\n### JS and CSS guidelines\n\n- **Use Tailwind CSS classes and custom CSS rules** to create polished, responsive, and visually stunning interfaces.\n- Tailwindcss v4 **no longer needs a tailwind.config.js** and uses a new import syntax in `app.css`:\n\n      @import \"tailwindcss\" source(none);\n      @source \"../css\";\n      @source \"../js\";\n      @source \"../../lib/my_app_web\";\n\n- **Always use and maintain this import syntax** in the app.css file for projects generated with `phx.new`\n- **Never** use `@apply` when writing raw css\n- **Always** manually write your own tailwind-based components instead of using daisyUI for a unique, world-class design\n- Out of the box **only the app.js and app.css bundles are supported**\n  - You cannot reference an external vendor'd script `src` or link `href` in the layouts\n  - You must import the vendor deps into app.js and app.css to use them\n  - **Never write inline <script>custom js</script> tags within templates**\n\n### UI/UX & design guidelines\n\n- **Produce world-class UI designs** with a focus on usability, aesthetics, and modern design principles\n- Implement **subtle micro-interactions** (e.g., button hover effects, and smooth transitions)\n- Ensure **clean typography, spacing, and layout balance** for a refined, premium look\n- Focus on **delightful details** like hover effects, loading states, and smooth page transitions\n\n\n<!-- usage-rules-start -->\n\n<!-- phoenix:elixir-start -->\n## Elixir guidelines\n\n- Elixir lists **do not support index based access via the access syntax**\n\n  **Never do this (invalid)**:\n\n      i = 0\n      mylist = [\"blue\", \"green\"]\n      mylist[i]\n\n  Instead, **always** use `Enum.at`, pattern matching, or `List` for index based list access, ie:\n\n      i = 0\n      mylist = [\"blue\", \"green\"]\n      Enum.at(mylist, i)\n\n- Elixir variables are immutable, but can be rebound, so for block expressions like `if`, `case`, `cond`, etc\n  you *must* bind the result of the expression to a variable if you want to use it and you CANNOT rebind the result inside the expression, ie:\n\n      # INVALID: we are rebinding inside the `if` and the result never gets assigned\n      if connected?(socket) do\n        socket = assign(socket, :val, val)\n      end\n\n      # VALID: we rebind the result of the `if` to a new variable\n      socket =\n        if connected?(socket) do\n          assign(socket, :val, val)\n        end\n\n- **Never** nest multiple modules in the same file as it can cause cyclic dependencies and compilation errors\n- **Never** use map access syntax (`changeset[:field]`) on structs as they do not implement the Access behaviour by default. For regular structs, you **must** access the fields directly, such as `my_struct.field` or use higher level APIs that are available on the struct if they exist, `Ecto.Changeset.get_field/2` for changesets\n- Elixir's standard library has everything necessary for date and time manipulation. Familiarize yourself with the common `Time`, `Date`, `DateTime`, and `Calendar` interfaces by accessing their documentation as necessary. **Never** install additional dependencies unless asked or for date/time parsing (which you can use the `date_time_parser` package)\n- Don't use `String.to_atom/1` on user input (memory leak risk)\n- Predicate function names should not start with `is_` and should end in a question mark. Names like `is_thing` should be reserved for guards\n- Elixir's builtin OTP primitives like `DynamicSupervisor` and `Registry`, require names in the child spec, such as `{DynamicSupervisor, name: MyApp.MyDynamicSup}`, then you can use `DynamicSupervisor.start_child(MyApp.MyDynamicSup, child_spec)`\n- Use `Task.async_stream(collection, callback, options)` for concurrent enumeration with back-pressure. The majority of times you will want to pass `timeout: :infinity` as option\n\n## Mix guidelines\n\n- Read the docs and options before using tasks (by using `mix help task_name`)\n- To debug test failures, run tests in a specific file with `mix test test/my_test.exs` or run all previously failed tests with `mix test --failed`\n- `mix deps.clean --all` is **almost never needed**. **Avoid** using it unless you have good reason\n<!-- phoenix:elixir-end -->\n\n<!-- phoenix:phoenix-start -->\n## Phoenix guidelines\n\n- Remember Phoenix router `scope` blocks include an optional alias which is prefixed for all routes within the scope. **Always** be mindful of this when creating routes within a scope to avoid duplicate module prefixes.\n\n- You **never** need to create your own `alias` for route definitions! The `scope` provides the alias, ie:\n\n      scope \"/admin\", AppWeb.Admin do\n        pipe_through :browser\n\n        live \"/users\", UserLive, :index\n      end\n\n  the UserLive route would point to the `AppWeb.Admin.UserLive` module\n\n- `Phoenix.View` no longer is needed or included with Phoenix, don't use it\n<!-- phoenix:phoenix-end -->\n\n\n<!-- phoenix:html-start -->\n## Phoenix HTML guidelines\n\n- Phoenix templates **always** use `~H` or .html.heex files (known as HEEx), **never** use `~E`\n- **Always** use the imported `Phoenix.Component.form/1` and `Phoenix.Component.inputs_for/1` function to build forms. **Never** use `Phoenix.HTML.form_for` or `Phoenix.HTML.inputs_for` as they are outdated\n- When building forms **always** use the already imported `Phoenix.Component.to_form/2` (`assign(socket, form: to_form(...))` and `<.form for={@form} id=\"msg-form\">`), then access those forms in the template via `@form[:field]`\n- **Always** add unique DOM IDs to key elements (like forms, buttons, etc) when writing templates, these IDs can later be used in tests (`<.form for={@form} id=\"product-form\">`)\n- For \"app wide\" template imports, you can import/alias into the `my_app_web.ex`'s `html_helpers` block, so they will be available to all LiveViews, LiveComponent's, and all modules that do `use MyAppWeb, :html` (replace \"my_app\" by the actual app name)\n\n- Elixir supports `if/else` but **does NOT support `if/else if` or `if/elsif`. **Never use `else if` or `elseif` in Elixir**, **always** use `cond` or `case` for multiple conditionals.\n\n  **Never do this (invalid)**:\n\n      <%= if condition do %>\n        ...\n      <% else if other_condition %>\n        ...\n      <% end %>\n\n  Instead **always** do this:\n\n      <%= cond do %>\n        <% condition -> %>\n          ...\n        <% condition2 -> %>\n          ...\n        <% true -> %>\n          ...\n      <% end %>\n\n- HEEx require special tag annotation if you want to insert literal curly's like `{` or `}`. If you want to show a textual code snippet on the page in a `<pre>` or `<code>` block you *must* annotate the parent tag with `phx-no-curly-interpolation`:\n\n      <code phx-no-curly-interpolation>\n        let obj = {key: \"val\"}\n      </code>\n\n  Within `phx-no-curly-interpolation` annotated tags, you can use `{` and `}` without escaping them, and dynamic Elixir expressions can still be used with `<%= ... %>` syntax\n\n- HEEx class attrs support lists, but you must **always** use list `[...]` syntax. You can use the class list syntax to conditionally add classes, **always do this for multiple class values**:\n\n      <a class={[\n        \"px-2 text-white\",\n        @some_flag && \"py-5\",\n        if(@other_condition, do: \"border-red-500\", else: \"border-blue-100\"),\n        ...\n      ]}>Text</a>\n\n  and **always** wrap `if`'s inside `{...}` expressions with parens, like done above (`if(@other_condition, do: \"...\", else: \"...\")`)\n\n  and **never** do this, since it's invalid (note the missing `[` and `]`):\n\n      <a class={\n        \"px-2 text-white\",\n        @some_flag && \"py-5\"\n      }> ...\n      => Raises compile syntax error on invalid HEEx attr syntax\n\n- **Never** use `<% Enum.each %>` or non-for comprehensions for generating template content, instead **always** use `<%= for item <- @collection do %>`\n- HEEx HTML comments use `<%!-- comment --%>`. **Always** use the HEEx HTML comment syntax for template comments (`<%!-- comment --%>`)\n- HEEx allows interpolation via `{...}` and `<%= ... %>`, but the `<%= %>` **only** works within tag bodies. **Always** use the `{...}` syntax for interpolation within tag attributes, and for interpolation of values within tag bodies. **Always** interpolate block constructs (if, cond, case, for) within tag bodies using `<%= ... %>`.\n\n  **Always** do this:\n\n      <div id={@id}>\n        {@my_assign}\n        <%= if @some_block_condition do %>\n          {@another_assign}\n        <% end %>\n      </div>\n\n  and **Never** do this – the program will terminate with a syntax error:\n\n      <%!-- THIS IS INVALID NEVER EVER DO THIS --%>\n      <div id=\"<%= @invalid_interpolation %>\">\n        {if @invalid_block_construct do}\n        {end}\n      </div>\n<!-- phoenix:html-end -->\n\n<!-- phoenix:liveview-start -->\n## Phoenix LiveView guidelines\n\n- **Never** use the deprecated `live_redirect` and `live_patch` functions, instead **always** use the `<.link navigate={href}>` and  `<.link patch={href}>` in templates, and `push_navigate` and `push_patch` functions LiveViews\n- **Avoid LiveComponent's** unless you have a strong, specific need for them\n- LiveViews should be named like `AppWeb.WeatherLive`, with a `Live` suffix. When you go to add LiveView routes to the router, the default `:browser` scope is **already aliased** with the `AppWeb` module, so you can just do `live \"/weather\", WeatherLive`\n- Remember anytime you use `phx-hook=\"MyHook\"` and that js hook manages its own DOM, you **must** also set the `phx-update=\"ignore\"` attribute\n- **Never** write embedded `<script>` tags in HEEx. Instead always write your scripts and hooks in the `assets/js` directory and integrate them with the `assets/js/app.js` file\n\n### LiveView streams\n\n- **Always** use LiveView streams for collections for assigning regular lists to avoid memory ballooning and runtime termination with the following operations:\n  - basic append of N items - `stream(socket, :messages, [new_msg])`\n  - resetting stream with new items - `stream(socket, :messages, [new_msg], reset: true)` (e.g. for filtering items)\n  - prepend to stream - `stream(socket, :messages, [new_msg], at: -1)`\n  - deleting items - `stream_delete(socket, :messages, msg)`\n\n- When using the `stream/3` interfaces in the LiveView, the LiveView template must 1) always set `phx-update=\"stream\"` on the parent element, with a DOM id on the parent element like `id=\"messages\"` and 2) consume the `@streams.stream_name` collection and use the id as the DOM id for each child. For a call like `stream(socket, :messages, [new_msg])` in the LiveView, the template would be:\n\n      <div id=\"messages\" phx-update=\"stream\">\n        <div :for={{id, msg} <- @streams.messages} id={id}>\n          {msg.text}\n        </div>\n      </div>\n\n- LiveView streams are *not* enumerable, so you cannot use `Enum.filter/2` or `Enum.reject/2` on them. Instead, if you want to filter, prune, or refresh a list of items on the UI, you **must refetch the data and re-stream the entire stream collection, passing reset: true**:\n\n      def handle_event(\"filter\", %{\"filter\" => filter}, socket) do\n        # re-fetch the messages based on the filter\n        messages = list_messages(filter)\n\n        {:noreply,\n        socket\n        |> assign(:messages_empty?, messages == [])\n        # reset the stream with the new messages\n        |> stream(:messages, messages, reset: true)}\n      end\n\n- LiveView streams *do not support counting or empty states*. If you need to display a count, you must track it using a separate assign. For empty states, you can use Tailwind classes:\n\n      <div id=\"tasks\" phx-update=\"stream\">\n        <div class=\"hidden only:block\">No tasks yet</div>\n        <div :for={{id, task} <- @stream.tasks} id={id}>\n          {task.name}\n        </div>\n      </div>\n\n  The above only works if the empty state is the only HTML block alongside the stream for-comprehension.\n\n- **Never** use the deprecated `phx-update=\"append\"` or `phx-update=\"prepend\"` for collections\n\n### LiveView tests\n\n- `Phoenix.LiveViewTest` module and `LazyHTML` (included) for making your assertions\n- Form tests are driven by `Phoenix.LiveViewTest`'s `render_submit/2` and `render_change/2` functions\n- Come up with a step-by-step test plan that splits major test cases into small, isolated files. You may start with simpler tests that verify content exists, gradually add interaction tests\n- **Always reference the key element IDs you added in the LiveView templates in your tests** for `Phoenix.LiveViewTest` functions like `element/2`, `has_element/2`, selectors, etc\n- **Never** tests again raw HTML, **always** use `element/2`, `has_element/2`, and similar: `assert has_element?(view, \"#my-form\")`\n- Instead of relying on testing text content, which can change, favor testing for the presence of key elements\n- Focus on testing outcomes rather than implementation details\n- Be aware that `Phoenix.Component` functions like `<.form>` might produce different HTML than expected. Test against the output HTML structure, not your mental model of what you expect it to be\n- When facing test failures with element selectors, add debug statements to print the actual HTML, but use `LazyHTML` selectors to limit the output, ie:\n\n      html = render(view)\n      document = LazyHTML.from_fragment(html)\n      matches = LazyHTML.filter(document, \"your-complex-selector\")\n      IO.inspect(matches, label: \"Matches\")\n",
+        "USER_CONTEXT.md": "# User Context\n\n## User Profile\n\n**Name:** Vince\n**Shell:** zsh (with git completions and aliases)\n**OS:** macOS\n**Editor:** VSCodium / Cursor\n**Development Directory:** ~/dev/\n\n## Environment\n\n### Communication Style\n- Direct and efficient\n- Uses conversational aliases (see ALIASES.md)\n- Appreciates concise responses\n- \"Learn\" means document for reuse, not just solve\n\n## What Agents Should Know\n\n### You Don't Need\n- Interactive prompts (assume yes for standard operations)\n- Verbose explanations (be concise)\n\n### You Do Need\n- To recognize conversational aliases (hi, bye, ci, learn, wip)\n\n### Communication Preferences\n- **Concise:** 1-3 sentences when possible\n- **No preamble:** Don't explain what you're about to do, just do it\n- **No postamble:** Don't summarize what you just did\n- **Show results:** Code changes, file outputs, verification\n- **Ask when stuck:** 1-2 attempts, then ask\n"
       },
-      "version": "1.5.0"
+      "version": "2025-10-29"
     },
     "purpose": "Minimal core rules - git workflow, verification, tracking"
   },
   "description": "Startup configuration for Maestro AI sessions - all content bundled",
-  "generated_at": "2025-10-29T05:55:49.293514Z",
+  "generated_at": "2025-10-29T13:23:15.872827Z",
   "philosophy": "Load less, reference more. Read what you need when you need it. Everything you need to start is in this file.",
   "readme": {
     "content": "# Maestro\n\nProject orchestration and agent coordination hub.\n\n## Project Tasks\n\n### Current: Agent Startup Optimization\n\n**The Problem:** AI agents spend enormous amounts of time, money, and tokens loading all guidelines at session start. We need to solve this by loading only what's needed for specific tasks.\n\n**The Solution:**\n- **Maestro** (this project): Reads entire `agents/` directory to have full context for coordinating work\n- **Other projects**: Load minimal essential guidelines at startup\n- **Task-specific loading**: When we assign a task to another project, Maestro tells them exactly what guidelines they need to read\n- **Usage tracking**: Track which guidelines agents actually reference during work to optimize future sessions\n\n**How it works:**\n1. Maestro plans tasks for other projects here\n2. Maestro writes the task with specific reading requirements to the project's CHANGELOG\n3. That project's agent starts up, reads minimal guidelines + task-specific ones\n4. Agent logs which guidelines were actually used (server log style)\n5. We analyze logs to optimize what to load by default\n\n**Current status:**\n- ✅ Maestro reads everything (agents/ directory)\n- ✅ Other project startup files created (minimal loading)\n- ⚠️ GUIDELINE_USAGE_TRACKER exists but not being used as intended\n- 🔄 Need to implement usage logging (agent-oriented, like server logs)\n- 🔄 Need to test with other projects loading minimal set\n\n### Completed: CSS Linter Integration\n\n**Branch:** feature/css-linter\n\n**Goal:** Move Tailwind analysis UI from Maestro to css_linter tool, making it reusable across all projects.\n\n**Status:** ✅ Working, needs migration for full functionality\n\n**What was done:**\n- Copied TailwindAnalysisLive to css_linter package\n- Refactored to be repo-agnostic and mountable from any app\n- Added LiveTable dependency to css_linter\n- Configured and mounted in Maestro (separate scope to avoid namespace collision)\n\n**Remaining:**\n- Run migration for css_class_usage table\n- Test UI functionality\n- Remove old Maestro-specific analysis files\n- Document web UI usage in css_linter\n\n### Access Points\n\n- **Web App**: http://localhost:4004\n- **Live Debugger**: http://localhost:4012\n\n## Orchestration Features\n\nCurrent features:\n- **Project Dashboard**: View status of all projects\n- **Real-time Monitoring**: Track which projects are running (ProjectMonitor GenServer checks TCP ports every 10s)\n- **Guideline Browser**: Visual tree of all agent guidelines\n- **LiveTable Integration**: Uses vintrepid/live_table fork with DaisyUI styling\n\nPlanned features:\n- **Task Planning**: Create and assign tasks to other projects\n- **Usage Analytics**: Track which guidelines are actually referenced\n- **Smart Loading**: Recommend minimal guideline set based on task type\n- **Multi-Project Commands**: Start/stop multiple projects\n- **Log Aggregation**: View logs from all projects\n- **Environment Management**: Manage .env files across projects\n\n## Technical Details\n\n### Project Monitoring\n- ProjectMonitor GenServer checks TCP ports every 10s\n- LiveView updates UI every 5s\n- Real-time status indicators (green=running, red=stopped)\n\n### Dashboard\n- Uses LiveTable component from vintrepid/live_table fork\n- DaisyUI styling with table-pin-rows for fixed headers\n- Sortable and searchable project listing\n\n### Guideline Browser\n- Visual tree view of entire agents directory\n- Helps agents understand available documentation\n- Checkbox tracking (UI-only, not persisted)\n\n### Database\n- Uses Ash Framework with PostgreSQL\n- Ecto for css_linter integration (Ash not compatible with LiveTable)\n- Seeds include 6 projects: Ready, Calvin, SanJuan, new_project, Maestro, np\n\n## Development Setup\n\n### Prerequisites\n\n- Elixir 1.18.3\n- PostgreSQL running at localhost\n- Erlang/OTP 27\n\n### Getting Started\n\n```bash\ncd ~/dev/maestro\nsource .env\nmix deps.get\nmix ecto.setup\nmix phx.server\n```\n\nVisit: http://localhost:4004\n\n### Database Commands\n\n```bash\nmix ecto.create\nmix ecto.migrate\nmix ecto.reset\n```\n\n## Project Structure\n\n```\nlib/\n├── maestro/\n│   └── ops/              # Project management\n├── maestro_web/\n│   ├── components/       # Guideline viewer, etc\n│   └── live/            # Dashboard, project detail\npriv/\n├── repo/\n│   ├── migrations/\n│   └── seeds.exs\n```\n\n## Other Projects Tracked\n\n- **Ready**: Web 4000, Debugger 4008\n- **new_project**: Web 4001, Debugger 4009\n- **Calvin**: Web 4002, Debugger 4010\n- **SanJuan**: Web 4003, Debugger 4011\n- **Circle**: Web 4015, Debugger 4016\n",
