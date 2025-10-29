@@ -96,7 +96,11 @@ defmodule MaestroWeb.ConceptsLive do
               <% else %>
                 <div class="card bg-base-100 shadow-xl card-compact">
                   <div class="card-body p-0">
-                    <div class="cursor-pointer hover:opacity-80 transition-opacity" phx-click="toggle_fullscreen">
+                    <div 
+                      phx-hook="ShiftClickHook"
+                      id="concept-svg-container"
+                      class="cursor-pointer hover:opacity-80 transition-opacity"
+                    >
                       <img src="/images/concept_dag.svg" alt="Concept Dependency Graph" class="w-full" />
                     </div>
                   </div>

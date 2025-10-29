@@ -158,11 +158,22 @@ const GitDropdownHook = {
   }
 };
 
+const ShiftClickHook = {
+  mounted() {
+    this.el.addEventListener('click', (e) => {
+      if (e.shiftKey) {
+        e.preventDefault();
+        this.pushEvent('toggle_fullscreen', {});
+      }
+    });
+  }
+};
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook, GitDropdownHook},
+  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook, GitDropdownHook, ShiftClickHook},
 })
 
 window.addEventListener("phx:theme-changed", (e) => {
