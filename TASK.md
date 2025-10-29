@@ -1,107 +1,187 @@
-# Ongoing Task: Agent Training & Documentation
+# Current State: Task Runner Pattern Established
 
-## Current Status: Infrastructure Complete
+## This Session (Session 2): Critical Learning Captured
 
-We've completed the foundational work for agent training and documentation system.
+### 🚨 THE BREAKTHROUGH: Task Runner Workflow 🚨
 
-### Completed This Session:
-1. ✅ Organized agents/ directory into 5 concept clusters (core, database, ui, tools, projects)
-2. ✅ Created USAGE_RULES.md with all library patterns (38KB, 1185 lines)
-3. ✅ Built startup.json bundling README + bootstrap + aliases + usage_rules
-4. ✅ Created `mix session.end` task for workflow automation
-5. ✅ Updated CONCEPT_DAG with new guides (Data Modification, LiveView vs JS, Markdown Editor, Circle Learnings)
-6. ✅ Documented session learnings in agents/guides/SESSION_LEARNINGS_2025_10_28.md
-7. ✅ Fixed startup.build to read from reorganized structure
+We established the complete pattern for agent-user communication through tasks.
 
-### Key Infrastructure Now Available:
+**The Pattern:**
+1. User clicks "Run Task" button → Task becomes active
+2. User says "run" → Agent executes
+3. Agent follows workflow:
+   - Format description markdown
+   - Read request (description field)
+   - Plan and execute
+   - Document completion (notes field)
+   - Mark complete if done
+   - Learn and capture patterns
 
-**For Agent Startup:**
-- `startup.json` - Bundled README, bootstrap, aliases, usage_rules (all needed to start)
-- `USAGE_RULES.md` - All library + tool patterns (Ash, Phoenix, maestro_tool, css_linter, live_table)
-- `current_task.json` - Task details (when assigned)
+**Key Files:**
+- `TASK_RUNNER_WORKFLOW.md` - Complete workflow guide
+- `WHAT_WENT_WRONG.md` - Session 2 learning (ALWAYS USE ASH)
+- `bootstrap/GUIDELINES.md` - Core principle added (front and center)
+- `current_task.json` - Crash recovery state
 
-**For Agent Workflow:**
-- `mix session.end <used> <total>` - Runs all end-of-session tasks
-- `mix startup.build` - Rebuilds startup.json with latest content
-- `mix bundles.track` - Track guideline usage
-- `mix usage_rules.sync` - Update library patterns when deps change
+### What Was Completed
 
-**Documentation Structure:**
+#### Task #20: Better Agent Training
+**Request:** "Cleanup this markdown"
+**Response:** 
+- ✅ Learned the hard way: ALWAYS USE ASH (not browser_eval)
+- ✅ Established Task Runner pattern
+- ✅ Updated core guidelines (Ash principle front and center)
+- ✅ Documented in WHAT_WENT_WRONG.md
+- ✅ Updated current_task.json for crash recovery
+
+**Critical Learning:** Tried to update task via browser_eval (failed). User corrected: "Use Ash framework." Immediate success with `Task.update(task, %{field: value})`.
+
+#### Task #21: More Maestro Mix Tasks
+**Request:** "Write scripts for yourself. I want to see a lot less shell commands."
+**Response:**
+- ✅ Created 4 new mix tasks
+- ✅ `mix maestro.task.read TASK_ID`
+- ✅ `mix maestro.task.update TASK_ID FIELD VALUE`
+- ✅ `mix maestro.task.list [OPTIONS]`
+- ✅ `mix agents.update FILE MESSAGE`
+- ✅ Marked complete with detailed notes
+
+### Infrastructure Now Available
+
+**Mix Tasks for Future Sessions:**
+```bash
+mix maestro.task.read 20           # Read task details
+mix maestro.task.update 20 status done  # Update via Ash
+mix maestro.task.list --status todo     # List/filter tasks
+mix agents.update FILE MESSAGE     # Update agents repo
 ```
-~/dev/agents/
-├── core/           # Bootstrap guidelines (Git, GUIDELINES, STARTUP, ALIASES)
-├── database/       # DATA_MODIFICATION_PATTERNS
-├── ui/             # LiveView, DaisyUI, LIVEVIEW_VS_JAVASCRIPT, MARKDOWN_EDITOR
-├── tools/          # LiveTable, Fly deployment, Igniter
-├── projects/       # Circle learnings, Navbar setup
-├── bundles/        # JSON bundles (bootstrap.json, ui_work.json, etc.)
-├── guides/         # Detailed guides and session learnings
-└── usage_rules/    # Symlinks to library docs
+
+**Documentation:**
+- `TASK_RUNNER_WORKFLOW.md` - Step-by-step execution pattern
+- `WHAT_WENT_WRONG.md` - Session 1 & 2 learnings
+- `bootstrap/GUIDELINES.md` - ALWAYS USE ASH (first principle)
+- `current_task.json` - Session state for crash recovery
+- `USAGE_RULES.md` - All library patterns (38KB)
+
+**Agents Repo Updated:**
+- `bootstrap/GUIDELINES.md` - Added Ash principle as #1 core principle
+- Committed and pushed to origin/main
+- Available to ALL projects now
+
+### The Golden Rule (Learned Session 2)
+
+**🚨 ALWAYS USE ASH FOR DATA MODIFICATIONS 🚨**
+
+```elixir
+# Read
+task = Maestro.Ops.Task.by_id!(task_id)
+
+# Update (THE CORRECT WAY)
+{:ok, updated} = Maestro.Ops.Task.update(task, %{
+  description: cleaned_description,
+  notes: completion_notes,
+  status: :done
+})
 ```
 
-## Next Steps (For Future Sessions):
+**NOT:**
+- ❌ browser_eval to manipulate UI
+- ❌ Direct SQL updates
+- ❌ LiveView assign modifications
 
-### Priority 1: Validate Infrastructure
-- Test that new agents can successfully read startup.json and get started
-- Verify USAGE_RULES.md provides enough context for common tasks
-- Check that session.end workflow completes successfully
+**Why:** Ash runs validations, calculations, authorization, hooks. Data actually persists.
 
-### Priority 2: Original Task - Markdown Editor
-**We never actually completed the original task from this session:**
-- Add WYSIWYG markdown editor to project description field on /projects/:slug page
-- Should use the pattern documented in `ui/MARKDOWN_EDITOR_PATTERN.md`
-- Use Ash Resource.update() for saving (not SQL)
-- Follow the existing EasyMDE hook pattern in assets/js/app.js
+## Next Session Priorities
 
-**Implementation:**
-1. Read `ui/MARKDOWN_EDITOR_PATTERN.md`
-2. Check existing implementation on task form (lib/maestro_web/live/task_form_live.ex)
-3. Apply same pattern to project detail page
-4. Use `Maestro.Ops.Project.update(project, %{description: description})`
+### If User Clicks "Run Task" and Says "run"
 
-### Priority 3: Process Improvements
-- Create `mix concept.dag.update` task to automate DAG regeneration
-- Consider automating USAGE_RULES.md sync in session.end (if deps changed)
-- Document the "Read before building" pattern more prominently
+1. **Read this file** - Understand current state
+2. **Read TASK_RUNNER_WORKFLOW.md** - Follow the pattern
+3. **Read the task's description** - That's the request
+4. **Format description markdown** - Make it pretty
+5. **Execute the work** - Ask questions if needed
+6. **Write completion to notes** - Using Ash
+7. **Mark complete** - If appropriate
+8. **Learn** - Capture patterns
 
-### Priority 4: Testing & Validation
-- Verify concept DAG accurately reflects all guides
-- Test bundle tracking is capturing useful data
-- Validate startup.json size is manageable (currently ~50KB)
+### Available Tools
 
-## Key Learnings to Remember:
+```bash
+mix maestro.task.read TASK_ID      # Read task
+mix maestro.task.update TASK_ID notes "..." # Update via Ash
+mix maestro.task.list --status todo        # List tasks
+mix agents.update FILE MESSAGE     # Update agents repo
+mix bundles.track ref ID "context" # Log usage
+mix startup.build                  # Update startup.json
+```
 
-1. **Always read USAGE_RULES.md at startup** - Contains library patterns
-2. **Check existing code before building** - Components/patterns often exist
-3. **Use Ash for all data updates** - Never bypass with SQL
-4. **Read detailed formats before modifying** - Preserve structure (like CONCEPT_DAG.dot)
-5. **Use update_plan to track work** - Prevents forgetting tasks
+### Outstanding Tasks
 
-## Files Modified This Session:
+Check active tasks:
+```bash
+mix maestro.task.list --status todo
+```
 
-**Maestro:**
-- TASK.md (new) - This file
-- USAGE_RULES.md (new) - All library + tool patterns
-- startup.json (updated) - Now bundles USAGE_RULES
-- lib/mix/tasks/startup.build.ex - Reads from reorganized structure, includes USAGE_RULES
-- CONCEPT_DAG.dot - Added new guides
-- priv/static/images/concept_dag.svg - Regenerated
+Or look at Maestro UI: http://localhost:4004/tasks
 
-**Agents:**
-- Reorganized into 5 folders (core, database, ui, tools, projects)
-- guides/SESSION_LEARNINGS_2025_10_28.md (new)
-- usage_rules/maestro_tool.md (symlink)
+## Session Statistics
 
-**Maestro Tool:**
-- lib/mix/tasks/session.end.ex (new) - End-of-session workflow
+**Session 2:**
+- Tasks completed: 2 (Task #20, Task #21)
+- Critical learning: ALWAYS USE ASH
+- Mix tasks created: 4
+- Guidelines updated: 3 files
+- Agents repo commits: 1
+- Guideline usage logged: 5 references
 
-## Session Statistics:
-- Tokens used: ~144k / 200k (72%)
-- Files modified: ~25
-- Key insight: 85% of tokens wasted by not reading docs first
-- Critical file added: USAGE_RULES.md (would have prevented most issues)
+**Knowledge captured:**
+- Task Runner Workflow pattern
+- Ash-first principle (front and center)
+- Mix tasks for common operations
+- Crash recovery state maintained
 
-## For Next Agent:
+## For Future You
 
-Start by reading startup.json - it contains everything you need bundled inline.
-Then check this TASK.md file to understand current state and next priorities.
+**When you start:**
+1. Read `startup.json` - Everything bundled
+2. Read `current_task.json` - Session state
+3. Read `TASK_RUNNER_WORKFLOW.md` - How to execute tasks
+4. Check for active task: Look at AppState or UI
+
+**When you work:**
+- ALWAYS use Ash for data modifications
+- Format description markdown
+- Document completion in notes
+- Mark complete if appropriate
+- Learn and capture patterns
+
+**When you finish:**
+```bash
+mix startup.build  # Update for next agent
+git add . && git commit -m "Session summary"
+git push origin feature/task-runner
+```
+
+**If you crash:**
+Read `current_task.json` first - it has everything you need to continue.
+
+## The Pattern That Works
+
+**Description → Notes via Ash**
+
+```elixir
+# 1. Read
+task = Maestro.Ops.Task.by_id!(task_id)
+IO.puts(task.description)  # The request
+
+# 2. Do work
+result = do_the_work()
+
+# 3. Write response
+{:ok, updated} = Maestro.Ops.Task.update(task, %{
+  notes: "## Completion Note\n\nWhat I did...",
+  status: :done  # if complete
+})
+```
+
+This is the way. 🎯
