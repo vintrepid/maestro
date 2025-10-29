@@ -1,152 +1,98 @@
 {
-  "task": "session_2_complete",
-  "version": "3.0.0",
+  "for_next_maestro_session": true,
+  "task": "implement_centralized_logging",
+  "version": "4.0.0",
   "project": "Maestro",
-  "session": "ended",
-  "status": "ready_for_next",
+  "session": "session_3_ready",
+  "status": "queued",
   "branch": "feature/task-runner",
   
-  "session_2_summary": {
-    "critical_breakthrough": "Task Runner Pattern established and working",
-    "token_usage": "~113k / 200k (56%)",
-    "tasks_completed": 3,
-    "tasks_created": 1,
-    "key_learning": "ALWAYS USE ASH for data modifications"
+  "your_task": {
+    "task_id": 25,
+    "title": "Implement centralized JSON logging",
+    "maestro_url": "http://localhost:4004/tasks/25/edit",
+    "estimated_time": "40 minutes",
+    "priority": "high",
+    "context": "Part of multi-agent architecture (Task #24)"
   },
   
-  "what_was_accomplished": {
-    "task_20": "Agent training pattern - captured Always Use Ash learning",
-    "task_21": "Created 4 mix tasks to replace shell commands",
-    "task_22": "Validated Maestro → Circle coordination pattern",
-    "task_23": "Created for coordination efficiency discussion"
+  "what_previous_me_accomplished": {
+    "session_2_complete": true,
+    "tasks_completed": [20, 21, 22],
+    "tasks_created": [23, 24, 25],
+    "key_breakthrough": "Task Runner Pattern established",
+    "critical_learning": "ALWAYS USE ASH for data modifications",
+    "token_usage": "~122k / 200k (61%)"
   },
   
-  "infrastructure_built": {
-    "documentation": [
-      "TASK_RUNNER_WORKFLOW.md - Complete execution guide",
-      "WHAT_WENT_WRONG.md - Session 1 & 2 learnings",
-      "SESSION_LEARNINGS_2025_10_28_session2.md - This session",
-      "TASK.md - Updated with current state"
-    ],
-    "mix_tasks": [
+  "you_should_know": {
+    "task_runner_pattern": "Format → Read → Plan → Execute → Document (via Ash) → Learn",
+    "coordination_validated": "Task #22 - Maestro → Circle worked perfectly",
+    "mix_tasks_available": [
       "mix maestro.task.read TASK_ID",
       "mix maestro.task.update TASK_ID FIELD VALUE",
       "mix maestro.task.list [OPTIONS]",
       "mix agents.update FILE MESSAGE"
     ],
-    "ash_enhancement": "Added entity_type and entity_id to Task :update action",
-    "agents_repo": "Added 'ALWAYS USE ASH' as #1 core principle in GUIDELINES.md"
+    "ash_updated": "Task resource now accepts entity_type/entity_id in update action"
   },
   
-  "coordination_pattern_validated": {
-    "task_22_flow": [
-      "1. Maestro created task in UI",
-      "2. Maestro generated task package (JSON + TASK.md)",
-      "3. Maestro copied to ~/dev/circle/current_task.json",
-      "4. Circle agent executed",
-      "5. Circle created COMPLETION-ui-cleanup.md",
-      "6. Maestro read completion and updated task",
-      "7. SUCCESS - Pattern works!"
-    ],
-    "time_taken": "~10 minutes total",
-    "result": "Clean coordination, clear handoff, good documentation"
+  "read_these_first": [
+    "startup.json - Everything bundled",
+    "TASK.md - Current session state",
+    "TASK_RUNNER_WORKFLOW.md - How to execute tasks",
+    "SESSION_LEARNINGS_2025_10_28_session2.md - What I learned"
+  ],
+  
+  "your_workflow": [
+    "1. Read Task #25 description",
+    "2. Create ~/dev/agents/logs/ structure",
+    "3. Document log format in README",
+    "4. Update mix bundles.track to JSON output",
+    "5. Test with your own session",
+    "6. Document completion in Task #25 notes",
+    "7. Mark complete",
+    "8. Update current_task.json for session_4"
+  ],
+  
+  "the_big_picture": {
+    "task_24": "Multi-agent architecture discussion",
+    "phase_1": "Centralized logging (Task #25 - you're doing this)",
+    "phase_2": "Git workflow split (future)",
+    "phase_3": "Multi-agent coordination (future)",
+    "goal": "Enable multiple agents working simultaneously"
   },
   
-  "the_golden_rule": "🚨 ALWAYS USE ASH FOR DATA MODIFICATIONS 🚨",
-  
-  "for_next_session": {
-    "must_read_first": [
-      "startup.json - Has everything bundled",
-      "current_task.json - This file (crash recovery)",
-      "TASK.md - Current session state",
-      "TASK_RUNNER_WORKFLOW.md - How to execute tasks"
-    ],
-    
-    "available_tools": [
-      "mix maestro.task.read TASK_ID - Read task details",
-      "mix maestro.task.update TASK_ID FIELD VALUE - Update via Ash",
-      "mix maestro.task.list [OPTIONS] - List/filter tasks",
-      "mix agents.update FILE MESSAGE - Update agents repo",
-      "mix bundles.track ref ID 'context' - Log usage",
-      "mix startup.build - Update startup.json"
-    ],
-    
-    "when_user_says_run": [
-      "1. Read task with mix maestro.task.read TASK_ID",
-      "2. Format description if needed (make it pretty)",
-      "3. Read request (description = what user wants)",
-      "4. Plan and execute",
-      "5. Document completion (notes = what you did, via Ash)",
-      "6. Mark complete if done",
-      "7. Learn from the work"
-    ],
-    
-    "outstanding_tasks": {
-      "task_19": "Circle UI alignment - still todo",
-      "task_23": "Coordination efficiency discussion - ready to discuss",
-      "task_20": "Has more instructions for future sessions"
-    }
-  },
-  
-  "if_i_crash": {
-    "read_this_first": "You're reading it - current_task.json",
-    "then_read": [
-      "startup.json",
-      "TASK.md", 
-      "TASK_RUNNER_WORKFLOW.md"
-    ],
-    "key_pattern": "Description=Request, Notes=Response, Ash=API",
-    "check_for": "Look for active tasks with: mix maestro.task.list --status todo"
-  },
-  
-  "critical_files_updated": {
-    "maestro": [
+  "git_status": {
+    "branch": "feature/task-runner",
+    "commits_ahead": 7,
+    "files_modified_session_2": [
       "TASK.md",
-      "startup.json", 
+      "startup.json",
       "current_task.json",
       "TASK_RUNNER_WORKFLOW.md",
       "WHAT_WENT_WRONG.md",
       "SESSION_LEARNINGS_2025_10_28_session2.md",
       "lib/maestro/ops/task.ex",
-      "lib/mix/tasks/maestro/*.ex"
+      "lib/mix/tasks/maestro/*.ex (4 files)"
     ],
-    "agents_repo": [
-      "bootstrap/GUIDELINES.md - ALWAYS USE ASH added as #1 principle"
-    ],
-    "circle": [
-      "task_ui_cleanup.json",
-      "current_task.json",
-      "TASK.md",
-      "COMPLETION-ui-cleanup.md"
-    ]
+    "ready_to_commit": false,
+    "working_directory": "Clean (all committed)"
   },
   
-  "session_stats": {
-    "commits_maestro": 7,
-    "commits_agents": 1,
-    "commits_circle": 1,
-    "files_created": 8,
-    "files_modified": 12,
-    "mix_tasks_created": 4,
-    "guidelines_logged": 8,
-    "token_efficiency": "56% (better than Session 1's 72%)"
+  "handoff_message": "Hey future me! Session 2 went great. We established the Task Runner Pattern and it's working. Now implement centralized logging (Task #25) so we can track guideline usage across all agents. The description has everything you need. Use the mix tasks I created. Remember: ALWAYS USE ASH! Good luck! 🎯",
+  
+  "if_stuck": {
+    "read": "TASK_RUNNER_WORKFLOW.md and SESSION_LEARNINGS_2025_10_28_session2.md",
+    "ask": "User is available for questions",
+    "pattern": "Format desc → Read → Plan → Execute → Document notes → Mark complete"
   },
   
-  "next_session_priorities": [
-    "Discuss Task #23 - When Maestro does work vs. assigns",
-    "Create automation - mix maestro.task.trigger for 'run' command",
-    "Test coordination pattern again with another task",
-    "Consider Task #19 - Might be simple enough for Maestro"
-  ],
-  
-  "success_indicators": {
-    "pattern_established": true,
-    "coordination_validated": true,
-    "tools_created": true,
-    "learning_captured": true,
-    "future_ready": true,
-    "no_context_lost": true
-  },
-  
-  "reminder": "Read USAGE_RULES.md BEFORE attempting data modifications. It has the Ash patterns. Don't repeat Session 2's initial mistake!"
+  "success_criteria_task_25": [
+    "~/dev/agents/logs/ structure created",
+    "Log format documented",
+    "mix bundles.track writes JSON",
+    "Session ID tracked",
+    "Tested and working"
+  ]
 }
