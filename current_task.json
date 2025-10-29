@@ -1,79 +1,66 @@
 {
-  "task": "continue_interactive_concept_maps",
+  "task": "fix_concept_map_tool_not_diagrams",
   "version": "1.0.0",
   "project": "Maestro",
-  "session": "continuation",
+  "critical_instruction": "FIX THE TOOL, NOT THE GENERATED DIAGRAMS",
   "maestro_url": "http://localhost:4004/concepts",
   "status": "ready",
   
-  "what_was_accomplished": {
-    "git_maestro": "Created Git Maestro startup package for specialized git operations",
-    "concept_maps": "Built interactive concept map system with drill-down navigation",
-    "directory_dags": "Added sub-DAG generation for directory views (e.g., /concepts/sessions)",
-    "maestro_tool": "Enhanced mix concept.update to auto-scan agents directory",
-    "clickable_svg": "Inline SVG with clickable nodes for navigation",
-    "shift_click": "Shift+click for fullscreen view"
-  },
-  
-  "current_state": {
-    "feature_branch": "feature/task-runner",
-    "merged_to_master": true,
-    "concept_map": "Auto-generates from ~/dev/agents/ structure",
-    "sessions_view": "/concepts/sessions shows sub-DAG with file relationships",
-    "tools_created": [
-      "mix concept.update (auto-scan mode for Maestro)",
-      "mix session.end (end-of-session workflow)",
-      "Git Maestro startup package"
+  "CRITICAL_UNDERSTANDING": {
+    "DO_NOT": [
+      "Edit CONCEPT_DAG.dot files manually",
+      "Edit generated SVG files",
+      "Fix the diagrams directly",
+      "Modify the output"
+    ],
+    "DO": [
+      "Fix the code in concepts_live.ex that generates the diagrams",
+      "Fix the maestro_tool that creates the DOT files",
+      "Fix the generation logic",
+      "Fix the tool, not its output"
     ]
   },
   
-  "what_to_continue": {
-    "priority_1": "Test and refine directory sub-DAGs",
-    "priority_2": "Add more relationship intelligence (what files reference what)",
-    "priority_3": "Consider sub-DAGs for other directories (bootstrap, bundles, guides)",
-    "priority_4": "Improve session file chronological connections",
-    "priority_5": "Add content preview on hover or in sidebar"
+  "the_problem": {
+    "what": "The generate_directory_dag function in concepts_live.ex has bugs",
+    "where": "lib/maestro_web/live/concepts_live.ex - generate_directory_dag/2 and generate_session_relationships/1",
+    "issue_1": "generate_session_relationships returns wrong format or empty string",
+    "issue_2": "Variable warnings indicate logic errors in the generation code",
+    "issue_3": "Sub-DAG generation runs on every page view (inefficient)"
   },
   
-  "known_issues": [
-    "Session relationships might not render correctly (check generate_session_relationships)",
-    "Sub-DAG generation happens on every view (could cache)",
-    "No error handling if dot command fails for sub-DAGs"
-  ],
-  
-  "files_modified": [
-    "lib/maestro_web/live/concepts_live.ex - Added sub-DAG generation",
-    "lib/maestro_web/router.ex - Added /concepts/:dir/:file routes",
-    "assets/js/app.js - Added ShiftClickHook",
-    "~/dev/forks/maestro_tool/lib/mix/tasks/concept.update.ex - Auto-scan for Maestro"
-  ],
-  
-  "testing_needed": [
-    "Navigate to /concepts and click on Sessions directory",
-    "Verify sub-DAG shows all session files",
-    "Click on a session file to view content",
-    "Test shift+click for fullscreen",
-    "Check if chronological relationships show between sessions"
-  ],
-  
-  "next_session_tasks": [
-    "1. Test current concept map functionality at /concepts",
-    "2. Test sub-DAG at /concepts/sessions",
-    "3. Fix any rendering issues with session relationships",
-    "4. Consider adding similar intelligence for other directories",
-    "5. Optionally: Add caching for generated sub-DAGs",
-    "6. Optionally: Add file content previews"
-  ],
-  
-  "reference": {
-    "concepts_page": "http://localhost:4004/concepts",
-    "sessions_subdag": "http://localhost:4004/concepts/sessions",
-    "git_maestro_files": [
-      "GIT_MAESTRO_STARTUP.json",
-      "GIT_MAESTRO_README.md"
-    ],
-    "session_capacity": "72% tokens used (145k/200k)"
+  "what_to_fix": {
+    "file": "lib/maestro_web/live/concepts_live.ex",
+    "function_1": "generate_session_relationships/1 - Fix the relationships variable and logic",
+    "function_2": "generate_directory_dag/2 - Make sure it generates valid DOT syntax",
+    "function_3": "Consider caching the generated SVGs instead of regenerating on every view"
   },
   
-  "context_for_next_agent": "This session created an interactive concept map system that auto-generates from the agents directory structure. The main innovation is drill-down navigation: click on a directory to see a sub-DAG of its contents with relationship intelligence. The sessions directory now shows chronological connections between learning files. Continue by testing and refining this system."
+  "how_to_test": {
+    "step_1": "Navigate to /concepts/sessions",
+    "step_2": "Check if the sub-DAG shows files with connections between them",
+    "step_3": "Look for arrows between chronologically related session files",
+    "step_4": "Click on a file node to verify navigation works"
+  },
+  
+  "current_warnings": [
+    "variable 'relationships' is unused (there is a variable with the same name in the context)",
+    "variable 'task_summaries' is unused",
+    "These indicate bugs in generate_session_relationships/1"
+  ],
+  
+  "expected_behavior": {
+    "sessions_view": "Should show all session files connected chronologically",
+    "example": "SESSION_LEARNINGS_2025_10_28_session2.md → SESSION_LEARNINGS_2025_10_29_session3.md",
+    "relationships": "Arrows showing 'followed by' between sequential sessions"
+  },
+  
+  "tools_you_have": {
+    "read_code": "Read concepts_live.ex to understand current implementation",
+    "fix_code": "Edit concepts_live.ex to fix the generation logic",
+    "test": "Navigate to /concepts/sessions to see if your fix worked",
+    "reference": "Look at how the main concept_dag is generated for patterns"
+  },
+  
+  "remember": "You are a developer fixing a bug in the diagram generation code. You do NOT edit the diagrams themselves. You edit the CODE that generates the diagrams."
 }
