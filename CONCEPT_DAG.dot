@@ -2,46 +2,103 @@ digraph GuidelineConcepts {
   rankdir=LR;
   node [shape=box, style=filled];
   
-  // Core concepts
+  // Bootstrap layer - Core foundations
   node [fillcolor=lightblue];
-  git [label="Git Workflow\n(GUIDELINES)"];
-  git_maestro [label="Git Maestro\nSpecialized Agent\n(GIT_MAESTRO_STARTUP)"];
-  verification [label="Code Verification\n(GUIDELINES)"];
-  communication [label="Communication\n(GUIDELINES)"];
-  startup_json [label="Startup JSON\n(guides/STARTUP_JSON)"];
+  bootstrap [label="Bootstrap Bundle\n(agents/bundles/bootstrap.json)"];
+  guidelines [label="Guidelines\n(agents/bootstrap/GUIDELINES.md)"];
+  aliases [label="Aliases\n(agents/bootstrap/ALIASES.md)"];
+  user_context [label="User Context\n(agents/bootstrap/USER_CONTEXT.md)"];
+  startup_json [label="Startup JSON\n(agents/guides/STARTUP_JSON_GUIDE)"];
+  
+  // Coordination layer
+  node [fillcolor=lightpink];
   task_runner [label="Task Runner\nWorkflow\n(TASK_RUNNER_WORKFLOW)"];
   coordination [label="Agent Coordination\nPattern\n(MASTER_COORDINATOR)"];
+  git_maestro [label="Git Maestro\nSpecialized Agent\n(GIT_MAESTRO_STARTUP)"];
+  
+  // Git workflow
+  node [fillcolor=lightskyblue];
+  git [label="Git Workflow\n(agents/git/)"];
+  verification [label="Code Verification\n(guidelines)"];
+  communication [label="Communication\n(guidelines)"];
+  
+  // Bundle system
+  node [fillcolor=lavender];
+  bundles [label="Bundles System\n(agents/bundles/)"];
+  database_bundle [label="Database Work Bundle"];
+  ui_bundle [label="UI Work Bundle"];
+  tools_bundle [label="Tools Bundle"];
+  projects_bundle [label="Projects Bundle"];
+  navbar_bundle [label="Navbar Setup Bundle"];
+  maestro_bundle [label="Maestro Bundle"];
   
   // Database concepts
   node [fillcolor=lightgreen];
-  db_pk [label="Primary Keys\n(GUIDELINES)"];
-  ash_resource [label="Ash Resources\n(GUIDELINES)"];
-  poly_relations [label="Polymorphic Relations\n(POLYMORPHIC_RELATIONS)"];
-  migrations [label="Data Migrations\n(GUIDELINES)"];
+  db_pk [label="Primary Keys\n(guidelines)"];
+  ash_resource [label="Ash Resources\n(guidelines)"];
+  poly_relations [label="Polymorphic Relations\n(database_work)"];
+  migrations [label="Data Migrations\n(guidelines)"];
   data_modification [label="Data Modification\n(guides/DATA_MODIFICATION)"];
   
   // UI/Frontend concepts
   node [fillcolor=lightyellow];
-  phoenix [label="Phoenix Patterns\n(LIVEVIEW)"];
+  phoenix [label="Phoenix Patterns\n(ui_work)"];
   ui_decision [label="LiveView vs JS\nDecision Point\n(guides/LIVEVIEW_VS_JS)"];
-  liveview [label="LiveView\n(LIVEVIEW)"];
+  liveview [label="LiveView\n(ui_work)"];
   javascript [label="JavaScript\n(guides/LIVEVIEW_VS_JS)"];
-  daisyui [label="DaisyUI Components\n(DAISYUI)"];
-  css [label="CSS Standards\n(DAISYUI)"];
+  daisyui [label="DaisyUI Components\n(ui_work)"];
+  css [label="CSS Standards\n(ui_work)"];
   markdown_editor [label="Markdown Editor\n(guides/MARKDOWN_EDITOR)"];
   
   // Tools
   node [fillcolor=lightcoral];
-  css_linter [label="CSS Linter\n(usage_rules)"];
-  live_table [label="LiveTable\n(LIVE_TABLE)"];
-  fly [label="Fly Deployment\n(FLY_DEPLOYMENT)"];
+  css_linter [label="CSS Linter\n(tools)"];
+  live_table [label="LiveTable\n(tools)"];
+  fly [label="Fly Deployment\n(tools)"];
+  maestro_tool [label="Maestro Tool Package\n(tools)"];
   
   // Project-specific
   node [fillcolor=plum];
-  calvin_domain [label="Calvin Business\n(calvin/README)"];
-  sanjuan_domain [label="SanJuan Analytics\n(sanjuan/README)"];
+  calvin_domain [label="Calvin Business\n(projects/calvin)"];
+  sanjuan_domain [label="SanJuan Analytics\n(projects/sanjuan)"];
   maestro_coord [label="Maestro Coordination\n(maestro/README)"];
   circle_learnings [label="Circle Patterns\n(guides/CIRCLE_LEARNINGS)"];
+  
+  // Bootstrap relationships
+  bootstrap -> guidelines [label="contains"];
+  bootstrap -> aliases [label="contains"];
+  bootstrap -> user_context [label="contains"];
+  bootstrap -> git [label="defines"];
+  bootstrap -> verification [label="defines"];
+  bootstrap -> communication [label="defines"];
+  startup_json -> bootstrap [label="bundles"];
+  
+  // Coordination relationships
+  coordination -> maestro_coord [label="implements"];
+  coordination -> task_runner [label="uses"];
+  coordination -> git_maestro [label="deploys"];
+  task_runner -> communication [label="defines handoffs"];
+  git_maestro -> git [label="executes"];
+  
+  // Bundle system relationships
+  bundles -> database_bundle [label="provides"];
+  bundles -> ui_bundle [label="provides"];
+  bundles -> tools_bundle [label="provides"];
+  bundles -> projects_bundle [label="provides"];
+  bundles -> navbar_bundle [label="provides"];
+  bundles -> maestro_bundle [label="provides"];
+  
+  database_bundle -> ash_resource [label="contains"];
+  database_bundle -> poly_relations [label="contains"];
+  database_bundle -> migrations [label="contains"];
+  
+  ui_bundle -> phoenix [label="contains"];
+  ui_bundle -> liveview [label="contains"];
+  ui_bundle -> daisyui [label="contains"];
+  
+  tools_bundle -> css_linter [label="contains"];
+  tools_bundle -> live_table [label="contains"];
+  tools_bundle -> maestro_tool [label="contains"];
   
   // Database flow
   db_pk -> ash_resource [label="used in"];
@@ -75,7 +132,6 @@ digraph GuidelineConcepts {
   // Development flow
   git -> verification [label="before merge"];
   verification -> communication [label="report via"];
-  startup_json -> git [label="defines workflow"];
   
   // Database & UI intersection
   ash_resource -> liveview [label="displayed in"];
@@ -95,15 +151,13 @@ digraph GuidelineConcepts {
   maestro_coord -> calvin_domain [label="coordinates"];
   maestro_coord -> sanjuan_domain [label="coordinates"];
   maestro_coord -> git_maestro [label="assigns git tasks"];
-  git_maestro -> git [label="executes"];
-  coordination -> maestro_coord [label="implements"];
-  coordination -> task_runner [label="uses"];
-  task_runner -> communication [label="defines handoffs"];
   
   // Tools & Concepts
   css_linter -> maestro_coord [label="integrated in"];
   live_table -> sanjuan_domain [label="used in"];
   live_table -> calvin_domain [label="used in"];
+  maestro_tool -> maestro_coord [label="provides tasks"];
+  maestro_tool -> bundles [label="tracks usage"];
   
   // Deployment
   liveview -> fly [label="deployed via"];
@@ -111,11 +165,33 @@ digraph GuidelineConcepts {
   fly -> verification [label="tested after"];
   
   // Organization clusters
-  subgraph cluster_core {
-    label="Core Guidelines";
+  subgraph cluster_bootstrap {
+    label="Bootstrap Layer\n(Loaded by all agents)";
     style=filled;
     color=lightgrey;
-    git; git_maestro; verification; communication; startup_json; task_runner; coordination;
+    bootstrap; guidelines; aliases; user_context; startup_json;
+  }
+  
+  subgraph cluster_coordination {
+    label="Coordination Layer\n(Maestro orchestration)";
+    style=filled;
+    color=lightgrey;
+    coordination; task_runner; git_maestro;
+  }
+  
+  subgraph cluster_git {
+    label="Git Workflow";
+    style=filled;
+    color=lightgrey;
+    git; verification; communication;
+  }
+  
+  subgraph cluster_bundles {
+    label="Bundle System\n(Task-specific loading)";
+    style=filled;
+    color=lightgrey;
+    bundles; database_bundle; ui_bundle; tools_bundle; 
+    projects_bundle; navbar_bundle; maestro_bundle;
   }
   
   subgraph cluster_data {
@@ -136,7 +212,7 @@ digraph GuidelineConcepts {
     label="Tools & Infrastructure";
     style=filled;
     color=lightgrey;
-    css_linter; live_table; fly;
+    css_linter; live_table; fly; maestro_tool;
   }
   
   subgraph cluster_projects {
