@@ -1,0 +1,15 @@
+digraph sessionsDirectory {
+  rankdir=LR;
+  node [shape=box, style=filled, fillcolor=lightblue];
+  
+    LEARNINGS_TASK_37_md [label="LEARNINGS-TASK-37.md" URL="/concepts/sessions/LEARNINGS-TASK-37.md"];
+  SESSION_LEARNINGS_2025_10_28_extended_md [label="SESSION LEARNINGS 2025 10 28 extended.md" URL="/concepts/sessions/SESSION_LEARNINGS_2025_10_28_extended.md"];
+  SESSION_LEARNINGS_2025_10_28_session2_md [label="SESSION LEARNINGS 2025 10 28 session2.md" URL="/concepts/sessions/SESSION_LEARNINGS_2025_10_28_session2.md"];
+  SESSION_LEARNINGS_2025_10_29_session3_md [label="SESSION LEARNINGS 2025 10 29 session3.md" URL="/concepts/sessions/SESSION_LEARNINGS_2025_10_29_session3.md"];
+  TASK_34_SUMMARY_md [label="TASK 34 SUMMARY.md" URL="/concepts/sessions/TASK_34_SUMMARY.md"];
+  TASK_37_SUMMARY_md [label="TASK 37 SUMMARY.md" URL="/concepts/sessions/TASK_37_SUMMARY.md"];
+  WHAT_WENT_WRONG_md [label="WHAT WENT WRONG.md" URL="/concepts/sessions/WHAT_WENT_WRONG.md"];
+  
+  // Show temporal relationships for session files
+  
+}

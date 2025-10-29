@@ -127,29 +127,19 @@ defmodule MaestroWeb.ConceptsLive do
     dir_path = Path.join(agents_dir, assigns.current_dir)
     
     if File.dir?(dir_path) do
-      files = File.ls!(dir_path)
-      |> Enum.filter(&(!String.starts_with?(&1, ".")))
-      |> Enum.sort()
-      
-      assigns = assign(assigns, :files, files)
+      # Generate sub-DAG for this directory
+      generate_directory_dag(assigns.current_dir, dir_path)
       
       ~H"""
-      <div class="grid grid-cols-1 gap-2">
-        <%= for file <- @files do %>
-          <.link 
-            navigate={"/concepts/#{@current_dir}/#{URI.encode(file)}"} 
-            class="card bg-base-100 shadow hover:shadow-lg transition-shadow"
-          >
-            <div class="card-body p-4">
-              <div class="flex items-center gap-2">
-                <span class="text-2xl">
-                  <%= if String.ends_with?(file, ".json"), do: "📦", else: if String.ends_with?(file, ".md"), do: "📄", else: "📁" %>
-                </span>
-                <span class="font-medium"><%= file %></span>
-              </div>
-            </div>
-          </.link>
-        <% end %>
+      <div class="mb-4">
+        <p class="text-sm text-base-content/70">Concept map showing relationships between files in this directory. Click nodes to view files.</p>
+      </div>
+      <div class="card bg-base-100 shadow-xl card-compact">
+        <div class="card-body p-0">
+          <div class="hover:opacity-80 transition-opacity">
+            <%= raw(load_directory_svg(assigns.current_dir)) %>
+          </div>
+        </div>
       </div>
       """
     else
@@ -189,6 +179,68 @@ defmodule MaestroWeb.ConceptsLive do
       File.read!(svg_path)
     else
       ""
+    end
+  end
+
+  defp generate_directory_dag(dir_name, dir_path) do
+    files = File.ls!(dir_path)
+    |> Enum.filter(&(!String.starts_with?(&1, ".")))
+    |> Enum.sort()
+    
+    # Generate DOT content for this directory
+    dot_content = """
+    digraph #{String.replace(dir_name, "-", "_")}Directory {
+      rankdir=LR;
+      node [shape=box, style=filled, fillcolor=lightblue];
+      
+      #{Enum.map_join(files, "\n", fn file ->
+        id = String.replace(file, ~r/[^a-zA-Z0-9]/, "_")
+        label = String.replace(file, "_", " ")
+        url = "/concepts/#{dir_name}/#{URI.encode(file)}"
+        "  #{id} [label=\"#{label}\" URL=\"#{url}\"];"
+      end)}
+      
+      // Show temporal relationships for session files
+      #{generate_session_relationships(files)}
+    }
+    """
+    
+    # Write DOT file
+    dot_path = "CONCEPT_DAG_#{dir_name}.dot"
+    File.write!(dot_path, dot_content)
+    
+    # Generate SVG
+    svg_path = Path.join(["priv", "static", "images", "concept_dag_#{dir_name}.svg"])
+    File.mkdir_p!(Path.dirname(svg_path))
+    System.cmd("dot", ["-Tsvg", dot_path, "-o", svg_path])
+  end
+
+  defp generate_session_relationships(files) do
+    # Group related files
+    session_learnings = Enum.filter(files, &String.contains?(&1, "SESSION_LEARNINGS"))
+    task_summaries = Enum.filter(files, &String.contains?(&1, "TASK"))
+    
+    relationships = []
+    
+    # Connect session learnings chronologically
+    session_learnings
+    |> Enum.sort()
+    |> Enum.chunk_every(2, 1, :discard)
+    |> Enum.each(fn [file1, file2] ->
+      id1 = String.replace(file1, ~r/[^a-zA-Z0-9]/, "_")
+      id2 = String.replace(file2, ~r/[^a-zA-Z0-9]/, "_")
+      relationships = ["  #{id1} -> #{id2} [label=\"followed by\"];" | relationships]
+    end)
+    
+    Enum.join(relationships, "\n")
+  end
+
+  defp load_directory_svg(dir_name) do
+    svg_path = Path.join([Application.app_dir(:maestro), "priv", "static", "images", "concept_dag_#{dir_name}.svg"])
+    if File.exists?(svg_path) do
+      File.read!(svg_path)
+    else
+      "<p>Loading...</p>"
     end
   end
 end
