@@ -182,7 +182,6 @@ defmodule MaestroWeb.ConceptsLive do
       """
     end
   end
-end
 
   defp load_svg_content do
     svg_path = Path.join([Application.app_dir(:maestro), "priv", "static", "images", "concept_dag.svg"])
@@ -192,3 +191,4 @@ end
       ""
     end
   end
+end
