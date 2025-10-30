@@ -1,68 +1,78 @@
 {
-  "task": "fix_concept_map_tool_not_diagrams",
+  "task": "create_chelekom_project",
   "version": "1.0.0",
-  "project": "Maestro",
-  "critical_instruction": "FIX THE TOOL, NOT THE GENERATED DIAGRAMS",
-  "maestro_url": "http://localhost:4004/concepts",
+  "project": "Chelekom",
+  "critical_instruction": "Follow NEWPROJECT.md guidelines with Chelekom instead of DaisyUI",
+  "maestro_task_id": 39,
   "status": "ready",
   
   "CRITICAL_UNDERSTANDING": {
-    "DO_NOT": [
-      "Edit CONCEPT_DAG.dot files manually",
-      "Edit generated SVG files",
-      "Fix the diagrams directly",
-      "Modify the output"
-    ],
     "DO": [
-      "Fix the code in concepts_live.ex that generates the diagrams",
-      "Fix the maestro_tool that creates the DOT files",
-      "Fix the generation logic",
-      "Fix the tool, not its output"
+      "Read NEWPROJECT.md first - complete setup process",
+      "Research Mishka Chelekom before starting",
+      "Use mix igniter.new with standard flags",
+      "Add Chelekom dependency instead of DaisyUI",
+      "Run maestro.project.update after generation",
+      "Document your learnings"
+    ],
+    "DO_NOT": [
+      "Skip research phase",
+      "Assume Chelekom works like DaisyUI",
+      "Skip the three-step setup process",
+      "Forget to symlink agents directory"
     ]
   },
   
-  "the_problem": {
-    "what": "The generate_directory_dag function in concepts_live.ex has bugs",
-    "where": "lib/maestro_web/live/concepts_live.ex - generate_directory_dag/2 and generate_session_relationships/1",
-    "issue_1": "generate_session_relationships returns wrong format or empty string",
-    "issue_2": "Variable warnings indicate logic errors in the generation code",
-    "issue_3": "Sub-DAG generation runs on every page view (inefficient)"
+  "requirements": {
+    "ui_library": "Mishka Chelekom (NOT DaisyUI)",
+    "authentication": "None (for now)",
+    "standard_tools": [
+      "Phoenix LiveView",
+      "Ash Framework",
+      "tidewave",
+      "usage_rules",
+      "ex_money",
+      "live_debugger",
+      "ash_admin"
+    ]
   },
   
-  "what_to_fix": {
-    "file": "lib/maestro_web/live/concepts_live.ex",
-    "function_1": "generate_session_relationships/1 - Fix the relationships variable and logic",
-    "function_2": "generate_directory_dag/2 - Make sure it generates valid DOT syntax",
-    "function_3": "Consider caching the generated SVGs instead of regenerating on every view"
+  "research_first": {
+    "what_is_chelekom": "mix hex.info mishka_chelekom",
+    "documentation": "https://mishka.tools/chelekom/docs",
+    "questions": [
+      "How does Chelekom differ from DaisyUI?",
+      "What components does it provide?",
+      "How to integrate with Phoenix LiveView?",
+      "Any special configuration needed?"
+    ]
   },
   
-  "how_to_test": {
-    "step_1": "Navigate to /concepts/sessions",
-    "step_2": "Check if the sub-DAG shows files with connections between them",
-    "step_3": "Look for arrows between chronologically related session files",
-    "step_4": "Click on a file node to verify navigation works"
+  "setup_process": {
+    "step_1": "Read NEWPROJECT.md for three-step process",
+    "step_2": "Research Chelekom documentation",
+    "step_3": "Run mix igniter.new (see NEWPROJECT.md for flags)",
+    "step_4": "Add {:mishka_chelekom, \"~> 0.0.8\"} to mix.exs",
+    "step_5": "Configure Chelekom (research how)",
+    "step_6": "Run mix maestro.project.update",
+    "step_7": "Test Chelekom components work",
+    "step_8": "Document findings"
   },
   
-  "current_warnings": [
-    "variable 'relationships' is unused (there is a variable with the same name in the context)",
-    "variable 'task_summaries' is unused",
-    "These indicate bugs in generate_session_relationships/1"
+  "completion_criteria": [
+    "Project generates without errors",
+    "All dependencies install",
+    "Chelekom components render in test LiveView",
+    "Ash Admin accessible",
+    "LiveDebugger working",
+    "README updated with Chelekom specifics"
   ],
   
-  "expected_behavior": {
-    "sessions_view": "Should show all session files connected chronologically",
-    "example": "SESSION_LEARNINGS_2025_10_28_session2.md → SESSION_LEARNINGS_2025_10_29_session3.md",
-    "relationships": "Arrows showing 'followed by' between sequential sessions"
+  "documentation": {
+    "main_guide": "~/dev/agents/NEWPROJECT.md",
+    "tool": "mix maestro.project.update",
+    "report_back": "Write completion notes to Maestro task 39"
   },
   
-  "tools_you_have": {
-    "read_code": "Read concepts_live.ex to understand current implementation",
-    "fix_code": "Edit concepts_live.ex to fix the generation logic",
-    "test": "Navigate to /concepts/sessions to see if your fix worked",
-    "reference": "Look at how the main concept_dag is generated for patterns",
-    "NEW_TOOL": "mix concept.generate - Use this tool to generate concept maps for any directory!",
-    "example": "mix concept.generate ~/dev/agents/sessions"
-  },
-  
-  "remember": "You are a developer fixing a bug in the diagram generation code. You do NOT edit the diagrams themselves. You edit the CODE that generates the diagrams."
+  "remember": "You are creating a NEW project. Research Chelekom first, then follow NEWPROJECT.md with Chelekom modifications."
 }

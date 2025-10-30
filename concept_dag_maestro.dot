@@ -1,0 +1,14 @@
+digraph maestro {
+  rankdir=LR;
+  node [shape=box, style=filled, fillcolor=lightblue];
+  
+  // Files
+  AGENT_COMMUNICATION_md [label="📄 AGENT COMMUNICATION.md"];
+  SESSION_WORKFLOW_md [label="📄 SESSION WORKFLOW.md"];
+  TASK_RUNNER_md [label="📄 TASK RUNNER.md"];
+  completion_checklist_md [label="📄 completion checklist.md"];
+  task_runner_pattern_md [label="📄 task runner pattern.md"];
+  
+  // Relationships
+
+}

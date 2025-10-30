@@ -1,0 +1,38 @@
+digraph agents {
+  rankdir=LR;
+  node [shape=box, style=filled, fillcolor=lightblue];
+  
+  // Files
+  AGENTS_md [label="📄 AGENTS.md"];
+  CODE_QUALITY_md [label="📄 CODE QUALITY.md"];
+  CONCEPT_DAG_dot [label="📁 CONCEPT DAG.dot"];
+  CONCEPT_DAG_md [label="📄 CONCEPT DAG.md"];
+  CONTEXT_md [label="📄 CONTEXT.md"];
+  FORKING_GUIDE_md [label="📄 FORKING GUIDE.md"];
+  GUIDELINES_NO_GIT_md [label="📄 GUIDELINES NO GIT.md"];
+  GUIDELINE_USAGE_TRACKER_md [label="📄 GUIDELINE USAGE TRACKER.md"];
+  NEWPROJECT_md [label="📄 NEWPROJECT.md"];
+  README_md [label="📄 README.md"];
+  REUSABLE_CODE_md [label="📄 REUSABLE CODE.md"];
+  SENSE_OF_PLACE_md [label="📄 SENSE OF PLACE.md"];
+  agents_code_workspace [label="📁 agents.code-workspace"];
+  bootstrap [label="📁 bootstrap"];
+  bundles [label="📁 bundles"];
+  database_work [label="📁 database work"];
+  git [label="📁 git"];
+  guides [label="📁 guides"];
+  logs [label="📁 logs"];
+  maestro [label="📁 maestro"];
+  old [label="📁 old"];
+  projects [label="📁 projects"];
+  scripts [label="📁 scripts"];
+  sessions [label="📁 sessions"];
+  templates [label="📁 templates"];
+  testing [label="📁 testing"];
+  tools [label="📁 tools"];
+  ui_work [label="📁 ui work"];
+  usage_rules [label="📁 usage rules"];
+  
+  // Relationships
+
+}
