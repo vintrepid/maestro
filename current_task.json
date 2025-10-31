@@ -1,78 +1,53 @@
 {
-  "task": "create_chelekom_project",
-  "version": "1.0.0",
-  "project": "Chelekom",
-  "critical_instruction": "Follow NEWPROJECT.md guidelines with Chelekom instead of DaisyUI",
-  "maestro_task_id": 39,
-  "status": "ready",
-  
-  "CRITICAL_UNDERSTANDING": {
-    "DO": [
-      "Read NEWPROJECT.md first - complete setup process",
-      "Research Mishka Chelekom before starting",
-      "Use mix igniter.new with standard flags",
-      "Add Chelekom dependency instead of DaisyUI",
-      "Run maestro.project.update after generation",
-      "Document your learnings"
+  "status": "todo",
+  "type": "feature",
+  "version": "2.0.0",
+  "instructions": {
+    "critical_rules": [
+      "Use Ash for all task updates (never browser manipulation)",
+      "Write completion notes BEFORE marking done",
+      "Log session: mix bundles.track init maestro <branch> <bundles>",
+      "Test changes before reporting complete",
+      "Document learnings in task notes"
     ],
-    "DO_NOT": [
-      "Skip research phase",
-      "Assume Chelekom works like DaisyUI",
-      "Skip the three-step setup process",
-      "Forget to symlink agents directory"
+    "mission": "## Goal\nExtract UI patterns from Calvin work, document them, and evaluate Chelekom component library for Maestro.\n\n## Context\n- Calvin had UI improvements (unclear what exactly)\n- Created css_linter (analyzes CSS usage)\n- Created ui.compact & ui.add_expandable scripts (transform UI)\n- Chelekom documentation exists (CHELEKOM_NOTES.md)\n- Need to consolidate UI knowledge\n\n## Questions to Answer\n1. What specific UI improvements did we do in Calvin?\n2. Are they captured anywhere? Scripts? Docs?\n3. Should we use Chelekom components in Maestro?\n4. How do Chelekom components compare to current approach?\n\n## Tasks\n- [ ] Review Calvin project git history for UI work\n- [ ] Check if ui.compact/add_expandable apply Calvin lessons\n- [ ] Review CHELEKOM_NOTES.md thoroughly\n- [ ] Evaluate Chelekom for Maestro (pros/cons)\n- [ ] Document decision and rationale\n- [ ] If yes to Chelekom: Create installation/migration plan\n- [ ] Extract any missing patterns from Calvin work\n\n## Resources\n- ~/dev/agents/docs/chelekom/CHELEKOM_NOTES.md\n- ~/dev/forks/css_linter (analysis tool)\n- ~/dev/forks/maestro_tool (transformation scripts)\n- Calvin project git history",
+    "workflow": [
+      "1. Format - Clean up description if needed",
+      "2. Read - Understand what's requested",
+      "3. Plan - Break into steps, identify blockers",
+      "4. Execute - Do the work (use Ash for data!)",
+      "5. Document - Write completion notes FIRST",
+      "6. Complete - Update status AFTER notes",
+      "7. Learn - Capture patterns for future"
     ]
   },
-  
-  "requirements": {
-    "ui_library": "Mishka Chelekom (NOT DaisyUI)",
-    "authentication": "None (for now)",
-    "standard_tools": [
-      "Phoenix LiveView",
-      "Ash Framework",
-      "tidewave",
-      "usage_rules",
-      "ex_money",
-      "live_debugger",
-      "ash_admin"
+  "context": {
+    "entity_id": "9f95c0df-a167-4df9-be8d-1fa1eee0e538",
+    "entity_type": "Project",
+    "due_at": null,
+    "notes": null
+  },
+  "description": "## Goal\nExtract UI patterns from Calvin work, document them, and evaluate Chelekom component library for Maestro.\n\n## Context\n- Calvin had UI improvements (unclear what exactly)\n- Created css_linter (analyzes CSS usage)\n- Created ui.compact & ui.add_expandable scripts (transform UI)\n- Chelekom documentation exists (CHELEKOM_NOTES.md)\n- Need to consolidate UI knowledge\n\n## Questions to Answer\n1. What specific UI improvements did we do in Calvin?\n2. Are they captured anywhere? Scripts? Docs?\n3. Should we use Chelekom components in Maestro?\n4. How do Chelekom components compare to current approach?\n\n## Tasks\n- [ ] Review Calvin project git history for UI work\n- [ ] Check if ui.compact/add_expandable apply Calvin lessons\n- [ ] Review CHELEKOM_NOTES.md thoroughly\n- [ ] Evaluate Chelekom for Maestro (pros/cons)\n- [ ] Document decision and rationale\n- [ ] If yes to Chelekom: Create installation/migration plan\n- [ ] Extract any missing patterns from Calvin work\n\n## Resources\n- ~/dev/agents/docs/chelekom/CHELEKOM_NOTES.md\n- ~/dev/forks/css_linter (analysis tool)\n- ~/dev/forks/maestro_tool (transformation scripts)\n- Calvin project git history",
+  "title": "Review Calvin UI improvements and consider Chelekom for Maestro",
+  "project": "maestro",
+  "assigned_at": "2025-10-31T10:35:53.779581Z",
+  "completion_template": {
+    "status": "✅ done / 🔄 in progress / ⚠️ blocked",
+    "sections": [
+      "What Was Done - actions taken, key decisions",
+      "How It Works - brief explanation",
+      "Testing - what was verified",
+      "Files Modified - list with descriptions",
+      "Learnings - what to remember",
+      "Next Steps - if incomplete"
     ]
   },
-  
-  "research_first": {
-    "what_is_chelekom": "mix hex.info mishka_chelekom",
-    "documentation": "https://mishka.tools/chelekom/docs",
-    "questions": [
-      "How does Chelekom differ from DaisyUI?",
-      "What components does it provide?",
-      "How to integrate with Phoenix LiveView?",
-      "Any special configuration needed?"
-    ]
+  "coordinated_by": "Maestro",
+  "reporting": {
+    "code_example": "task = Maestro.Ops.Task.by_id!(66)\n\n# Write notes FIRST\nMaestro.Ops.Task.update(task, %{\n  notes: \"## Completion Report\\n\\n[Your findings]...\"\n})\n\n# Mark complete AFTER notes\nMaestro.Ops.Task.update(task, %{\n  status: :done\n})\n",
+    "maestro_url": "http://localhost:4004/tasks/66/edit",
+    "method": "Ash API (never browser)",
+    "project_url": "http://localhost:4004"
   },
-  
-  "setup_process": {
-    "step_1": "Read NEWPROJECT.md for three-step process",
-    "step_2": "Research Chelekom documentation",
-    "step_3": "Run mix igniter.new (see NEWPROJECT.md for flags)",
-    "step_4": "Add {:mishka_chelekom, \"~> 0.0.8\"} to mix.exs",
-    "step_5": "Configure Chelekom (research how)",
-    "step_6": "Run mix maestro.project.update",
-    "step_7": "Test Chelekom components work",
-    "step_8": "Document findings"
-  },
-  
-  "completion_criteria": [
-    "Project generates without errors",
-    "All dependencies install",
-    "Chelekom components render in test LiveView",
-    "Ash Admin accessible",
-    "LiveDebugger working",
-    "README updated with Chelekom specifics"
-  ],
-  
-  "documentation": {
-    "main_guide": "~/dev/agents/NEWPROJECT.md",
-    "tool": "mix maestro.project.update",
-    "report_back": "Write completion notes to Maestro task 39"
-  },
-  
-  "remember": "You are creating a NEW project. Research Chelekom first, then follow NEWPROJECT.md with Chelekom modifications."
+  "task_id": 66
 }

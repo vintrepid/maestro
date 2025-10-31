@@ -35,6 +35,7 @@ defmodule Mix.Tasks.Startup.Build do
     readme_content = File.read!(readme_path)
     
     essential_docs = [
+      "CRITICAL_10.md",
       "GUIDELINES.md",
       "AGENTS_SYMLINK.md",
       "AGENT_OPERATIONS_PATTERNS.md",
