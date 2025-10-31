@@ -198,3 +198,12 @@ table .line-number {
   @apply overflow-x-auto;
 }
 
+
+/* Compact prose for information-dense displays */
+.compact-prose h2 { @apply text-sm font-bold mt-2 mb-1; }
+.compact-prose h3 { @apply text-xs font-semibold mt-1 mb-0.5; }
+.compact-prose p { @apply my-1 text-sm leading-snug; }
+.compact-prose ul, .compact-prose ol { @apply my-1 ml-4 space-y-0; }
+.compact-prose li { @apply text-sm leading-snug; }
+.compact-prose strong { @apply font-semibold; }
+.compact-prose code { @apply text-xs; }

@@ -229,10 +229,10 @@ defmodule MaestroWeb.TaskFormLive do
                   </div>
                 <% else %>
                   <%= if @task.description do %>
-                    <div class="mt-6 p-6 bg-base-200 rounded-lg prose prose-sm max-w-none cursor-pointer hover:bg-base-300 transition-colors" phx-click="edit_description">
-                      <div class="flex items-center justify-between mb-2">
-                        <div class="text-xs text-base-content/60 uppercase tracking-wide">Description (click to edit)</div>
-                        <.icon name="hero-pencil" class="w-4 h-4 text-base-content/40" />
+                    <div class="mt-2 p-3 bg-base-200 rounded prose prose-sm max-w-none cursor-pointer hover:bg-base-300 transition-colors compact-prose" phx-click="edit_description">
+                      <div class="flex items-center justify-between mb-1">
+                        <div class="text-xs text-base-content/60 font-semibold">Description</div>
+                        <.icon name="hero-pencil" class="w-3 h-3 text-base-content/40" />
                       </div>
                       {raw(Earmark.as_html!(@task.description))}
                     </div>
@@ -284,10 +284,10 @@ defmodule MaestroWeb.TaskFormLive do
                   </div>
                 <% else %>
                   <%= if @task.notes do %>
-                    <div class="mt-6 p-6 bg-base-200 rounded-lg prose prose-sm max-w-none cursor-pointer hover:bg-base-300 transition-colors" phx-click="edit_notes">
-                      <div class="flex items-center justify-between mb-2">
-                        <div class="text-xs text-base-content/60 uppercase tracking-wide">Notes (click to edit)</div>
-                        <.icon name="hero-pencil" class="w-4 h-4 text-base-content/40" />
+                    <div class="mt-2 p-3 bg-base-200 rounded prose prose-sm max-w-none cursor-pointer hover:bg-base-300 transition-colors compact-prose" phx-click="edit_notes">
+                      <div class="flex items-center justify-between mb-1">
+                        <div class="text-xs text-base-content/60 font-semibold">Notes</div>
+                        <.icon name="hero-pencil" class="w-3 h-3 text-base-content/40" />
                       </div>
                       {raw(Earmark.as_html!(@task.notes))}
                     </div>
