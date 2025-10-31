@@ -93,8 +93,6 @@ defmodule MaestroWeb.TaskFormLive do
     task = socket.assigns.task
     
     if task do
-      Maestro.Ops.AppState.set_current_task(task.id)
-      
       entity_project = if task.entity_type == "Project" do
         case Maestro.Repo.get(Maestro.Ops.Project, task.entity_id) do
           nil -> nil
@@ -105,12 +103,33 @@ defmodule MaestroWeb.TaskFormLive do
       end
       
       if entity_project do
-        Maestro.Ops.AppState.set_current_project(entity_project.id)
+        project_path = Path.expand("~/dev/#{entity_project.slug}")
+        
+        if File.dir?(project_path) do
+          Maestro.Ops.AppState.set_current_task(task.id)
+          Maestro.Ops.AppState.set_current_project(entity_project.id)
+          
+          case System.cmd("mix", ["maestro.task.request", to_string(task.id), project_path], stderr_to_stdout: true) do
+            {output, 0} ->
+              {:noreply,
+               socket
+               |> put_flash(:info, "Task coordinated successfully! Check #{entity_project.name} project.")}
+            
+            {output, _} ->
+              {:noreply,
+               socket
+               |> put_flash(:error, "Failed to coordinate task: #{String.slice(output, 0..200)}...")}
+          end
+        else
+          {:noreply,
+           socket
+           |> put_flash(:error, "Project directory not found: #{project_path}")}
+        end
+      else
+        {:noreply,
+         socket
+         |> put_flash(:error, "Task must belong to a Project to be run. This task belongs to #{task.entity_type}.")}
       end
-      
-      {:noreply,
-       socket
-       |> put_flash(:info, "Task #{task.title} is now active")}
     else
       {:noreply, put_flash(socket, :error, "Cannot run unsaved task")}
     end
@@ -142,48 +161,57 @@ defmodule MaestroWeb.TaskFormLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
-      <div class="max-w-2xl mx-auto px-8 py-12">
-        <div class="mb-8">
-          <h2 class="text-2xl font-semibold">{if @task, do: @task.display_name, else: if(@entity_name, do: "#{@entity_name} - New Task", else: @page_title)}</h2>
+      <div class="w-full px-4 py-2">
+        <div class="mb-2">
+          <div class="text-sm font-medium text-base-content/70">{if @task, do: @task.display_name, else: if(@entity_name, do: "#{@entity_name} - New Task", else: @page_title)}</div>
         </div>
 
-        <div class="card bg-base-100 shadow-xl">
-          <div class="card-body">
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body p-3">
             <.form for={@form} phx-change="validate" phx-submit="save">
               <%= if @entity_name do %>
-                <h3 class="text-xl font-extrabold mb-4">
-                  <.icon name="hero-folder" class="w-5 h-5 inline" />
+                <div class="text-xs font-semibold mb-2 text-base-content/60">
+                  <.icon name="hero-folder" class="w-3 h-3 inline" />
                   {@entity_name}
-                </h3>
+                </div>
               <% end %>
               
-              <div class="form-control">
-                <label class="label">
-                  <span class="label-text">Title</span>
+              <%= if @task && @task.entity_type == "Project" && @task.status != :done do %>
+                <div class="alert alert-info mb-2 p-2">
+                  <.icon name="hero-information-circle" class="w-4 h-4" />
+                  <div class="text-xs">
+                    <strong>Ready to run?</strong> Click "Run Task" to coordinate using <code class="bg-base-200 px-1 text-xs rounded">mix maestro.task.request</code>
+                  </div>
+                </div>
+              <% end %>
+              
+              <div class="form-control mb-2">
+                <label class="label py-0">
+                  <span class="label-text text-xs">Title</span>
                 </label>
-                <.input field={@form[:title]} type="text" class="input input-bordered" required />
+                <.input field={@form[:title]} type="text" class="input input-bordered input-sm" required />
               </div>
 
-              <div class="grid grid-cols-2 gap-4 mt-4">
+              <div class="grid grid-cols-2 gap-2 mb-2">
                 <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Type</span>
+                  <label class="label py-0">
+                    <span class="label-text text-xs">Type</span>
                   </label>
-                  <.input field={@form[:task_type]} type="select" options={task_type_options()} class="select select-bordered" />
+                  <.input field={@form[:task_type]} type="select" options={task_type_options()} class="select select-bordered select-sm" />
                 </div>
 
                 <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Status</span>
+                  <label class="label py-0">
+                    <span class="label-text text-xs">Status</span>
                   </label>
-                  <.input field={@form[:status]} type="select" options={status_options()} class="select select-bordered" />
+                  <.input field={@form[:status]} type="select" options={status_options()} class="select select-bordered select-sm" />
                 </div>
               </div>
 
               <%= if @task && @task.completed_at do %>
-                <div class="alert alert-success mt-4">
-                  <.icon name="hero-check-circle" class="w-5 h-5" />
-                  <span>Completed on {Calendar.strftime(@task.completed_at, "%B %d, %Y at %I:%M %p")}</span>
+                <div class="text-xs text-success mb-2">
+                  <.icon name="hero-check-circle" class="w-3 h-3 inline" />
+                  <span>Completed {Calendar.strftime(@task.completed_at, "%m/%d/%y %I:%M%p")}</span>
                 </div>
               <% end %>
 
@@ -227,20 +255,18 @@ defmodule MaestroWeb.TaskFormLive do
               <% end %>
 
               <%= if @task do %>
-                <div class="card bg-base-100 shadow-xl mt-6">
-                  <div class="card-body">
-                    <div class="flex items-center justify-between mb-4">
-                      <h3 class="card-title">Sub-tasks</h3>
-                      <.link navigate={~p"/tasks/new?entity_type=Task&entity_id=#{@task.id}"} class="btn btn-sm btn-primary">
-                        <.icon name="hero-plus" class="w-4 h-4" />
-                        New Sub-task
-                      </.link>
-                    </div>
-                    <MaestroWeb.Components.TaskTable.task_table
-                      id="task-subtasks-table"
-                      query_fn={fn -> task_subtasks_query(@task.id) end}
-                    />
+                <div class="mt-2 mb-2">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="text-xs font-semibold text-base-content/70">Sub-tasks</div>
+                    <.link navigate={~p"/tasks/new?entity_type=Task&entity_id=#{@task.id}"} class="btn btn-xs btn-primary">
+                      <.icon name="hero-plus" class="w-3 h-3" />
+                      New
+                    </.link>
                   </div>
+                  <MaestroWeb.Components.TaskTable.task_table
+                    id="task-subtasks-table"
+                    query_fn={fn -> task_subtasks_query(@task.id) end}
+                  />
                 </div>
               <% end %>
 
@@ -294,24 +320,33 @@ defmodule MaestroWeb.TaskFormLive do
                 </div>
               <% end %>
 
-              <div class="card-actions justify-end mt-6">
-                <.link navigate={~p"/tasks"} class="btn btn-ghost">
+              <div class="flex justify-end gap-2 mt-2">
+                <.link navigate={~p"/tasks"} class="btn btn-ghost btn-sm">
                   Cancel
                 </.link>
                 <%= if @task do %>
                   <%= if @task.status != :done do %>
-                    <button type="button" phx-click="mark_complete" class="btn btn-success gap-2">
-                      <.icon name="hero-check-circle" class="w-5 h-5" />
-                      Mark Complete
+                    <button type="button" phx-click="mark_complete" class="btn btn-success btn-sm gap-1">
+                      <.icon name="hero-check-circle" class="w-3 h-3" />
+                      Complete
                     </button>
                   <% end %>
-                  <button type="button" phx-click="run_task" class="btn btn-accent gap-2">
-                    <.icon name="hero-play" class="w-5 h-5" />
-                    Run Task
-                  </button>
+                  <%= if @task.entity_type == "Project" do %>
+                    <button type="button" phx-click="run_task" class="btn btn-accent btn-sm gap-1" title="Coordinates this task using mix maestro.task.request">
+                      <.icon name="hero-play" class="w-3 h-3" />
+                      Run
+                    </button>
+                  <% else %>
+                    <div class="tooltip tooltip-left" data-tip="Only Project tasks can be run">
+                      <button type="button" class="btn btn-disabled btn-sm gap-1">
+                        <.icon name="hero-play" class="w-3 h-3" />
+                        Run
+                      </button>
+                    </div>
+                  <% end %>
                 <% end %>
-                <button type="submit" class="btn btn-primary">
-                  Save Task
+                <button type="submit" class="btn btn-primary btn-sm">
+                  Save
                 </button>
               </div>
             </.form>
