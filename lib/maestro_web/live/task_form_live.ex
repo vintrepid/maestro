@@ -176,34 +176,14 @@ defmodule MaestroWeb.TaskFormLive do
                 </div>
               <% end %>
               
-              <%= if @task && @task.entity_type == "Project" && @task.status != :done do %>
-                <div class="alert alert-info mb-2 p-2">
-                  <.icon name="hero-information-circle" class="w-4 h-4" />
-                  <div class="text-xs">
-                    <strong>Ready to run?</strong> Click "Run Task" to coordinate using <code class="bg-base-200 px-1 text-xs rounded">mix maestro.task.request</code>
-                  </div>
+              <div class="flex gap-2 mb-1 items-center">
+                <div class="flex-1">
+                  <.input field={@form[:title]} type="text" class="input input-bordered input-sm" placeholder="Title" required />
                 </div>
-              <% end %>
-              
-              <div class="form-control mb-2">
-                <label class="label py-0">
-                  <span class="label-text text-xs">Title</span>
-                </label>
-                <.input field={@form[:title]} type="text" class="input input-bordered input-sm" required />
-              </div>
-
-              <div class="grid grid-cols-2 gap-2 mb-2">
-                <div class="form-control">
-                  <label class="label py-0">
-                    <span class="label-text text-xs">Type</span>
-                  </label>
+                <div class="w-28">
                   <.input field={@form[:task_type]} type="select" options={task_type_options()} class="select select-bordered select-sm" />
                 </div>
-
-                <div class="form-control">
-                  <label class="label py-0">
-                    <span class="label-text text-xs">Status</span>
-                  </label>
+                <div class="w-32">
                   <.input field={@form[:status]} type="select" options={status_options()} class="select select-bordered select-sm" />
                 </div>
               </div>
@@ -216,6 +196,8 @@ defmodule MaestroWeb.TaskFormLive do
               <% end %>
 
               <%= if @task do %>
+                <div class="grid grid-cols-2 gap-2 mb-1">
+                  <div>
                 <%= if @editing_description do %>
                   <div class="mt-6 p-4 bg-base-200 rounded-lg">
                     <div class="flex items-center justify-between mb-2">
@@ -229,12 +211,12 @@ defmodule MaestroWeb.TaskFormLive do
                   </div>
                 <% else %>
                   <%= if @task.description do %>
-                    <div class="mt-2 p-3 bg-base-200 rounded prose prose-sm max-w-none cursor-pointer hover:bg-base-300 transition-colors compact-prose" phx-click="edit_description">
-                      <div class="flex items-center justify-between mb-1">
+                    <div class="p-2 bg-base-200 rounded cursor-pointer hover:bg-base-300 max-h-40 overflow-y-auto" phx-click="edit_description">
+                      <div class="flex items-center justify-between mb-0.5">
                         <div class="text-xs text-base-content/60 font-semibold">Description</div>
                         <.icon name="hero-pencil" class="w-3 h-3 text-base-content/40" />
                       </div>
-                      {raw(Earmark.as_html!(@task.description))}
+                      <div class="prose prose-sm max-w-none compact-prose">{raw(Earmark.as_html!(@task.description))}</div>
                     </div>
                   <% else %>
                     <button type="button" phx-click="edit_description" class="mt-6 w-full p-4 bg-base-200 rounded-lg hover:bg-base-300 transition-colors text-left">
@@ -245,6 +227,39 @@ defmodule MaestroWeb.TaskFormLive do
                     </button>
                   <% end %>
                 <% end %>
+                  </div>
+                  <div>
+                <%= if @editing_notes do %>
+                  <div class="p-2 bg-base-200 rounded">
+                    <div class="flex items-center justify-between mb-1">
+                      <div class="text-xs font-semibold">Notes</div>
+                      <button type="button" phx-click="cancel_edit_notes" class="btn btn-ghost btn-xs">
+                        <.icon name="hero-x-mark" class="w-3 h-3" />
+                      </button>
+                    </div>
+                    <div id="notes-markdown-editor-wrapper" phx-update="ignore"><textarea id="notes-markdown-editor" name="form[notes]" phx-hook="MarkdownEditorHook" class="textarea textarea-bordered textarea-sm h-40">{Phoenix.HTML.Form.input_value(@form, :notes)}</textarea></div>
+                  </div>
+                <% else %>
+                  <%= if @task.notes do %>
+                    <div class="p-2 bg-base-200 rounded cursor-pointer hover:bg-base-300 max-h-40 overflow-y-auto" phx-click="edit_notes">
+                      <div class="flex items-center justify-between mb-0.5">
+                        <div class="text-xs text-base-content/60 font-semibold">Notes</div>
+                        <.icon name="hero-pencil" class="w-3 h-3 text-base-content/40" />
+                      </div>
+                      <div class="prose prose-sm max-w-none compact-prose">{raw(Earmark.as_html!(@task.notes))}</div>
+                    </div>
+                  <% else %>
+                    <button type="button" phx-click="edit_notes" class="w-full p-2 bg-base-200 rounded hover:bg-base-300 text-left">
+                      <div class="flex items-center gap-1 text-base-content/60 text-xs">
+                        <.icon name="hero-plus" class="w-3 h-3" />
+                        <span>Add notes...</span>
+                      </div>
+                    </button>
+                  <% end %>
+                <% end %>
+                  </div>
+                </div>
+
               <% else %>
                 <div class="form-control mt-4">
                   <label class="label">
@@ -255,7 +270,7 @@ defmodule MaestroWeb.TaskFormLive do
               <% end %>
 
               <%= if @task do %>
-                <div class="mt-2 mb-2">
+                <div class="mt-1">
                   <div class="flex items-center justify-between mb-1">
                     <div class="text-xs font-semibold text-base-content/70">Sub-tasks</div>
                     <.link navigate={~p"/tasks/new?entity_type=Task&entity_id=#{@task.id}"} class="btn btn-xs btn-primary">
