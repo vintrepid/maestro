@@ -188,10 +188,10 @@ defmodule MaestroWeb.TaskFormLive do
                   <.input field={@form[:title]} type="text" class="input input-bordered input-sm" placeholder="Title" required />
                 </div>
                 <div class="w-36">
-                  <.input field={@form[:task_type]} type="select" options={task_type_options()} class="select select-bordered select-sm text-sm" />
+                  <.input field={@form[:task_type]} type="select" options={task_type_options()} class="select select-bordered text-sm" />
                 </div>
                 <div class="w-36">
-                  <.input field={@form[:status]} type="select" options={status_options()} class="select select-bordered select-sm text-sm" />
+                  <.input field={@form[:status]} type="select" options={status_options()} class="select select-bordered text-sm" />
                 </div>
               </div>
 
