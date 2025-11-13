@@ -48,14 +48,7 @@ defmodule MaestroWeb.TaskFormLive do
     form = socket.assigns.form.source
     is_new_task = socket.assigns.task == nil
     
-    # Auto-format description if provided
-    formatted_params = if params["description"] && String.trim(params["description"]) != "" do
-      Map.put(params, "description", format_task_description(params["description"], params["title"] || "Task"))
-    else
-      params
-    end
-    
-    case AshPhoenix.Form.submit(form, params: formatted_params) do
+    case AshPhoenix.Form.submit(form, params: params) do
       {:ok, task} ->
         if is_new_task do
           {:noreply,
@@ -430,33 +423,5 @@ defmodule MaestroWeb.TaskFormLive do
     from t in Task,
       where: t.entity_type == "Task" and t.entity_id == ^to_string(task_id),
       order_by: [desc: t.inserted_at]
-  end
-  
-  # Auto-format task descriptions on save
-  defp format_task_description(description, title) do
-    description = String.trim(description)
-    
-    # Skip if already well-formatted (has markdown headers)
-    if String.contains?(description, ["## ", "### ", "**"]) do
-      description
-    else
-      # Basic formatting for raw text/chat dumps
-      formatted = """
-# #{title}
-
-## Overview
-
-#{description}
-
-## Status
-
-- [ ] In Progress
-
-## Notes
-
-(Add notes here)
-"""
-      String.trim(formatted)
-    end
   end
 end

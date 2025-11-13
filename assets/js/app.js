@@ -56,14 +56,58 @@ const MarkdownEditorHook = {
       initialValue: textarea.value || ""
     });
     
+    // Auto-format raw content when editor first loads
+    const initialValue = textarea.value || "";
+    if (initialValue && !this.isAlreadyFormatted(initialValue)) {
+      const formatted = this.formatContent(initialValue);
+      easyMDE.value(formatted);
+      textarea.value = formatted;
+    }
+    
     easyMDE.codemirror.on("change", () => {
       textarea.value = easyMDE.value();
       textarea.dispatchEvent(new Event('input', { bubbles: true }));
     });
     
+    // Auto-format on blur (when user finishes editing)
+    easyMDE.codemirror.on("blur", () => {
+      const currentValue = easyMDE.value();
+      if (currentValue && !this.isAlreadyFormatted(currentValue)) {
+        const formatted = this.formatContent(currentValue);
+        easyMDE.value(formatted);
+        textarea.value = formatted;
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+    
     this.handleEvent("clear-editor", () => {
       easyMDE.value("");
     });
+  },
+  
+  isAlreadyFormatted(content) {
+    // Check if content already has markdown structure
+    return content.includes('## ') || content.includes('### ') || content.includes('**') || content.includes('- [');
+  },
+  
+  formatContent(content) {
+    const trimmed = content.trim();
+    if (!trimmed) return trimmed;
+    
+    // Basic formatting for raw text/chat dumps
+    return `# Topic
+
+## Overview
+
+${trimmed}
+
+## Status
+
+- [ ] In Progress
+
+## Notes
+
+(Add notes here)`;
   }
 };
 
