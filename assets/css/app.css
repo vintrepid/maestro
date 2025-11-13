@@ -17,6 +17,16 @@
   @apply ring-1 ring-black/5 dark:ring-gray-700/50;
 }
 
+/* Global select styling - proper height for text visibility */
+.select {
+  @apply text-sm;
+}
+
+/* Fix small selects - they're too short for text */
+.select-sm {
+  @apply h-10; /* Override DaisyUI select-sm height */
+}
+
 /* A Tailwind plugin that makes "hero-#{ICON}" classes available.
    The heroicons installation itself is managed by your mix.exs */
 @plugin "../vendor/heroicons";
