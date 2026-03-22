@@ -236,6 +236,76 @@ defmodule Maestro.Ops.RuleParser do
   defp agents_categorize("liveview-tests"), do: :testing
   defp agents_categorize(_), do: :liveview
 
+  @doc """
+  Parse a startup.json file into rule attribute maps.
+  Extracts rules from embedded markdown in source_files, anti_patterns, workflow, etc.
+  """
+  def parse_startup_json(path, library_name \\ "maestro-startup") do
+    json = path |> File.read!() |> Jason.decode!()
+
+    rules = []
+
+    # Extract rules from embedded markdown in source_files
+    source_files = get_in(json, ["bootstrap", "content", "source_files"]) || %{}
+
+    rules =
+      Enum.reduce(source_files, rules, fn {filename, content}, acc ->
+        sub = filename |> String.replace_suffix(".md", "") |> String.downcase()
+
+        parsed =
+          content
+          |> String.split("\n")
+          |> chunk_rules()
+          |> Enum.filter(&(String.length(String.trim(&1)) >= @min_rule_length))
+          |> Enum.map(fn rule_text ->
+            rule_text = String.trim(rule_text)
+
+            %{
+              content: rule_text,
+              content_hash: content_hash(rule_text),
+              category: startup_categorize(sub),
+              severity: detect_severity(rule_text),
+              source_project_slug: library_name,
+              source_commit: nil,
+              source_context: "#{library_name}:#{sub}",
+              applies_to: ["all"],
+              tags: [library_name, sub] |> Enum.uniq()
+            }
+          end)
+
+        acc ++ parsed
+      end)
+
+    # Extract anti-patterns as rules
+    anti_patterns = json["anti_patterns"] || []
+
+    anti_rules =
+      anti_patterns
+      |> Enum.filter(&(is_binary(&1) and String.length(&1) >= @min_rule_length))
+      |> Enum.map(fn text ->
+        %{
+          content: text,
+          content_hash: content_hash(text),
+          category: :architecture,
+          severity: :should,
+          source_project_slug: library_name,
+          source_commit: nil,
+          source_context: "#{library_name}:anti_patterns",
+          applies_to: ["all"],
+          tags: [library_name, "anti_patterns"]
+        }
+      end)
+
+    rules ++ anti_rules
+  end
+
+  defp startup_categorize("critical_10"), do: :architecture
+  defp startup_categorize("guidelines"), do: :architecture
+  defp startup_categorize("user_context"), do: :architecture
+  defp startup_categorize("agent_operations_patterns"), do: :architecture
+  defp startup_categorize("agents_symlink"), do: :architecture
+  defp startup_categorize(_), do: :architecture
+
   @doc "Extract sub-rule name from a file path."
   def sub_rule_name(path) do
     parts = path |> Path.relative_to("deps") |> String.split("/")

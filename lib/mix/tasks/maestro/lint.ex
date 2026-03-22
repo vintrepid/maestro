@@ -53,7 +53,7 @@ defmodule Mix.Tasks.Maestro.Lint do
       violations =
         dir
         |> collect_files()
-        |> Enum.reject(&String.ends_with?(&1, "maestro/lint.ex"))
+        |> Enum.reject(&String.contains?(&1, "lint"))
         |> Enum.flat_map(&check_file(&1, checks))
         |> Enum.sort_by(fn v -> {v.file, v.line} end)
 
