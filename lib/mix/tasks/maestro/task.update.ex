@@ -30,12 +30,12 @@ defmodule Mix.Tasks.Maestro.Task.Update do
     id = String.to_integer(task_id)
     task = Maestro.Ops.Task.by_id!(id)
     
-    field_atom = String.to_atom(field)
-    
+    field_atom = String.to_existing_atom(field)
+
     # Convert value if needed
     actual_value = case field_atom do
-      :status -> String.to_atom(value)
-      :task_type -> String.to_atom(value)
+      :status -> String.to_existing_atom(value)
+      :task_type -> String.to_existing_atom(value)
       _ -> value
     end
     

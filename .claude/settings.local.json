@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Tidewave-Web__browser_eval",
+      "mcp__Tidewave__project_eval",
+      "mcp__Tidewave__get_logs",
+      "WebSearch",
+      "mcp__Tidewave__execute_sql_query"
+    ]
+  }
+}

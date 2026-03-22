@@ -1,0 +1,249 @@
+defmodule Maestro.Ops.RuleParser do
+  @moduledoc """
+  Shared rule parsing logic used by both maestro.update and maestro.rules.ingest.
+  Handles chunking markdown into rules, categorization, severity detection, and content hashing.
+  """
+
+  @min_rule_length 30
+
+  @doc "Parse a usage-rules markdown file into rule attribute maps."
+  def parse_rules_from_file(path, dep, sub_rule_name) do
+    File.read!(path)
+    |> String.split("\n")
+    |> chunk_rules()
+    |> Enum.filter(&(String.length(String.trim(&1)) >= @min_rule_length))
+    |> Enum.map(fn rule_text ->
+      rule_text = String.trim(rule_text)
+
+      %{
+        content: rule_text,
+        content_hash: content_hash(rule_text),
+        category: categorize(dep, sub_rule_name),
+        severity: detect_severity(rule_text),
+        source_project_slug: dep,
+        source_commit: get_dep_version(dep),
+        source_context: "#{dep}:#{sub_rule_name}",
+        applies_to: applies_to(dep),
+        tags: [dep, sub_rule_name] |> Enum.uniq()
+      }
+    end)
+  end
+
+  @doc "SHA256 hash of normalized content for deduplication."
+  def content_hash(text) do
+    text
+    |> normalize()
+    |> then(&:crypto.hash(:sha256, &1))
+    |> Base.encode16(case: :lower)
+  end
+
+  @doc "Normalize content for comparison: trim, collapse whitespace, downcase."
+  def normalize(content) do
+    content |> String.trim() |> String.replace(~r/\s+/, " ") |> String.downcase()
+  end
+
+  @doc "SHA256 hash of raw file content (for RuleSource change detection)."
+  def file_hash(path) do
+    File.read!(path)
+    |> then(&:crypto.hash(:sha256, &1))
+    |> Base.encode16(case: :lower)
+  end
+
+  @doc "Chunk markdown lines into individual rule strings."
+  def chunk_rules(lines) do
+    {chunks, current} =
+      Enum.reduce(lines, {[], nil}, fn line, {chunks, current} ->
+        cond do
+          String.starts_with?(line, "#") or String.starts_with?(line, "<!--") ->
+            chunks = if current, do: [current | chunks], else: chunks
+            {chunks, nil}
+
+          Regex.match?(~r/^- /, line) ->
+            chunks = if current, do: [current | chunks], else: chunks
+            {chunks, line}
+
+          current != nil and
+              (line == "" or String.starts_with?(line, "  ") or
+                 String.starts_with?(line, "\t") or String.starts_with?(line, "```")) ->
+            {chunks, current <> "\n" <> line}
+
+          true ->
+            chunks = if current, do: [current | chunks], else: chunks
+            {chunks, nil}
+        end
+      end)
+
+    chunks = if current, do: [current | chunks], else: chunks
+    Enum.reverse(chunks)
+  end
+
+  @doc "Detect severity from rule text."
+  def detect_severity(text) do
+    cond do
+      Regex.match?(~r/\*\*(Always|ALWAYS|Never|NEVER|must|MUST|FORBIDDEN)\*\*/i, text) -> :must
+      Regex.match?(~r/\*\*Avoid\*\*/i, text) -> :should
+      true -> :should
+    end
+  end
+
+  @doc "Categorize a rule based on its source dep and sub-rule file."
+  def categorize("ash", "testing"), do: :testing
+  def categorize("ash", "authorization"), do: :security
+  def categorize("ash" <> _, _), do: :ash
+  def categorize("phoenix", "liveview"), do: :liveview
+  def categorize("phoenix", "html"), do: :heex
+  def categorize("phoenix", "ecto"), do: :ash
+  def categorize("phoenix", "phoenix"), do: :routing
+  def categorize("phoenix", "elixir"), do: :elixir
+  def categorize("phoenix", _), do: :liveview
+  def categorize("igniter", _), do: :elixir
+  def categorize("usage_rules", "elixir"), do: :elixir
+  def categorize("usage_rules", "otp"), do: :elixir
+  def categorize("usage_rules", _), do: :elixir
+  def categorize(_, _), do: :elixir
+
+  @doc "Determine which project types a dep's rules apply to."
+  def applies_to("ash" <> _), do: ["ash"]
+  def applies_to("phoenix"), do: ["phoenix"]
+  def applies_to(_), do: ["all"]
+
+  @doc "Extract version string from a dep's mix.exs."
+  def get_dep_version(dep) do
+    mix_exs = Path.join(["deps", dep, "mix.exs"])
+
+    if File.exists?(mix_exs) do
+      content = File.read!(mix_exs)
+
+      case Regex.run(~r/@version\s+"([^"]+)"/, content) ||
+             Regex.run(~r/version:\s+"([^"]+)"/, content) do
+        [_, v] -> "v#{v}"
+        _ -> nil
+      end
+    end
+  end
+
+  @doc "Get description from a dep's mix.exs."
+  def get_dep_description(dep) do
+    mix_exs = Path.join(["deps", dep, "mix.exs"])
+
+    if File.exists?(mix_exs) do
+      content = File.read!(mix_exs)
+
+      case Regex.run(~r/description:\s+"([^"]+)"/, content) do
+        [_, desc] -> desc
+        _ -> nil
+      end
+    end
+  end
+
+  @doc "Find all usage-rules files for a dependency."
+  def find_rule_files(dep_name) do
+    dep_path = Path.join("deps", dep_name)
+
+    main =
+      case Path.join(dep_path, "usage-rules.md") do
+        path -> if File.exists?(path), do: [path], else: []
+      end
+
+    subs = Path.wildcard(Path.join(dep_path, "usage-rules/*.md"))
+
+    main ++ subs
+  end
+
+  @doc """
+  Parse an AGENTS.md file (generated by phx.new) into rule attribute maps.
+  Handles the mixed format: project guidelines + usage-rules sections.
+  Strips usage-rules markers and parses both bullet-point rules and
+  section-based content blocks.
+  """
+  def parse_agents_file(path, library_name \\ "phoenix-framework") do
+    content = File.read!(path)
+
+    # Split into sections by ## headers
+    sections = split_sections(content)
+
+    sections
+    |> Enum.flat_map(fn {heading, body} ->
+      sub = heading_to_sub_rule(heading)
+
+      body
+      |> String.split("\n")
+      |> chunk_rules()
+      |> Enum.filter(&(String.length(String.trim(&1)) >= @min_rule_length))
+      |> Enum.map(fn rule_text ->
+        rule_text = String.trim(rule_text)
+
+        %{
+          content: rule_text,
+          content_hash: content_hash(rule_text),
+          category: agents_categorize(sub),
+          severity: detect_severity(rule_text),
+          source_project_slug: library_name,
+          source_commit: nil,
+          source_context: "#{library_name}:#{sub}",
+          applies_to: ["phoenix"],
+          tags: [library_name, sub] |> Enum.uniq()
+        }
+      end)
+    end)
+  end
+
+  defp split_sections(content) do
+    # Remove HTML comment markers from usage_rules.sync
+    content = Regex.replace(~r/<!--.*?-->/, content, "")
+
+    lines = String.split(content, "\n")
+
+    {sections, current_heading, current_lines} =
+      Enum.reduce(lines, {[], "project", []}, fn line, {sections, heading, lines} ->
+        if String.starts_with?(line, "## ") do
+          section = {heading, Enum.reverse(lines) |> Enum.join("\n")}
+          new_heading = line |> String.trim_leading("## ") |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
+          {[section | sections], new_heading, []}
+        else
+          {sections, heading, [line | lines]}
+        end
+      end)
+
+    final = {current_heading, Enum.reverse(current_lines) |> Enum.join("\n")}
+    Enum.reverse([final | sections])
+  end
+
+  defp heading_to_sub_rule(heading) do
+    heading
+    |> String.replace(~r/guidelines$/, "")
+    |> String.trim("-")
+    |> String.trim()
+    |> case do
+      "" -> "main"
+      s -> s
+    end
+  end
+
+  defp agents_categorize("project"), do: :liveview
+  defp agents_categorize("phoenix-v1-8" <> _), do: :liveview
+  defp agents_categorize("js-and-css"), do: :css
+  defp agents_categorize("ui-ux" <> _), do: :css
+  defp agents_categorize("ui-ux-design"), do: :css
+  defp agents_categorize("elixir"), do: :elixir
+  defp agents_categorize("mix"), do: :elixir
+  defp agents_categorize("test"), do: :testing
+  defp agents_categorize("phoenix-html"), do: :heex
+  defp agents_categorize("phoenix-liveview" <> _), do: :liveview
+  defp agents_categorize("phoenix"), do: :routing
+  defp agents_categorize("liveview-streams"), do: :liveview
+  defp agents_categorize("liveview-javascript" <> _), do: :liveview
+  defp agents_categorize("liveview-tests"), do: :testing
+  defp agents_categorize(_), do: :liveview
+
+  @doc "Extract sub-rule name from a file path."
+  def sub_rule_name(path) do
+    parts = path |> Path.relative_to("deps") |> String.split("/")
+
+    case parts do
+      [_, "usage-rules", file] -> String.replace_suffix(file, ".md", "")
+      [_, "usage-rules.md"] -> "main"
+      _ -> Path.basename(path, ".md")
+    end
+  end
+end

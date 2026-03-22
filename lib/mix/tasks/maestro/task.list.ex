@@ -39,14 +39,14 @@ defmodule Mix.Tasks.Maestro.Task.List do
       order_by: [desc: t.inserted_at]
     
     query = if opts[:status] do
-      status = String.to_atom(opts[:status])
+      status = String.to_existing_atom(opts[:status])
       from t in query, where: t.status == ^status
     else
       query
     end
     
     query = if opts[:type] do
-      type = String.to_atom(opts[:type])
+      type = String.to_existing_atom(opts[:type])
       from t in query, where: t.task_type == ^type
     else
       query

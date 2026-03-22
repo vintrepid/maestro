@@ -12,7 +12,39 @@ defmodule Maestro.MixProject do
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
       listeners: [Phoenix.CodeReloader],
-      consolidate_protocols: Mix.env() != :dev
+      consolidate_protocols: Mix.env() != :dev,
+      usage_rules: usage_rules()
+    ]
+  end
+
+  defp usage_rules do
+    [
+      usage_rules: [
+        {:usage_rules, link: :markdown},
+        {:ash, link: :markdown},
+        {~r/^ash_/, link: :markdown},
+        {:phoenix, link: :markdown},
+        {:igniter, link: :markdown}
+      ],
+      skills: [
+        location: ".claude/skills",
+        # Pick up pre-built SKILL.md files shipped by deps
+        package_skills: [:ash, ~r/^ash_/, :phoenix, :igniter, :usage_rules],
+        build: [
+          "ash-framework": [
+            description: "Use this skill when working with Ash Framework or any of its extensions. Always consult this when making domain changes, features or fixes.",
+            usage_rules: [:ash, ~r/^ash_/]
+          ],
+          "phoenix-liveview": [
+            description: "Use this skill when working with Phoenix LiveView, templates, components, or the web layer.",
+            usage_rules: [:phoenix]
+          ],
+          "elixir-core": [
+            description: "Use this skill for core Elixir patterns, OTP, and general conventions.",
+            usage_rules: [:usage_rules, :igniter]
+          ]
+        ]
+      ]
     ]
   end
 
@@ -51,17 +83,17 @@ defmodule Maestro.MixProject do
       {:picosat_elixir, "~> 0.2"},
       {:sourceror, "~> 1.8"},
       {:oban, "~> 2.0"},
-      {:usage_rules, "~> 0.1", only: [:dev]},
+      {:usage_rules, "~> 1.2", only: [:dev]},
       {:ash_cloak, "~> 0.1"},
       {:cloak, "~> 1.0"},
-      {:ash_ai, "~> 0.2"},
+      {:ash_ai, "~> 0.5"},
       {:ash_paper_trail, "~> 0.5"},
       {:tidewave, "~> 0.5", only: [:dev]},
       {:live_debugger, "~> 0.4", only: [:dev]},
       {:ash_archival, "~> 2.0"},
       {:ash_money, "~> 0.2"},
       {:oban_web, "~> 2.0"},
-      {:ash_oban, "~> 0.4"},
+      {:ash_oban, "~> 0.7"},
       {:ash_admin, "~> 0.13"},
       {:ash_authentication_phoenix, "~> 2.0"},
       {:ash_authentication, "~> 4.0"},
@@ -69,18 +101,18 @@ defmodule Maestro.MixProject do
       {:ash_phoenix, "~> 2.0"},
       {:ash, "~> 3.0"},
       {:igniter, "~> 0.6"},
-      {:phoenix, "~> 1.8.1"},
+      {:phoenix, "~> 1.8"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 1.1.0"},
+      {:phoenix_live_view, "~> 1.1"},
       {:lazy_html, ">= 0.1.0", only: :test},
-      {:floki, "~> 0.36"},
-      {:phoenix_live_dashboard, "~> 0.8.3"},
+      {:floki, "~> 0.37"},
+      {:phoenix_live_dashboard, "~> 0.8"},
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
-      {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.4", runtime: Mix.env() == :dev},
       {:heroicons,
        github: "tailwindlabs/heroicons",
        tag: "v2.2.0",

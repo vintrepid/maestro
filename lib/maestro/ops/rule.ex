@@ -16,25 +16,30 @@ defmodule Maestro.Ops.Rule do
     create :create do
       primary? true
       accept [
-        :content, :category, :severity, :source_project_slug,
-        :source_commit, :source_context, :applies_to, :tags
+        :content, :content_hash, :category, :severity, :source_project_slug,
+        :source_commit, :source_context, :applies_to, :tags,
+        :library_id, :rule_source_id
       ]
       change set_attribute(:status, :proposed)
+      change Maestro.Ops.Rule.Changes.ComputeContentHash
     end
 
     create :propose do
       accept [
-        :content, :category, :severity, :source_project_slug,
-        :source_commit, :source_context, :applies_to, :tags
+        :content, :content_hash, :category, :severity, :source_project_slug,
+        :source_commit, :source_context, :applies_to, :tags,
+        :library_id, :rule_source_id
       ]
       change set_attribute(:status, :proposed)
+      change Maestro.Ops.Rule.Changes.ComputeContentHash
     end
 
     update :update do
       primary? true
       accept [
         :content, :category, :severity, :source_project_slug,
-        :source_commit, :source_context, :applies_to, :tags
+        :source_commit, :source_context, :applies_to, :tags,
+        :library_id, :rule_source_id, :content_hash
       ]
     end
 
@@ -51,7 +56,7 @@ defmodule Maestro.Ops.Rule do
     end
 
     update :mark_linter do
-      accept []
+      accept [:lint_pattern, :lint_file_types, :lint_message, :lint_exclude_paths, :lint_only_paths]
       change set_attribute(:status, :linter)
     end
 
@@ -69,9 +74,18 @@ defmodule Maestro.Ops.Rule do
       filter expr(status == :proposed)
     end
 
+    read :linter do
+      filter expr(status == :linter and not is_nil(lint_pattern))
+    end
+
     read :by_category do
       argument :category, :atom, allow_nil?: false
       filter expr(status == :approved and category == ^arg(:category))
+    end
+
+    read :by_content_hash do
+      argument :content_hash, :string, allow_nil?: false
+      filter expr(content_hash == ^arg(:content_hash))
     end
 
     read :for_project do
@@ -148,8 +162,41 @@ defmodule Maestro.Ops.Rule do
       description "Freeform tags for grouping into skills"
     end
 
+    attribute :content_hash, :string do
+      public? true
+      description "SHA256 of normalized content for deduplication"
+    end
+
     attribute :retired_reason, :string do
       public? true
+    end
+
+    attribute :lint_pattern, :string do
+      public? true
+      description "Regex pattern for linter checks (stored as string, compiled at runtime)"
+    end
+
+    attribute :lint_file_types, {:array, :string} do
+      default []
+      public? true
+      description "File types to check: ex, heex"
+    end
+
+    attribute :lint_message, :string do
+      public? true
+      description "Message shown when the lint pattern matches"
+    end
+
+    attribute :lint_exclude_paths, {:array, :string} do
+      default []
+      public? true
+      description "Path substrings to exclude from this check"
+    end
+
+    attribute :lint_only_paths, {:array, :string} do
+      default []
+      public? true
+      description "If non-empty, only check files matching these path substrings"
     end
 
     attribute :approved_at, :utc_datetime_usec do
@@ -164,6 +211,18 @@ defmodule Maestro.Ops.Rule do
     update_timestamp :updated_at
   end
 
+  relationships do
+    belongs_to :library, Maestro.Ops.Library do
+      public? true
+      allow_nil? true
+    end
+
+    belongs_to :rule_source, Maestro.Ops.RuleSource do
+      public? true
+      allow_nil? true
+    end
+  end
+
   code_interface do
     define :create
     define :read
@@ -176,6 +235,8 @@ defmodule Maestro.Ops.Rule do
     define :proposed
     define :mark_linter
     define :reset_to_proposed
+    define :linter
+    define :by_content_hash, args: [:content_hash]
     define :by_id, get_by: [:id], action: :read
   end
 end

@@ -5,6 +5,9 @@ defmodule Maestro.Ops do
     resource Maestro.Ops.Project
     resource Maestro.Ops.Task
     resource Maestro.Ops.Rule
+    resource Maestro.Ops.Library
+    resource Maestro.Ops.RuleSource
+    resource Maestro.Ops.Skill
   end
 
   import Ecto.Query
