@@ -1,1 +1,3 @@
-Read AGENTS.md for all project rules and current task.
+**BEFORE RESPONDING TO THE USER**, you MUST:
+
+1. Read and follow all the rules in `AGENTS.md`

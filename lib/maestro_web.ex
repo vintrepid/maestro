@@ -53,6 +53,8 @@ defmodule MaestroWeb do
       use Phoenix.LiveView
 
       unquote(html_helpers())
+
+      @before_compile MaestroWeb.LiveViewHelpers
     end
   end
 

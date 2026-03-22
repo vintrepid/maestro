@@ -132,7 +132,7 @@ defmodule MaestroWeb.Layouts do
                 <table class="table table-xs">
                   <tbody>
                     <%= for file <- @files do %>
-                      <tr class="hover">
+                      <tr class="hover cursor-pointer" phx-click="open_file" phx-value-path={file.path}>
                         <td>
                           <span class={"badge badge-xs #{file_type_badge(file.type)}"}>
                             {file.type}
