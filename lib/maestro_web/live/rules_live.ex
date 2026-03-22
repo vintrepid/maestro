@@ -2,7 +2,7 @@ defmodule MaestroWeb.RulesLive do
   use MaestroWeb, :live_view
 
   alias Maestro.Ops.Rule
-  alias Maestro.Ops.Rules.Coverage
+  alias Maestro.Ops.Rules.{Coverage, Quality}
   import Ash.Query
 
   @status_options [
@@ -35,6 +35,10 @@ defmodule MaestroWeb.RulesLive do
       Rule
       |> sort(updated_at: :desc)
 
+    quality_results = Rule.approved!() |> Quality.audit_rules()
+    quality_summary = Quality.summarize(quality_results)
+    quality_by_id = Map.new(quality_results, &{&1.id, &1})
+
     {:ok,
      socket
      |> assign(:page_title, "Rules")
@@ -42,13 +46,21 @@ defmodule MaestroWeb.RulesLive do
      |> assign(:source_options, source_options)
      |> assign(:deps_info, Coverage.by_library())
      |> assign(:skills, Coverage.skills())
+     |> assign(:quality_summary, quality_summary)
+     |> assign(:quality_by_id, quality_by_id)
      |> assign(:show_stats, true)}
   end
 
   @impl true
   def handle_event("approve", %{"id" => id}, socket) do
-    Rule.by_id!(id) |> Rule.approve()
-    {:noreply, socket |> refresh_table() |> put_flash(:info, "Rule approved")}
+    rule = Rule.by_id!(id)
+
+    if Quality.passes_quality?(rule) do
+      Rule.approve(rule)
+      {:noreply, socket |> refresh_table() |> put_flash(:info, "Rule approved")}
+    else
+      {:noreply, put_flash(socket, :error, "Rule fails quality checks — fix content before approving")}
+    end
   end
 
   def handle_event("retire", %{"id" => id}, socket) do
@@ -137,11 +149,18 @@ defmodule MaestroWeb.RulesLive do
                         <td class="text-center text-xs text-base-content/50">{d.version}</td>
                         <td class="text-center">{d.source_count}</td>
                         <td class="text-center">
-                          <progress class={["progress w-12", cond do
-                            d.coverage_pct >= 80 -> "progress-success"
-                            d.coverage_pct >= 40 -> "progress-warning"
-                            true -> "progress-error"
-                          end]} value={d.coverage_pct} max="100" />
+                          <progress
+                            class={[
+                              "progress w-12",
+                              cond do
+                                d.coverage_pct >= 80 -> "progress-success"
+                                d.coverage_pct >= 40 -> "progress-warning"
+                                true -> "progress-error"
+                              end
+                            ]}
+                            value={d.coverage_pct}
+                            max="100"
+                          />
                           <span class="text-xs ml-1">{d.coverage_pct}%</span>
                         </td>
                         <td class="text-center text-success">{d.approved}</td>
@@ -162,6 +181,22 @@ defmodule MaestroWeb.RulesLive do
                   <% end %>
                 </div>
               <% end %>
+
+              <%!-- Quality Gate --%>
+              <div class="quality-gate-summary">
+                <h3>Quality Gate</h3>
+                <div class="quality-gate-stats">
+                  <span class="badge badge-success gap-1">
+                    Pass <span class="badge badge-success badge-xs">{@quality_summary.pass}</span>
+                  </span>
+                  <span class="badge badge-error gap-1">
+                    Fail <span class="badge badge-error badge-xs">{@quality_summary.fail}</span>
+                  </span>
+                  <span class="badge badge-outline gap-1">
+                    {@quality_summary.pass_rate}% pass rate
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         <% end %>
@@ -173,36 +208,90 @@ defmodule MaestroWeb.RulesLive do
           page_size={50}
           theme="daisy_ui"
         >
-          <:col :let={rule} field="status" label="Status" sort filter={[type: :select, options: @status_options]}>
+          <:col
+            :let={rule}
+            field="status"
+            label="Status"
+            sort
+            filter={[type: :select, options: @status_options]}
+          >
             <span class={["badge badge-sm", status_badge_class(rule.status)]}>{rule.status}</span>
           </:col>
 
-          <:col :let={rule} field="severity" label="Sev" sort filter={[type: :select, options: [{"Must", "must"}, {"Should", "should"}, {"Prefer", "prefer"}]]}>
-            <span class={["badge badge-sm badge-outline", severity_badge_class(rule.severity)]}>{rule.severity}</span>
+          <:col
+            :let={rule}
+            field="severity"
+            label="Sev"
+            sort
+            filter={[
+              type: :select,
+              options: [{"Must", "must"}, {"Should", "should"}, {"Prefer", "prefer"}]
+            ]}
+          >
+            <span class={["badge badge-sm badge-outline", severity_badge_class(rule.severity)]}>
+              {rule.severity}
+            </span>
           </:col>
 
-          <:col :let={rule} field="category" label="Category" sort filter={[type: :select, options: @category_options]}>
+          <:col
+            :let={rule}
+            field="category"
+            label="Category"
+            sort
+            filter={[type: :select, options: @category_options]}
+          >
             {rule.category}
           </:col>
 
-          <:col :let={rule} field="source_project_slug" label="Source" sort filter={[type: :select, options: @source_options]}>
+          <:col
+            :let={rule}
+            field="source_project_slug"
+            label="Source"
+            sort
+            filter={[type: :select, options: @source_options]}
+          >
             <span class="text-xs">{rule.source_project_slug}</span>
           </:col>
 
           <:col :let={rule} field="content" label="Content" filter>
-            <p class="text-sm whitespace-pre-wrap max-w-xl truncate">{String.slice(rule.content, 0, 200)}</p>
+            <p class="text-sm whitespace-pre-wrap max-w-xl truncate">
+              {String.slice(rule.content, 0, 200)}
+            </p>
           </:col>
 
           <:col :let={rule} field="id" label="">
             <div class="flex gap-1">
               <%= if rule.status == :proposed do %>
-                <button phx-click="approve" phx-value-id={rule.id} class="btn btn-xs btn-success btn-outline">Approve</button>
-                <button phx-click="mark_linter" phx-value-id={rule.id} class="btn btn-xs btn-info btn-outline">Linter</button>
+                <button
+                  phx-click="approve"
+                  phx-value-id={rule.id}
+                  class="btn btn-xs btn-success btn-outline"
+                >
+                  Approve
+                </button>
+                <button
+                  phx-click="mark_linter"
+                  phx-value-id={rule.id}
+                  class="btn btn-xs btn-info btn-outline"
+                >
+                  Linter
+                </button>
               <% end %>
               <%= if rule.status not in [:retired, :linter] do %>
-                <button phx-click="retire" phx-value-id={rule.id} class="btn btn-xs btn-ghost text-warning">Retire</button>
+                <button
+                  phx-click="retire"
+                  phx-value-id={rule.id}
+                  class="btn btn-xs btn-ghost text-warning"
+                >
+                  Retire
+                </button>
               <% end %>
-              <button phx-click="delete" phx-value-id={rule.id} class="btn btn-xs btn-ghost text-error" data-confirm="Delete?">
+              <button
+                phx-click="delete"
+                phx-value-id={rule.id}
+                class="btn btn-xs btn-ghost text-error"
+                data-confirm="Delete?"
+              >
                 <.icon name="hero-trash" class="w-3 h-3" />
               </button>
             </div>
@@ -212,4 +301,12 @@ defmodule MaestroWeb.RulesLive do
     </Layouts.app>
     """
   end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_params(socket, _action, _params),
+    do: socket
 end

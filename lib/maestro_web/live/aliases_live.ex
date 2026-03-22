@@ -6,7 +6,7 @@ defmodule MaestroWeb.AliasesLive do
   @impl true
   def mount(_params, _session, socket) do
     content = File.read!(@aliases_file)
-    
+
     {:ok,
      socket
      |> assign(:page_title, "Aliases Settings")
@@ -21,7 +21,7 @@ defmodule MaestroWeb.AliasesLive do
 
   def handle_event("save", %{"content" => content}, socket) do
     File.write!(@aliases_file, content)
-    
+
     {:noreply,
      socket
      |> assign(:content, content)
@@ -42,8 +42,7 @@ defmodule MaestroWeb.AliasesLive do
           <h1 class="text-4xl font-bold">Conversational Aliases</h1>
           <%= if !@editing do %>
             <button phx-click="edit" class="btn btn-primary">
-              <.icon name="hero-pencil" class="w-5 h-5" />
-              Edit
+              <.icon name="hero-pencil" class="w-5 h-5" /> Edit
             </button>
           <% end %>
         </div>
@@ -56,7 +55,7 @@ defmodule MaestroWeb.AliasesLive do
                 phx-blur="save"
                 class="textarea textarea-bordered font-mono h-96"
               >{@content}</textarea>
-              
+
               <div class="card-actions justify-end">
                 <button phx-click="cancel" class="btn btn-ghost">Cancel</button>
                 <button
@@ -86,4 +85,12 @@ defmodule MaestroWeb.AliasesLive do
     </Layouts.app>
     """
   end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_params(socket, _action, _params),
+    do: socket
 end

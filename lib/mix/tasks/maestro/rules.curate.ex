@@ -1,19 +1,19 @@
-defmodule Mix.Tasks.Maestro.Update do
+defmodule Mix.Tasks.Maestro.Rules.Curate do
   @moduledoc """
-  Maestro's curation pipeline. Thin orchestrator shell.
+  Maestro's rules curation pipeline. Thin orchestrator shell.
 
   ## Usage
 
-      mix maestro.update              # Full pipeline
-      mix maestro.update --skip-deps  # Skip deps.update
-      mix maestro.update --skip-sync  # Skip usage_rules.sync
-      mix maestro.update --report     # Just report, no changes
+      mix maestro.rules.curate              # Full pipeline
+      mix maestro.rules.curate --skip-deps  # Skip deps.update
+      mix maestro.rules.curate --skip-sync  # Skip usage_rules.sync
+      mix maestro.rules.curate --report     # Just report, no changes
   """
 
   use Mix.Task
-  @shortdoc "Scan deps, sync rules, triage, report coverage"
+  @shortdoc "Scan deps, sync rules, triage, quality gate, write outputs"
 
-  alias Maestro.Ops.{RuleParser, Rules.Triage, Rules.LintExtractor, Rules.SkillParser, Rules.Dedup, Rules.Coverage}
+  alias Maestro.Ops.{RuleParser, Rules.Triage, Rules.LintExtractor, Rules.SkillParser, Rules.Dedup, Rules.Coverage, Rules.Quality}
 
   def run(args) do
     Mix.Task.run("app.start")
@@ -35,8 +35,9 @@ defmodule Mix.Tasks.Maestro.Update do
     end
 
     phase("4: Skills", &sync_skills/0)
-    phase("5: Write AGENTS.md", &write_agents_md/0)
-    phase("6: Coverage", &report_coverage/0)
+    phase("5: Quality Gate", &quality_gate/0)
+    phase("6: Write Outputs", &write_outputs/0)
+    phase("7: Coverage", &report_coverage/0)
   end
 
   defp phase(name, fun) do
@@ -201,6 +202,14 @@ defmodule Mix.Tasks.Maestro.Update do
       paths: [
         "startup.json"
       ]
+    },
+    %{
+      name: "claude-memory",
+      description: "Claude Code memory files — agent behavioral preferences and project knowledge",
+      parser: :memory_dir,
+      paths: [
+        "/Users/vince/.claude/projects/-Users-vince-dev-maestro/memory"
+      ]
     }
   ]
 
@@ -219,15 +228,20 @@ defmodule Mix.Tasks.Maestro.Update do
           last_synced_at: now
         })
 
-      for path <- source_config.paths, File.exists?(path) do
+      for path <- source_config.paths, File.exists?(path) or File.dir?(path) do
         rules = parse_external(source_config.parser, path, source_config.name)
+
+        hash =
+          if File.dir?(path),
+            do: :crypto.hash(:sha256, Path.wildcard(Path.join(path, "*.md")) |> Enum.join(",")) |> Base.encode16(case: :lower),
+            else: RuleParser.file_hash(path)
 
         {:ok, rs} =
           Maestro.Ops.RuleSource.create(%{
             library_id: lib.id,
             file_path: path,
-            sub_rule_name: "agents",
-            content_hash: RuleParser.file_hash(path),
+            sub_rule_name: "memory",
+            content_hash: hash,
             rule_count: length(rules),
             last_synced_at: now
           })
@@ -250,6 +264,7 @@ defmodule Mix.Tasks.Maestro.Update do
 
   defp parse_external(:agents, path, name), do: RuleParser.parse_agents_file(path, name)
   defp parse_external(:startup_json, path, name), do: RuleParser.parse_startup_json(path, name)
+  defp parse_external(:memory_dir, path, name), do: RuleParser.parse_memory_dir(path, name)
 
   defp link_orphan_rules do
     %{num_rows: n} =
@@ -310,13 +325,97 @@ defmodule Mix.Tasks.Maestro.Update do
     Mix.shell().info("  #{length(skills)} skills")
   end
 
-  # ── Phase 5: Write approved rules to AGENTS.md ─────────────────────
+  # ── Phase 6: Write outputs ─────────────────────────────────────────
 
-  defp write_agents_md do
-    Mix.Task.run("maestro.gen.claude_md", ["--type", "all", "--output", "AGENTS.md"])
+  defp write_outputs do
+    rules = Maestro.Ops.Rule.approved!()
+
+    # RULES.md — human-readable, grouped by category
+    write_rules_md(rules)
+
+    # rules.json — machine-readable for agents
+    write_rules_json(rules)
+
+    # AGENTS.md — lean, just references rules.json + current_task.json
+    write_agents_md(rules)
   end
 
-  # ── Phase 6 ─────────────────────────────────────────────────────────
+  defp write_rules_md(rules) do
+    by_category = Enum.group_by(rules, & &1.category) |> Enum.sort_by(&elem(&1, 0))
+
+    content =
+      ["# Rules", "# Curated by Maestro · #{Date.utc_today()} · #{length(rules)} approved rules", ""] ++
+      Enum.flat_map(by_category, fn {category, cat_rules} ->
+        always = Enum.filter(cat_rules, &(&1.severity == :must))
+        should = Enum.filter(cat_rules, &(&1.severity != :must))
+
+        header = ["## #{category |> to_string() |> String.capitalize()}", ""]
+
+        always_lines =
+          if always != [] do
+            Enum.map(always, fn r -> "**ALWAYS** #{r.content}" end)
+          else
+            []
+          end
+
+        should_lines = Enum.map(should, fn r -> "- #{r.content}" end)
+
+        header ++ always_lines ++ should_lines ++ [""]
+      end)
+
+    File.write!("RULES.md", Enum.join(content, "\n"))
+    Mix.shell().info("  RULES.md (#{length(rules)} rules)")
+  end
+
+  defp write_rules_json(rules) do
+    json_rules =
+      Enum.map(rules, fn r ->
+        base = %{
+          id: r.id,
+          content: r.content,
+          category: r.category,
+          severity: r.severity
+        }
+
+        # Include fix data if present
+        if r.fix_type do
+          Map.merge(base, %{
+            fix_type: r.fix_type,
+            fix_template: r.fix_template,
+            fix_target: r.fix_target,
+            fix_search: r.fix_search
+          })
+        else
+          base
+        end
+      end)
+
+    File.write!("rules.json", Jason.encode!(json_rules, pretty: true))
+    Mix.shell().info("  rules.json (#{length(rules)} rules)")
+  end
+
+  defp write_agents_md(rules) do
+    content = """
+    # Agent Rules
+    # Generated by Maestro · #{Date.utc_today()} · #{length(rules)} approved rules
+
+    Read and follow ALL rules in `rules.json`. Review the human-readable version in `RULES.md`.
+
+    Read `current_task.json` for your current task and context from the previous session.
+
+    On startup, confirm to the user:
+    1. You have read rules.json (state the count)
+    2. You have read current_task.json (summarize the current state and what's next)
+    3. You will follow the rules
+
+    Do NOT ask "what do you want me to do?" — current_task.json tells you.
+    """
+
+    File.write!("AGENTS.md", String.trim(content))
+    Mix.shell().info("  AGENTS.md (lean)")
+  end
+
+  # ── Phase 7 ─────────────────────────────────────────────────────────
 
   defp report_coverage do
     for d <- Coverage.by_library() do
@@ -336,6 +435,64 @@ defmodule Mix.Tasks.Maestro.Update do
     Mix.shell().info("\n  #{length(skills)} skills:")
     for s <- Enum.sort_by(skills, & &1.name) do
       Mix.shell().info("    #{s.name} — #{Enum.join(s.library_names, ", ")}")
+    end
+  end
+
+  # ── Phase 7: Quality gate ────────────────────────────────────────
+
+  defp quality_gate do
+    # Phase 5a: Try to auto-fix proposed rules that fail quality
+    proposed = Maestro.Ops.Rule.read!() |> Enum.filter(&(&1.status == :proposed))
+    proposed_results = Quality.audit_rules(proposed)
+    proposed_failing = Enum.reject(proposed_results, & &1.pass?)
+
+    {auto_fixed, unfixable} =
+      Enum.reduce(proposed_failing, {0, 0}, fn result, {fixed, skipped} ->
+        rule = Maestro.Ops.Rule.by_id!(result.id)
+
+        case Quality.fix_content(rule.content, rule) do
+          {:ok, new_content} ->
+            Maestro.Ops.Rule.update(rule, %{content: new_content, content_hash: nil})
+            {fixed + 1, skipped}
+
+          :skip ->
+            {fixed, skipped + 1}
+        end
+      end)
+
+    if auto_fixed > 0 do
+      Mix.shell().info("  #{auto_fixed} proposed rules auto-fixed for quality")
+    end
+
+    if unfixable > 0 do
+      Mix.shell().info("  #{unfixable} proposed rules need manual quality fixes")
+    end
+
+    # Phase 5b: Check approved rules — demote any that fail
+    approved = Maestro.Ops.Rule.approved!()
+    approved_results = Quality.audit_rules(approved)
+
+    failing = Enum.reject(approved_results, & &1.pass?)
+    passing = Enum.filter(approved_results, & &1.pass?)
+
+    demoted =
+      failing
+      |> Enum.map(fn result ->
+        rule = Maestro.Ops.Rule.by_id!(result.id)
+        Maestro.Ops.Rule.reset_to_proposed(rule)
+        result
+      end)
+      |> length()
+
+    Mix.shell().info("  #{length(passing)} approved (pass quality)")
+
+    if demoted > 0 do
+      Mix.shell().info("  #{demoted} demoted to proposed (failed quality)")
+
+      summary = Quality.summarize(approved_results)
+      for ic <- summary.issues_by_check do
+        Mix.shell().info("    #{ic.check}: #{ic.count}")
+      end
     end
   end
 end

@@ -61,8 +61,7 @@ defmodule MaestroWeb.ProfileLive do
           <div class="lg:col-span-2">
             <.card>
               <h2 class="card-title">
-                <.icon name="hero-user-circle" class="w-6 h-6" />
-                Edit Profile
+                <.icon name="hero-user-circle" class="w-6 h-6" /> Edit Profile
               </h2>
 
               <.form for={@form} id="profile-form" phx-change="validate" phx-submit="save">
@@ -78,8 +77,7 @@ defmodule MaestroWeb.ProfileLive do
                 <div class="flex gap-2 justify-end">
                   <.link navigate={~p"/"} class="btn btn-ghost">Cancel</.link>
                   <button type="submit" class="btn btn-primary">
-                    <.icon name="hero-check" class="w-5 h-5" />
-                    Save Changes
+                    <.icon name="hero-check" class="w-5 h-5" /> Save Changes
                   </button>
                 </div>
               </.form>
@@ -90,4 +88,12 @@ defmodule MaestroWeb.ProfileLive do
     </Layouts.app>
     """
   end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_params(socket, _action, _params),
+    do: socket
 end

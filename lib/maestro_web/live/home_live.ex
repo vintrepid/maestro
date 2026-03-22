@@ -6,7 +6,7 @@ defmodule MaestroWeb.HomeLive do
     case Maestro.Ops.AppState.get_current_project() do
       nil ->
         {:ok, assign(socket, :page_title, "Maestro")}
-      
+
       project ->
         {:ok, push_navigate(socket, to: ~p"/projects/#{project.slug}")}
     end
@@ -25,16 +25,14 @@ defmodule MaestroWeb.HomeLive do
             <p class="text-2xl mb-12 text-base-content/70">
               Your Phoenix Project Orchestration Hub
             </p>
-            
+
             <div class="flex gap-4 justify-center">
               <.link navigate={~p"/projects"} class="btn btn-primary btn-lg gap-2">
-                <.icon name="hero-server-stack" class="w-6 h-6" />
-                View Projects
+                <.icon name="hero-server-stack" class="w-6 h-6" /> View Projects
               </.link>
-              
+
               <a href="http://localhost:4004" target="_blank" class="btn btn-ghost btn-lg gap-2">
-                <.icon name="hero-computer-desktop" class="w-6 h-6" />
-                Your Screen
+                <.icon name="hero-computer-desktop" class="w-6 h-6" /> Your Screen
               </a>
             </div>
           </div>
@@ -43,4 +41,12 @@ defmodule MaestroWeb.HomeLive do
     </Layouts.app>
     """
   end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_params(socket, _action, _params),
+    do: socket
 end

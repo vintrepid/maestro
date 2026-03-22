@@ -156,4 +156,12 @@ defmodule MaestroWeb.AdminLive.PageInventoryLive do
     </Layouts.app>
     """
   end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_params(socket, _action, _params),
+    do: socket
 end

@@ -20,12 +20,10 @@ defmodule MaestroWeb.ResourcesLive do
           <h1 class="text-4xl font-bold">Resources</h1>
           <div class="flex gap-2">
             <.link navigate={~p"/resources/import"} class="btn btn-secondary">
-              <.icon name="hero-arrow-down-tray" class="w-5 h-5" />
-              Import Bookmarks
+              <.icon name="hero-arrow-down-tray" class="w-5 h-5" /> Import Bookmarks
             </.link>
             <.link navigate={~p"/resources/new"} class="btn btn-primary">
-              <.icon name="hero-plus" class="w-5 h-5" />
-              New Resource
+              <.icon name="hero-plus" class="w-5 h-5" /> New Resource
             </.link>
           </div>
         </div>
@@ -44,7 +42,15 @@ defmodule MaestroWeb.ResourcesLive do
   end
 
   def list_resources_query do
-    from r in Resource, 
+    from r in Resource,
       order_by: [desc: r.inserted_at]
   end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_params(socket, _action, _params),
+    do: socket
 end

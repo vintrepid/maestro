@@ -39,7 +39,8 @@ defmodule Maestro.Ops.Rule do
       accept [
         :content, :category, :severity, :source_project_slug,
         :source_commit, :source_context, :applies_to, :tags,
-        :library_id, :rule_source_id, :content_hash
+        :library_id, :rule_source_id, :content_hash,
+        :fix_type, :fix_template, :fix_target, :fix_search
       ]
     end
 
@@ -197,6 +198,34 @@ defmodule Maestro.Ops.Rule do
       default []
       public? true
       description "If non-empty, only check files matching these path substrings"
+    end
+
+    attribute :fix_type, :atom do
+      constraints one_of: [
+        :add_callback,       # Add a function/callback if missing (e.g. handle_params)
+        :add_to_mount,       # Add code to mount function (e.g. PubSub subscribe)
+        :extract_css,        # Move inline Tailwind utilities to semantic CSS
+        :replace_pattern,    # Replace one code pattern with another
+        :remove_pattern,     # Remove matching code (e.g. embedded <script>)
+        :wrap_pattern        # Wrap existing code with additional code
+      ]
+      public? true
+      description "Strategy for auto-fixing violations of this rule"
+    end
+
+    attribute :fix_template, :string do
+      public? true
+      description "Fix content: the code to add, the replacement, or the CSS class name"
+    end
+
+    attribute :fix_target, :string do
+      public? true
+      description "Where to apply: callback name, mount, template, css, or a regex match target"
+    end
+
+    attribute :fix_search, :string do
+      public? true
+      description "Regex pattern to find what needs fixing (for replace/remove/wrap)"
     end
 
     attribute :approved_at, :utc_datetime_usec do

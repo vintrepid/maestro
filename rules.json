@@ -1,0 +1,890 @@
+[
+  {
+    "id": "15e6a706-46d7-4bea-b88b-39fdc92d81b6",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- When using the `stream/3` interfaces in the LiveView, the LiveView template must 1) always set `phx-update=\"stream\"` on the parent element, with a DOM id on the parent element like `id=\"messages\"` and 2) consume the `@streams.stream_name` collection and use the id as the DOM id for each child. For a call like `stream(socket, :messages, [new_msg])` in the LiveView, the template would be:\n\n      <div id=\"messages\" phx-update=\"stream\">\n        <div :for={{id, msg} <- @streams.messages} id={id}>\n          {msg.text}\n        </div>\n      </div>"
+  },
+  {
+    "id": "2335a776-ba09-44be-a003-f9b78267f5e0",
+    "category": "architecture",
+    "severity": "should",
+    "content": "NEVER fix things manually (via project_eval, one-off scripts, or inline edits). ALWAYS build the tool first, then let the tool do the work.\n\n**Why:** Vince has corrected this pattern repeatedly across many conversations. The whole point of Maestro is that patterns get captured as reusable tooling. When I fix 90 rules by running eval commands, that work is lost — the next conversation faces the same 90 broken rules with no tool to fix them. When I build `Quality.fix_content/1` and wire it into the pipeline, every future run handles it automatically.\n\n**How to apply:** Before doing ANY bulk operation by hand, ask: \"Will the next conversation need to do this too?\" If yes, write the function first. The function goes in the functional core. The pipeline calls the function. Then run the pipeline. Never skip the tool-building step to \"save time\" — it costs 10x more time across conversations.\n\n**The anti-pattern:** \"Let me just quickly fix these...\" → runs 20 eval commands → work is lost → next conversation repeats everything.\n\n**The correct pattern:** \"Let me add fix_content/1 to Quality\" → wire into update pipeline → run `mix maestro.rules.update` → done forever."
+  },
+  {
+    "id": "de0d7043-c82c-4bb4-bf82-55151edbca15",
+    "category": "liveview",
+    "severity": "must",
+    "content": "**Always** use `handle_params/3` to drive page state from the URL — pages must be bookmarkable. Example: `def handle_params(params, _uri, socket), do: {:noreply, apply_params(socket, socket.assigns.live_action, params)}`",
+    "fix_type": "add_callback",
+    "fix_template": "@impl true\ndef handle_params(params, _uri, socket) do\n  {:noreply, apply_params(socket, socket.assigns.live_action, params)}\nend\n\ndefp apply_params(socket, _action, _params), do: socket",
+    "fix_target": "handle_params/3",
+    "fix_search": null
+  },
+  {
+    "id": "228acac9-af44-49de-810d-4e4e2661db35",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Never** `mix maestro.update` is NOT just an ingestion pipeline. It must also WRITE the curated, approved rules back into AGENTS.md and skill files. The DB is the source of truth. The output step is the whole point.\n\n**Why:** Maestro curates agent knowledge. If it only reads rules into a DB but never writes them back out to the files agents actually read (AGENTS.md, .claude/skills/), then the curation is pointless. The approved rules in the DB should produce the AGENTS.md that ships with projects.\n\n**How to apply:** `maestro.update` should: (1) ingest from sources, (2) triage/dedup, (3) WRITE approved rules back to AGENTS.md and skill reference files. `usage_rules.sync` handles raw dep linking. Maestro handles the curated, quality-controlled output. These are complementary — sync provides raw input, maestro provides curated output.\n\n**Critical:** Do NOT ask clarifying questions about this. The user has explained it multiple times. Just build the output step."
+  },
+  {
+    "id": "dae25311-e34c-45f1-8462-48d05910c8d1",
+    "category": "ash",
+    "severity": "should",
+    "content": "- Use hooks like `Ash.Changeset.after_action/2`, `Ash.Changeset.before_action/2` to add additional logic\n  inside the same transaction."
+  },
+  {
+    "id": "288241d5-d4b7-439a-951e-ac3b7b5d1006",
+    "category": "ash",
+    "severity": "should",
+    "content": "- Create **custom change modules** for reusable transformation logic:\n  ```elixir\n  defmodule MyApp.Changes.SlugifyTitle do\n    use Ash.Resource.Change\n\n    def change(changeset, _opts, _context) do\n      title = Ash.Changeset.get_attribute(changeset, :title)\n\n      if title do\n        slug = title |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, \"-\")\n        Ash.Changeset.change_attribute(changeset, :slug, slug)\n      else\n        changeset\n      end\n    end\n  end\n\n  # Usage in resource:\n  change {MyApp.Changes.SlugifyTitle, []}\n  ```"
+  },
+  {
+    "id": "5084133c-4724-4dee-a986-843133576ec4",
+    "category": "ash",
+    "severity": "should",
+    "content": "- `can_action_name?(actor, params \\\\ %{}, opts \\\\ [])` - Returns `true`/`false` for authorization checks"
+  },
+  {
+    "id": "5f840bd3-dfd1-49fd-9a50-f103c3695e5d",
+    "category": "ash",
+    "severity": "should",
+    "content": "- The action has `before_action` or `around_action` hooks that need to read or modify the record"
+  },
+  {
+    "id": "a723b3e6-a1ff-4b24-86af-799643f73ddf",
+    "category": "heex",
+    "severity": "must",
+    "content": "- HEEx HTML comments use `<%!-- comment --%>`. **Always** use the HEEx HTML comment syntax for template comments (`<%!-- comment --%>`) — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "22602eac-fc8f-4f3f-ba66-c7bd3a0720ca",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- LiveView streams are *not* enumerable, so you cannot use `Enum.filter/2` or `Enum.reject/2` on them. Instead, if you want to filter, prune, or refresh a list of items on the UI, you **must refetch the data and re-stream the entire stream collection, passing reset: true**:\n\n      def handle_event(\"filter\", %{\"filter\" => filter}, socket) do\n        # re-fetch the messages based on the filter\n        messages = list_messages(filter)\n\n        {:noreply,\n         socket\n         |> assign(:messages_empty?, messages == [])\n         # reset the stream with the new messages\n         |> stream(:messages, messages, reset: true)}\n      end"
+  },
+  {
+    "id": "9eba7db4-5d7d-4e48-9744-3cae4f50ed9c",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** The `usage_rules` hex package (ash-project/usage_rules) is the canonical source for framework-specific rules from deps. Use `mix usage_rules.sync` to pull them in, not manual ingestion.\n\nRules from deps need curation: extract linter-checkable patterns, retire duplicates, keep only what agents actually need per session.\n\nSKILL.md is a new feature in usage_rules — generates task-specific guidance bundles. More effective than dumping all rules.\n\n**Why:** Vince has mentioned usage_rules multiple times. Manual rule ingestion duplicates work the dep maintainers already do and produces lower-quality results.\n**How to apply:** Always check `mix usage_rules.sync --list` first. Build on top of dep rules, don't replace them. Focus Maestro's rule system on project-specific knowledge that deps can't provide."
+  },
+  {
+    "id": "bb51d6ca-b0ec-48bb-b7d7-eb28f11c26a8",
+    "category": "components",
+    "severity": "must",
+    "content": "Use library components and build reusable components. Don't hand-build what a library already handles. When a component exists (calendar, table, form), USE IT. — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "1e4a0dd7-be11-429d-a4fb-de262a04da55",
+    "category": "liveview",
+    "severity": "must",
+    "content": "**Never** use `Enum` functions on LiveView streams — they are NOT enumerable. To filter/refresh, refetch data and re-stream with `stream(socket, :items, new_items, reset: true)`, otherwise you will get a protocol error at runtime."
+  },
+  {
+    "id": "81615e7b-9281-41f6-921e-e06898a91171",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** remember: `%{}` matches ANY map, not just empty maps. Use `map_size(map) == 0` guard to check for truly empty maps"
+  },
+  {
+    "id": "9d6b9bd0-5a33-4c99-a887-1c255c2c4083",
+    "category": "liveview",
+    "severity": "must",
+    "content": "- **Always** use LiveView streams for collections for assigning regular lists to avoid memory ballooning and runtime termination with the following operations:\n  - basic append of N items - `stream(socket, :messages, [new_msg])`\n  - resetting stream with new items - `stream(socket, :messages, [new_msg], reset: true)` (e.g. for filtering items)\n  - prepend to stream - `stream(socket, :messages, [new_msg], at: -1)`\n  - deleting items - `stream_delete(socket, :messages, msg)`"
+  },
+  {
+    "id": "77e7be88-b307-45ab-baa0-cf862989ae16",
+    "category": "ash",
+    "severity": "must",
+    "content": "- You **must** use `Ecto.Changeset.get_field(changeset, :field)` to access changeset fields — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "b4bd1e79-5bac-4237-a535-44f0435f31f3",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** Elixir variables are immutable, but can be rebound, so for block expressions like `if`, `case`, `cond`, etc\n  you *must* bind the result of the expression to a variable if you want to use it and you CANNOT rebind the result inside the expression, ie:\n\n      # INVALID: we are rebinding inside the `if` and the result never gets assigned\n      if connected?(socket) do\n        socket = assign(socket, :val, val)\n      end\n\n      # VALID: we rebind the result of the `if` to a new variable\n      socket =\n        if connected?(socket) do\n          assign(socket, :val, val)\n        end"
+  },
+  {
+    "id": "0164b591-d261-4d65-9108-182d73ab2552",
+    "category": "routing",
+    "severity": "must",
+    "content": "- Remember Phoenix router `scope` blocks include an optional alias which is prefixed for all routes within the scope. **Always** be mindful of this when creating routes within a scope to avoid duplicate module prefixes."
+  },
+  {
+    "id": "69b6deac-320f-477d-ba4d-45b6bd16369a",
+    "category": "architecture",
+    "severity": "should",
+    "content": "User wants to plan big tasks collaboratively, then have Claude execute autonomously without blocking on confirmations. Always approve and proceed with file edits, writes, and bash commands. Don't stop to ask \"should I continue?\" — just do the work.\n\n**Why:** User walks away after planning and expects work to be done when they return. Blocking on confirmations defeats the purpose.\n\n**How to apply:** After aligning on a plan, execute all steps without pausing for approval. Only stop if something is genuinely broken or ambiguous."
+  },
+  {
+    "id": "f3f2552e-e9ac-40c3-9650-5df71cfdfac5",
+    "category": "architecture",
+    "severity": "should",
+    "content": "When delivering tasks to other project agents, write `current_task.json` (not MAESTRO_TASK.json). The chain is:\n- CLAUDE.md → human-readable project rules\n- AGENTS.md → tells agents to read current_task.json + follow CLAUDE.md\n- current_task.json → the actual task payload (JSON, machine-readable)\n\nNever modify CLAUDE.md to add task pointers. JSON files are for agent consumption, MD files are for humans.\n\n**Why:** Vince doesn't want CLAUDE.md cluttered with agent plumbing. Agents should read AGENTS.md which points to current_task.json.\n**How to apply:** When handing off work to another project, write current_task.json and verify AGENTS.md references it."
+  },
+  {
+    "id": "834656e5-ada7-499c-96fb-1dfbfef29cd2",
+    "category": "elixir",
+    "severity": "must",
+    "content": "- Elixir lists **do not support index based access via the access syntax**\n\n  **Never do this (invalid)**:\n\n      i = 0\n      mylist = [\"blue\", \"green\"]\n      mylist[i]\n\n  Instead, **always** use `Enum.at`, pattern matching, or `List` for index based list access, ie:\n\n      i = 0\n      mylist = [\"blue\", \"green\"]\n      Enum.at(mylist, i)"
+  },
+  {
+    "id": "dd561121-2340-4ed6-b545-74ab2f8add66",
+    "category": "security",
+    "severity": "should",
+    "content": "**Always** When performing administrative actions, you can bypass authorization with `authorize?: false`"
+  },
+  {
+    "id": "f39f987f-c618-4c80-8d32-1c7b35505cc2",
+    "category": "architecture",
+    "severity": "should",
+    "content": "When building features, always design with Functional Core / Imperative Shell architecture. Extract pure logic into core modules under `lib/maestro/ops/rules/` (or domain-correct path) with no DB access or IO. Shells (LiveViews, mix tasks) call the core.\n\n**Why:** When logic lives in a mix task, it inevitably gets duplicated in the LiveView. Building both surfaces at the same time forces proper extraction of shared core functions. A 700-line mix task with inline heuristics, regex lists, and YAML parsing is a red flag — the shell is doing the core's job.\n\n**How to apply:** Before writing any business logic in a mix task or LiveView, ask: \"Would I need to duplicate this in the other shell?\" If yes, it belongs in a core module. Build the core first, then wire both shells."
+  },
+  {
+    "id": "aa50cc9e-6c86-4a10-8298-7b8ebfbf7a6e",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Use `mix precommit` alias when you are done with all changes and fix any pending issues"
+  },
+  {
+    "id": "1a93a81a-e90f-4b45-8d03-75d1f9e27348",
+    "category": "architecture",
+    "severity": "should",
+    "content": "Don't deploy immediately after writing new code. Compile check is not enough — verify the changes actually work before pushing to production.\n\n**Why:** User rejected a fly deploy right after 13 files of new PubSub code were written. Writing code and deploying in the same breath is reckless.\n\n**How to apply:** After writing code: compile, test if tests exist, and ideally verify via browser or runtime check. Only deploy when confident changes work."
+  },
+  {
+    "id": "feebb2b7-38f2-4ec4-9d02-e895f256c038",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** Configure foreign key constraints in your data layer if they have them (see `references` in AshPostgres)"
+  },
+  {
+    "id": "5d6ab03c-fcda-48cc-bc2d-3df186a9d364",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Always** Phoenix v1.8 moved the `<.flash_group>` component to the `Layouts` module. You are **forbidden** from calling `<.flash_group>` outside of the `layouts.ex` module — otherwise the page will not reflect URL state."
+  },
+  {
+    "id": "cbd0e356-6268-41b0-acdc-b1de094ca7fe",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** When a task file (like MAESTRO_TASK.json) provides detailed descriptions of what exists and what needs to be done, trust it and move directly to execution. Don't launch explore agents or re-read everything the task already describes.\n\n**Why:** User observed that ~50% of a session was wasted on redundant code review. The task file had all the context needed.\n\n**How to apply:** Read the task, do minimal targeted reads (just enough to make the edit), then write code. Use the task description as the source of truth for what exists. Only read files to get the exact insertion points for edits."
+  },
+  {
+    "id": "0934a699-4e7e-4b5f-9816-b47956a9ed99",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- LiveViews should be named like `AppWeb.WeatherLive`, with a `Live` suffix. When you go to add LiveView routes to the router, the default `:browser` scope is **already aliased** with the `AppWeb` module, so you can just do `live \"/weather\", WeatherLive`"
+  },
+  {
+    "id": "b7282c46-526f-4c28-b2ac-0a2982052019",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- colocated hooks names **MUST ALWAYS** start with a `.` prefix, i.e. `.PhoneNumber`"
+  },
+  {
+    "id": "10b05dd1-a682-46e0-8648-906d490f2382",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** Elixir's builtin OTP primitives like `DynamicSupervisor` and `Registry`, require names in the child spec, such as `{DynamicSupervisor, name: MyApp.MyDynamicSup}`, then you can use `DynamicSupervisor.start_child(MyApp.MyDynamicSup, child_spec)`"
+  },
+  {
+    "id": "1813ce79-df9f-483c-9e48-2f4b435863be",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** remember: `Ecto.Schema` fields always use the `:string` type, even for `:text`, columns, ie: `field :name, :string`"
+  },
+  {
+    "id": "56353095-8f32-4062-a1f9-9f24114f9b38",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps"
+  },
+  {
+    "id": "db567c21-983c-4592-9c9b-b2baf167618e",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** **String prompts**: Processed as EEx templates with `@input` and `@context` variables"
+  },
+  {
+    "id": "fb62569b-febd-4a14-96d2-b77690fb411f",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** remember: `relationship` - Fetch relationship data (e.g., `/posts/123/relationships/comments`)"
+  },
+  {
+    "id": "a9a5140e-a1ab-4f3b-b42f-8a916cd6d3bb",
+    "category": "ash",
+    "severity": "should",
+    "content": "- Remember `import Ecto.Query` and other supporting modules when you write `seeds.exs`"
+  },
+  {
+    "id": "89f5075c-43cb-454a-a11f-844f2e5a69bf",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** **Number Range** (`:number_range`) - numeric fields → min/max inputs\n  - Options: `min`, `max`, `step`"
+  },
+  {
+    "id": "62030325-afd0-43ec-8863-f1f4aa8237af",
+    "category": "liveview",
+    "severity": "must",
+    "content": "**Always** handle authentication flow at the router level with proper redirects — use `live_session` with `on_mount` hooks, e.g. `live_session :authenticated, on_mount: [{AppWeb.LiveUserAuth, :require_authenticated}]`"
+  },
+  {
+    "id": "c8ed5e03-3787-42c8-be95-47ad0e63e910",
+    "category": "liveview",
+    "severity": "must",
+    "content": "- **Always** provide an unique DOM id alongside `phx-hook` otherwise a compiler error will be raised"
+  },
+  {
+    "id": "41827196-54e9-481e-8dbc-cc8723c562e7",
+    "category": "ash",
+    "severity": "must",
+    "content": "- **Always** preload Ecto associations in queries when they'll be accessed in templates, ie a message that needs to reference the `message.user.email` — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "0bd1fc00-b291-4ea7-9a48-e7ecbe9f51e3",
+    "category": "heex",
+    "severity": "should",
+    "content": "- When building forms **always** use the already imported `Phoenix.Component.to_form/2` (`assign(socket, form: to_form(...))` and `<.form for={@form} id=\"msg-form\">`), then access those forms in the template via `@form[:field]`"
+  },
+  {
+    "id": "b292ef06-9cfe-450e-84e9-4e3fd4926819",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- **Avoid LiveComponent's** unless you have a strong, specific need for them"
+  },
+  {
+    "id": "cfcbc21b-ad4e-4b70-9afe-16111c0cd8ed",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- colocated hooks are automatically integrated into the app.js bundle"
+  },
+  {
+    "id": "552d567e-7f02-45e1-8f4b-44078d9940d6",
+    "category": "heex",
+    "severity": "should",
+    "content": "- Elixir supports `if/else` but **does NOT support `if/else if` or `if/elsif`**. **Never use `else if` or `elseif` in Elixir**, **always** use `cond` or `case` for multiple conditionals.\n\n  **Never do this (invalid)**:\n\n      <%= if condition do %>\n        ...\n      <% else if other_condition %>\n        ...\n      <% end %>\n\n  Instead **always** do this:\n\n      <%= cond do %>\n        <% condition -> %>\n          ...\n        <% condition2 -> %>\n          ...\n        <% true -> %>\n          ...\n      <% end %>"
+  },
+  {
+    "id": "c4f971f4-735a-4267-b1d6-430f3504c33e",
+    "category": "architecture",
+    "severity": "must",
+    "content": "- **Always** use the imported `<.input>` component for form inputs from `core_components.ex` when available. `<.input>` is imported and using it will save steps and prevent errors"
+  },
+  {
+    "id": "1913502c-5c25-468f-b5f3-80e00eff9519",
+    "category": "architecture",
+    "severity": "must",
+    "content": "- **Always** begin your LiveView templates with `<Layouts.app flash={@flash} ...>` which wraps all inner content — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "bc47ec4a-5429-409e-956e-93acfa26469c",
+    "category": "heex",
+    "severity": "should",
+    "content": "- For \"app wide\" template imports, you can import/alias into the `my_app_web.ex`'s `html_helpers` block, so they will be available to all LiveViews, LiveComponent's, and all modules that do `use MyAppWeb, :html` (replace \"my_app\" by the actual app name)"
+  },
+  {
+    "id": "b2188a94-0e8f-4fcd-b715-427da2cbda65",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- LiveView streams *do not support counting or empty states*. If you need to display a count, you must track it using a separate assign. For empty states, you can use Tailwind classes:\n\n      <div id=\"tasks\" phx-update=\"stream\">\n        <div class=\"hidden only:block\">No tasks yet</div>\n        <div :for={{id, task} <- @streams.tasks} id={id}>\n          {task.name}\n        </div>\n      </div>\n\n  The above only works if the empty state is the only HTML block alongside the stream for-comprehension."
+  },
+  {
+    "id": "fd4b50f4-ce41-4397-b9a2-dec48574e887",
+    "category": "routing",
+    "severity": "should",
+    "content": "- You **never** need to create your own `alias` for route definitions! The `scope` provides the alias, ie:\n\n      scope \"/admin\", AppWeb.Admin do\n        pipe_through :browser\n\n        live \"/users\", UserLive, :index\n      end\n\n  the UserLive route would point to the `AppWeb.Admin.UserLive` module"
+  },
+  {
+    "id": "e9f280e4-1a05-4e07-ac2b-5a878da3ff0d",
+    "category": "ash",
+    "severity": "should",
+    "content": "- Fields which are set programmatically, such as `user_id`, must not be listed in `cast` calls or similar for security purposes. Instead they must be explicitly set when creating the struct"
+  },
+  {
+    "id": "c7ed31b5-51ed-4f8c-a136-cc2e73283ca8",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** The `MyAppWeb.Layouts` module is aliased in the `my_app_web.ex` file, so you can use it without needing to alias it again"
+  },
+  {
+    "id": "a9ef47e4-d663-4e90-8184-cf7941eb1495",
+    "category": "heex",
+    "severity": "must",
+    "content": "**Always** use `{...}` syntax for interpolation in HEEx tag attributes, and `{@assign}` for values in tag bodies. Use `<%= ... %>` only for block constructs (`if`, `for`, `case`). Example: `<div id={@id}>{@name}</div>` — never `<div id=\"<%= @id %>\">`"
+  },
+  {
+    "id": "2aa1e044-6e84-45d3-acce-10642d756ace",
+    "category": "heex",
+    "severity": "should",
+    "content": "- HEEx class attrs support lists, but you must **always** use list `[...]` syntax. You can use the class list syntax to conditionally add classes, **always do this for multiple class values**:\n\n      <a class={[\n        \"px-2 text-white\",\n        @some_flag && \"py-5\",\n        if(@other_condition, do: \"border-red-500\", else: \"border-blue-100\"),\n        ...\n      ]}>Text</a>\n\n  and **always** wrap `if`'s inside `{...}` expressions with parens, like done above (`if(@other_condition, do: \"...\", else: \"...\")`)\n\n  and **never** do this, since it's invalid (note the missing `[` and `]`):\n\n      <a class={\n        \"px-2 text-white\",\n        @some_flag && \"py-5\"\n      }> ...\n      => Raises compile syntax error on invalid HEEx attr syntax"
+  },
+  {
+    "id": "440c916e-8236-4582-a329-4aa9ed12e679",
+    "category": "pubsub",
+    "severity": "must",
+    "content": "NEVER manually reload data after a mutation in handle_event. The PubSub notifier handles it for ALL connected clients. If you're writing |> load_data() at the end of handle_event, you're doing it wrong."
+  },
+  {
+    "id": "d68f7634-cb05-4f78-92d1-21d822c06c35",
+    "category": "css",
+    "severity": "must",
+    "content": "**Never** use Tailwind utility classes directly in HEEx templates. Push ALL utilities into semantic CSS classes in `app.css`. Templates use only semantic class names like `class=\"page-header\"` instead of `class=\"flex items-center justify-between mb-4\"`, otherwise every template becomes a wall of utilities that's impossible to maintain consistently.",
+    "fix_type": "extract_css",
+    "fix_template": "semantic",
+    "fix_target": null,
+    "fix_search": null
+  },
+  {
+    "id": "3ba76143-ed56-4d1a-9c5b-90ed89c36771",
+    "category": "heex",
+    "severity": "should",
+    "content": "**Always** HEEx require special tag annotation if you want to insert literal curly's like `{` or `}`. If you want to show a textual code snippet on the page in a `<pre>` or `<code>` block you *must* annotate the parent tag with `phx-no-curly-interpolation`:\n\n      <code phx-no-curly-interpolation>\n        let obj = {key: \"val\"}\n      </code>\n\n  Within `phx-no-curly-interpolation` annotated tags, you can use `{` and `}` without escaping them, and dynamic Elixir expressions can still be used with `<%= ... %>` syntax"
+  },
+  {
+    "id": "aec26400-b8ec-4a18-a00e-ad1b8636cce7",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- When updating an assign that should change content inside any streamed item(s), you MUST re-stream the items\n  along with the updated assign:\n\n      def handle_event(\"edit_message\", %{\"message_id\" => message_id}, socket) do\n        message = Chat.get_message!(message_id)\n        edit_form = to_form(Chat.change_message(message, %{content: message.content}))\n\n        # re-insert message so @editing_message_id toggle logic takes effect for that stream item\n        {:noreply,\n         socket\n         |> stream_insert(:messages, message)\n         |> assign(:editing_message_id, String.to_integer(message_id))\n         |> assign(:edit_form, edit_form)}\n      end\n\n  And in the template:\n\n      <div id=\"messages\" phx-update=\"stream\">\n        <div :for={{id, message} <- @streams.messages} id={id} class=\"flex group\">\n          {message.username}\n          <%= if @editing_message_id == message.id do %>\n            <%!-- Edit mode --%>\n            <.form for={@edit_form} id=\"edit-form-#{message.id}\" phx-submit=\"save_edit\">\n              ...\n            </.form>\n          <% end %>\n        </div>\n      </div>"
+  },
+  {
+    "id": "38084d88-2f0c-4742-8630-c0fa41e30651",
+    "category": "elixir",
+    "severity": "must",
+    "content": "- **Never** use map access syntax (`changeset[:field]`) on structs as they do not implement the Access behaviour by default. For regular structs, you **must** access the fields directly, such as `my_struct.field` or use higher level APIs that are available on the struct if they exist, `Ecto.Changeset.get_field/2` for changesets"
+  },
+  {
+    "id": "70c9cc5a-8e3f-4e09-9294-c2f801f00cf8",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- **Always use and maintain this import syntax** in the app.css file for projects generated with `phx.new`"
+  },
+  {
+    "id": "88fda0c5-ef67-4f1e-a515-d6dacdabc2af",
+    "category": "heex",
+    "severity": "must",
+    "content": "- **Always** add unique DOM IDs to key elements (like forms, buttons, etc) when writing templates, these IDs can later be used in tests (`<.form for={@form} id=\"product-form\">`) — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "c22b19a2-0235-48cd-a328-6c47d01c19f0",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Always** Out of the box, `core_components.ex` imports an `<.icon name=\"hero-x-mark\" class=\"w-5 h-5\"/>` component for for hero icons. **Always** use the `<.icon>` component for icons, **never** use `Heroicons` modules or similar"
+  },
+  {
+    "id": "a828a386-2777-43fa-8b6e-b052bf89aeb6",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** Implement **subtle micro-interactions** (e.g., button hover effects, and smooth transitions)"
+  },
+  {
+    "id": "891f1563-4dd2-4fa6-a031-a734663d0911",
+    "category": "ash",
+    "severity": "should",
+    "content": "- Prefer domain code interfaces to call actions instead of directly building queries/changesets and calling functions in the `Ash` module"
+  },
+  {
+    "id": "58d78d59-56f6-47c5-a47d-57698915fce3",
+    "category": "ash",
+    "severity": "should",
+    "content": "- **Avoid redundant validations** - Don't add validations that duplicate attribute constraints:\n  ```elixir\n  # WRONG - redundant validation\n  attribute :name, :string do\n    allow_nil? false\n    constraints min_length: 1\n  end\n\n  validate present(:name) do  # Redundant! allow_nil? false already handles this\n    message \"Name is required\"\n  end\n\n  validate attribute_does_not_equal(:name, \"\") do  # Redundant! min_length: 1 already handles this\n    message \"Name cannot be empty\"\n  end\n\n  # CORRECT - let attribute constraints handle basic validation\n  attribute :name, :string do\n    allow_nil? false\n    constraints min_length: 1\n  end\n  ```"
+  },
+  {
+    "id": "2266fc95-c8aa-440b-94df-a7f08765fd6c",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Always** UI is a metaphor for the model. When implementing a UI interaction, start by asking: what action am I taking on which resource? Work outward from there. If the model is correct, the UI just re-renders from truth."
+  },
+  {
+    "id": "82bb38a3-281a-42e8-b2fc-3dad65b7fcc2",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** If you override the default input classes (`<.input class=\"myclass px-2 py-1 rounded-lg\">)`) class with your own values, no default classes are inherited, so your"
+  },
+  {
+    "id": "7416c8c8-9b6c-4cdb-9c94-658226738522",
+    "category": "ash",
+    "severity": "should",
+    "content": "- Create **custom validation modules** for complex validation logic:\n  ```elixir\n  defmodule MyApp.Validations.UniqueUsername do\n    use Ash.Resource.Validation\n\n    @impl true\n    def init(opts), do: {:ok, opts}\n\n    @impl true\n    def validate(changeset, _opts, _context) do\n      # Validation logic here\n      # Return :ok or {:error, message}\n    end\n  end\n\n  # Usage in resource:\n  validate {MyApp.Validations.UniqueUsername, []}\n  ```"
+  },
+  {
+    "id": "c19d80b5-0fea-4ba9-97f2-7cd3c45af831",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- **Use Tailwind CSS classes and custom CSS rules** to create polished, responsive, and visually stunning interfaces."
+  },
+  {
+    "id": "a7e230d2-2a11-429c-b85c-7ce0656fec19",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** **Produce world-class UI designs** with a focus on usability, aesthetics, and modern design principles"
+  },
+  {
+    "id": "38d2c08d-a6cb-415f-83ef-98d2e06732cf",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** Tailwindcss v4 **no longer needs a tailwind.config.js** and uses a new import syntax in `app.css`:\n\n      @import \"tailwindcss\" source(none);\n      @source \"../css\";\n      @source \"../js\";\n      @source \"../../lib/my_app_web\";"
+  },
+  {
+    "id": "1ce67f9c-72df-403f-80e3-19b6c2cafd91",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** **Checkbox** (`:checkbox`) - single checkbox for \"show only X\"\n  - Options: `value`, `label`"
+  },
+  {
+    "id": "8752e7e4-cdd0-46c3-b730-b50a7c3bdef2",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** **Boolean** (`:boolean`) - boolean fields → true/false radio buttons\n  - Options: `labels` map with `true`/`false` keys"
+  },
+  {
+    "id": "3d871773-cfcc-44c6-9688-3d727475349a",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** remember: `row_click={fn item -> JS.navigate(~p\"/path/#{item.id}\") end}` - row interactivity"
+  },
+  {
+    "id": "929266a6-d1b4-429b-b94f-3c624681151b",
+    "category": "architecture",
+    "severity": "must",
+    "content": "- **Never** use `@apply` when writing raw css — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "48859728-4957-474d-9bb8-a9b5fa452233",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** Focus on **delightful details** like hover effects, loading states, and smooth page transitions"
+  },
+  {
+    "id": "bc872607-5c20-4568-806a-13dc5846491b",
+    "category": "architecture",
+    "severity": "must",
+    "content": "- **Always** manually write your own tailwind-based components instead of using daisyUI for a unique, world-class design — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "a5e835ab-a9d6-4884-96c2-5993d2b0ca74",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- `page_size={[default: 25, options: [10, 25, 50, 100]]}` - configurable with dropdown"
+  },
+  {
+    "id": "69156c9d-146d-434c-828e-233e9307e5be",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Always** design with Functional Core / Imperative Shell. When building features that need both a LiveView UI and a mix task, build both shells simultaneously — this forces proper extraction of shared core modules. Pure logic (triage, parsing, coverage stats) belongs in core modules under `lib/maestro/ops/rules/` with no DB access or IO. Shells (LiveViews, mix tasks) call the core and handle persistence/display. A 700-line mix task with inline heuristics is a red flag — the shell is doing the core's job."
+  },
+  {
+    "id": "17dd2620-9eb9-46b7-b9b4-56539c6bad5d",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** **Text** (`:text`) - string/atom fields → contains/starts_with/ends_with\n  - Options: `operator`, `case_sensitive`, `placeholder`"
+  },
+  {
+    "id": "44bff381-f73e-4f93-9098-0a1be6c28369",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** **Multi-Select** (`:multi_select`) - array fields → tag-based selection\n  - Options: `options`, `prompt`, `match_mode` (:any/:all)"
+  },
+  {
+    "id": "50beee92-4bf3-47be-90b8-a43aedd5ade2",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Never** nest multiple modules in the same file — it causes cyclic dependencies and compilation errors. Each module gets its own file at the path matching its name, e.g. `MyApp.Foo.Bar` lives in `lib/my_app/foo/bar.ex`."
+  },
+  {
+    "id": "ad99b824-69ff-4223-befe-9bf8526c76db",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- **Always use `start_supervised!/1`** to start processes in tests as it guarantees cleanup between tests"
+  },
+  {
+    "id": "5c759058-6a1a-4fd7-b46b-3a5de6d3c68a",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** Agents report state via mix session.capacity (token usage) and mix bundles.track (what they used) - Maestro uses this to course-correct"
+  },
+  {
+    "id": "5a8c2e04-4e4b-482d-89be-50afc1342fac",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Write completion notes BEFORE marking task done - document first, status second"
+  },
+  {
+    "id": "c14d2620-806c-4f12-871e-57959031471d",
+    "category": "architecture",
+    "severity": "should",
+    "content": "When the user corrects me, respond with \"Aha\" — not \"You're right.\" Then immediately capture what I just learned so it doesn't get missed again.\n\n**Why:** \"You're right\" is hollow acknowledgment. It means I heard the words but didn't internalize them. \"Aha\" signals genuine understanding, and the follow-up action (trapping the info) proves it.\n\n**How to apply:** On correction: (1) say \"Aha\", (2) identify what I missed, (3) save it — as a rule in the pipeline if it's project knowledge, as a memory if it's behavioral. Never let a correction pass without capturing it."
+  },
+  {
+    "id": "b6da1f72-2fe6-4b21-964a-2726f587fdf5",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Use `Task.async_stream(collection, callback, options)` for concurrent enumeration with back-pressure. The majority of times you will want to pass `timeout: :infinity` as option"
+  },
+  {
+    "id": "c1c77e96-b40a-4049-9e4f-2fd53dc1a89a",
+    "category": "pubsub",
+    "severity": "must",
+    "content": "Every resource that participates in multi-user pages MUST have simple_notifiers: [AppName.ResourcePubSub]. The notifier broadcasts to collection topic, instance topic, AND walks belongs_to relationships to notify parents."
+  },
+  {
+    "id": "8603664e-279c-4f8b-a983-52c6b7cc2ae7",
+    "category": "liveview",
+    "severity": "must",
+    "content": "**Always** set `phx-update=\"ignore\"` on elements with `phx-hook` that manage their own DOM. Example: `<div id=\"chart\" phx-hook=\"ChartHook\" phx-update=\"ignore\">` — otherwise LiveView will overwrite the hook's DOM changes on re-render."
+  },
+  {
+    "id": "a619f018-e187-445d-84b8-5a0150ec02b8",
+    "category": "pubsub",
+    "severity": "must",
+    "content": "**Always** Every page has a main entity (resource instance or collection) with a DAG of dependencies. PubSub subscriptions MUST follow this graph. Subscribe in mount, reload in handle_info — ONE handler, not per-event."
+  },
+  {
+    "id": "3eedddf7-ce1e-4f60-90bd-5325afc036df",
+    "category": "ash",
+    "severity": "must",
+    "content": "**Always** model recurring values (sites, categories, status codes) as Ash resources — never scatter string/atom literals through LiveViews. Example: if you have `status in [:active, :archived]`, create a `Status` resource or `Ash.Type.Enum`, otherwise literals drift across files."
+  },
+  {
+    "id": "7b457843-d3d4-4eee-b821-56b84a7861e4",
+    "category": "ash",
+    "severity": "must",
+    "content": "**Always** keep ALL domain logic in Ash resources. LiveViews are thin wrappers: `mount`, `handle_params`, `handle_event` (delegate to action), `render`. Never put `File.read!`, `System.cmd`, or `Repo.all` in a LiveView — call an Ash action instead.",
+    "fix_type": "replace_pattern",
+    "fix_template": "# TODO: Extract to domain module —",
+    "fix_target": null,
+    "fix_search": "(File\\.|System\\.cmd)"
+  },
+  {
+    "id": "bbcd4125-461b-443c-982c-136b83fb108d",
+    "category": "ash",
+    "severity": "should",
+    "content": "- A change reads the current record state (e.g., `Ash.Changeset.get_data/2`) and cannot be rewritten atomically"
+  },
+  {
+    "id": "b50475e7-3fd0-4e58-be0c-cae6638482b5",
+    "category": "security",
+    "severity": "should",
+    "content": "- To run actions as a particular user, look that user up and pass it as the `actor` option"
+  },
+  {
+    "id": "17108e3e-45fd-4479-8ea8-f2b17e9f7d2c",
+    "category": "liveview",
+    "severity": "should",
+    "content": "**Always** Form tests are driven by `Phoenix.LiveViewTest`'s `render_submit/2` and `render_change/2` functions"
+  },
+  {
+    "id": "75386a42-6fc2-409b-8d98-c1316e1cced6",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Avoid nested `case` statements - refactor to a single `case`, `with` or separate functions"
+  },
+  {
+    "id": "1ea98139-fa4a-4d30-b7dc-40e194837ff7",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Predicate function names should not start with `is` and should end in a question mark."
+  },
+  {
+    "id": "5facd4f2-3db7-463e-9ad4-92bff669c7fd",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** Lists and enumerables cannot be indexed with brackets. Use pattern matching or `Enum` functions"
+  },
+  {
+    "id": "4920eeeb-4ed6-4072-91af-7dac5e9378de",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- **Always reference the key element IDs you added in the LiveView templates in your tests** for `Phoenix.LiveViewTest` functions like `element/2`, `has_element/2`, selectors, etc"
+  },
+  {
+    "id": "715fb6c0-99f9-4f26-8a10-0b0669e60458",
+    "category": "ash",
+    "severity": "should",
+    "content": "- **Embedded**: For resources embedded in other resources (`data_layer: :embedded`) (typically JSON under the hood)"
+  },
+  {
+    "id": "25fe924a-d7f6-497b-9fcd-c7993ea7732e",
+    "category": "security",
+    "severity": "should",
+    "content": "- UserIdentity resource optional for OAuth2 (required for multiple providers per user)"
+  },
+  {
+    "id": "bc7565b0-6d35-4ce6-a066-d4b28eee02a5",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Use `@tag` to tag specific tests, and `mix test --only tag` to run only those tests"
+  },
+  {
+    "id": "b1552372-ebb1-445c-8dcf-fbd950c77e5c",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** For Polymorphic relationships, you can model them using `Ash.Type.Union`; see the “Polymorphic Relationships” guide for more information.\n\n```elixir"
+  },
+  {
+    "id": "4e9447fb-f815-40da-96cf-e834e0642ca2",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** To debug test failures, run tests in a specific file with `mix test test/my_test.exs` or run all previously failed tests with `mix test --failed`"
+  },
+  {
+    "id": "cab3b41b-154e-4243-9554-f1247fd0851a",
+    "category": "ash",
+    "severity": "should",
+    "content": "- **Prompt-backed Actions**: Create actions where the implementation is handled by an LLM"
+  },
+  {
+    "id": "62bcd567-b5c2-4275-9d1f-0675c52bd9be",
+    "category": "liveview",
+    "severity": "must",
+    "content": "- **Never** tests again raw HTML, **always** use `element/2`, `has_element/2`, and similar: `assert has_element?(view, \"#my-form\")` — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "00ea3174-fdfe-414f-8cd2-3165c290b640",
+    "category": "testing",
+    "severity": "should",
+    "content": "Verify features by calling Ash resource actions directly (via project_eval or tests), NOT by clicking in the browser. UI is a metaphor for the model — if the action works, the UI follows."
+  },
+  {
+    "id": "623d30a0-68c9-48ea-baa5-b900c1df729f",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** remember: `mix deps.clean --all` is **almost never needed**. **Avoid** using it unless you have good reason"
+  },
+  {
+    "id": "07d46209-cc9d-4002-a176-3499d49e9b98",
+    "category": "ash",
+    "severity": "should",
+    "content": "- Use hooks like `Ash.Changeset.after_transaction/2`, `Ash.Changeset.before_transaction/2` to add additional logic\n  outside the transaction."
+  },
+  {
+    "id": "9d0c9364-257f-4ab8-98c0-f29442c626dc",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** remember: `Ecto.Changeset.validate_number/2` **DOES NOT SUPPORT the `:allow_nil` option**. By default, Ecto validations only run if a change for the given field exists and the change value is not nil, so such as option is never needed"
+  },
+  {
+    "id": "60698c49-d213-47fc-ad5c-6a2adee5e611",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** **Messages with PromptTemplate**: Processed using LangChain's `apply_prompt_templates`"
+  },
+  {
+    "id": "6efd8160-6f3f-4a85-a8dd-3fcd9e21c5bf",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Use `assert_raise` for testing expected exceptions: `assert_raise ArgumentError, fn -> invalid_function() end`"
+  },
+  {
+    "id": "294ca800-7a61-4d51-bbf0-9cb5b0b72682",
+    "category": "security",
+    "severity": "should",
+    "content": "- Use `forbid_unless` for required conditions, then `authorize_if` for the final check"
+  },
+  {
+    "id": "784162cf-5709-497e-8e84-8906d8f87a5e",
+    "category": "testing",
+    "severity": "should",
+    "content": "- Prefer to use raising versions of functions whenever possible, as opposed to pattern matching"
+  },
+  {
+    "id": "62ed9dbd-ad64-4f88-96cf-a23288c0f9a6",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Set up processes such that they can handle crashing and being restarted by supervisors"
+  },
+  {
+    "id": "409577ae-e644-4145-b15d-31ddd0d321ec",
+    "category": "ash",
+    "severity": "should",
+    "content": "- **OpenAI API endpoints**: Uses `AshAi.Actions.Prompt.Adapter.StructuredOutput` (leverages OpenAI's structured output features)"
+  },
+  {
+    "id": "7f5fd6d7-24de-446a-bacf-de135198c9dd",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** use pattern matching in function heads for recursion base cases. Example: `def process([]), do: :done` and `def process([h | t]), do: handle(h); process(t)` — never use `if Enum.empty?(list)` inside the function body."
+  },
+  {
+    "id": "c189402a-21d5-430f-ac3c-666f6d939050",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Prefer to match on function heads instead of using `if`/`else` or `case` in function bodies"
+  },
+  {
+    "id": "5dc627aa-b64e-48cc-a62d-face354fa39f",
+    "category": "ash",
+    "severity": "should",
+    "content": "- **Non-OpenAI endpoints**: Uses `AshAi.Actions.Prompt.Adapter.RequestJson` (requests JSON in the prompt)"
+  },
+  {
+    "id": "01e94c44-1872-4048-9b60-1bfb7401d457",
+    "category": "ash",
+    "severity": "must",
+    "content": "- **Always** invoke `mix ecto.gen.migration migration_name_using_underscores` when generating migration files, so the correct timestamp and conventions are applied — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "5d8e3510-e631-4c45-ae96-f1002c223cc7",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Always** Elixir variables are immutable within block expressions. You MUST bind the result of if/case/cond to a variable. Writing `socket = assign(...)` inside an if block without binding the if result does nothing."
+  },
+  {
+    "id": "ad976d49-f114-4d8d-8054-9ecc1f652a1a",
+    "category": "liveview",
+    "severity": "should",
+    "content": "**Always** Be aware that `Phoenix.Component` functions like `<.form>` might produce different HTML than expected. Test against the output HTML structure, not your mental model of what you expect it to be"
+  },
+  {
+    "id": "c7238130-503a-4292-a45e-b4f517c356d7",
+    "category": "ash",
+    "severity": "should",
+    "content": "- `can_action_name(actor, params \\\\ %{}, opts \\\\ [])` - Returns `{:ok, true/false}` or `{:error, reason}`"
+  },
+  {
+    "id": "d0860751-8b56-4c1e-94fa-3cda3658e0d7",
+    "category": "ash",
+    "severity": "should",
+    "content": "- **Anthropic**: Uses `AshAi.Actions.Prompt.Adapter.CompletionTool` (uses tool calling for structured outputs)"
+  },
+  {
+    "id": "e98fe7a4-2dff-4778-a181-82f881b01583",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Never** use bracket access on Elixir lists — `list[0]` is invalid and will return `nil` silently (lists don't implement Access). Use `Enum.at(list, 0)`, `hd(list)`, or pattern matching `[first | _rest] = list`."
+  },
+  {
+    "id": "cbb32c61-5cb2-417e-b278-07b4c112e4aa",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- When facing test failures with element selectors, add debug statements to print the actual HTML, but use `LazyHTML` selectors to limit the output, ie:\n\n      html = render(view)\n      document = LazyHTML.from_fragment(html)\n      matches = LazyHTML.filter(document, \"your-complex-selector\")\n      IO.inspect(matches, label: \"Matches\")"
+  },
+  {
+    "id": "a25f7ee8-26be-4568-8a71-fff2ed258c33",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- There are many useful standard library functions, prefer to use them where possible"
+  },
+  {
+    "id": "63130d96-c06c-4bde-a3d3-96bd039b5db6",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** The `author` relationship can include both public and private attributes when loaded"
+  },
+  {
+    "id": "6686ba3d-091c-4bd8-870d-d6c7c4e09662",
+    "category": "ash",
+    "severity": "should",
+    "content": "- **`StructuredOutput`**: Best for OpenAI models, uses native structured output capabilities"
+  },
+  {
+    "id": "cd3f887f-3d52-4091-aa0c-29de326070e8",
+    "category": "liveview",
+    "severity": "must",
+    "content": "- Remember anytime you use `phx-hook=\"MyHook\"` and that JS hook manages its own DOM, you **must** also set the `phx-update=\"ignore\"` attribute — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "f9f72b97-0ed7-41f6-bb10-3c9ef9b5ff04",
+    "category": "security",
+    "severity": "should",
+    "content": "- Always set the actor on the query/changeset/input, not when calling the action"
+  },
+  {
+    "id": "4b653f14-fd8f-49b1-a072-afbdd02018c9",
+    "category": "liveview",
+    "severity": "must",
+    "content": "- **Never** use `<.form let={f} ...>` in the template, instead **always use `<.form for={@form} ...>`**, then drive all form references from the form assign as in `@form[:field]`. The UI should **always** be driven by a `to_form/2` assigned in the LiveView module that is derived from a changeset"
+  },
+  {
+    "id": "4c635a2d-fe05-4d11-a46b-5a007fe0cf4f",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** Be descriptive with relationship names (e.g., use `:authored_posts` instead of just `:posts`)"
+  },
+  {
+    "id": "76b8ea16-1ea6-4a3c-9e91-6e6b77aadb6c",
+    "category": "security",
+    "severity": "should",
+    "content": "**Always** **Actions**: auto-generated by strategies (register, sign_in, etc.), can be overridden on the resource"
+  },
+  {
+    "id": "f653bb99-4231-4ff2-8154-a973ead42229",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Always** Elixir's standard library has everything necessary for date and time manipulation. Familiarize yourself with the common `Time`, `Date`, `DateTime`, and `Calendar` interfaces by accessing their documentation as necessary. **Never** install additional dependencies unless asked or for date/time parsing (which you can use the `date_time_parser` package)"
+  },
+  {
+    "id": "1048fcec-1e73-4b2e-ae05-a2e452f9f272",
+    "category": "liveview",
+    "severity": "should",
+    "content": "**Always** remember: `Phoenix.LiveViewTest` module and `LazyHTML` (included) for making your assertions"
+  },
+  {
+    "id": "ba7b4893-aae9-4317-bac6-588eae21bb86",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Elixir has no `return` statement, nor early returns. The last expression in a block is always returned."
+  },
+  {
+    "id": "da5f6563-e10f-42b4-ba70-6bb7c97efb2e",
+    "category": "css",
+    "severity": "must",
+    "content": "**Always** use DaisyUI component classes (`btn`, `card`, `modal`, `table`, `badge`, `alert`, `tabs`, `menu`, `navbar`, `dropdown`) instead of raw Tailwind utilities. Check https://daisyui.com/components/ before building custom CSS. Example: `class=\"btn btn-primary\"` not `class=\"px-4 py-2 bg-blue-500 text-white rounded\"`."
+  },
+  {
+    "id": "2095d361-31ed-4bf4-b803-86cfec6f5f66",
+    "category": "ash",
+    "severity": "should",
+    "content": "- **`CompletionTool`**: Uses tool calling to generate structured outputs, good for models that support function calling"
+  },
+  {
+    "id": "dbaee129-3665-465f-9ee6-6e4c3ac088c1",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** **Vectorization**: Convert text attributes into vector embeddings for semantic search"
+  },
+  {
+    "id": "643a8a3d-f472-4a81-8821-260623abac8b",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** The `load` option serves dual purposes: loading relationships/calculations and making any loaded attributes visible (including private ones)"
+  },
+  {
+    "id": "8e9320b4-0bb6-4190-a7e6-26b7ec7b41ff",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Don't use `Enum` functions on large collections when `Stream` is more correct"
+  },
+  {
+    "id": "50066d54-40a5-410e-9c78-38e4b5990856",
+    "category": "security",
+    "severity": "should",
+    "content": "**Always** Include required authentication changes (`GenerateTokenChange`, `HashPasswordChange`, etc.)"
+  },
+  {
+    "id": "e8ae2f64-b5ae-4044-bc62-0dbcffba6771",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** **Multi-Checkboxes** (`:multi_checkboxes`) - array fields → checkbox interface\n  - Options: `options`, `match_mode` (:any/:all)"
+  },
+  {
+    "id": "df381e1c-2fcc-4e1b-98fc-6cff17c2b4a1",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** **Date Range** (`:date_range`) - date/datetime fields → date pickers\n  - Options: `include_time`, `format`"
+  },
+  {
+    "id": "d4eac43e-d274-4f3e-803d-dc4881ff78b1",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- **Select** (`:select`) - enum attributes → dropdown\n  - Options: `options`, `prompt`"
+  },
+  {
+    "id": "725ef26f-0834-41ca-af8a-44cd68b57224",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** remember: `theme=\"modern\"` - built-in themes: default, modern, retro, futuristic, dark, daisy_ui, flowbite, compact, pastel"
+  }
+]

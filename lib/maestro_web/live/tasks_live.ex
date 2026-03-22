@@ -15,22 +15,24 @@ defmodule MaestroWeb.TasksLive do
   @impl true
   def handle_event("delete_task", %{"id" => id}, socket) do
     task = Task.by_id!(String.to_integer(id))
-    
+
     case Task.destroy(task) do
       :ok ->
         {:noreply,
          socket
          |> load_tasks()
          |> put_flash(:info, "Task deleted successfully")}
-      
+
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Failed to delete task")}
     end
   end
 
   defp load_tasks(socket) do
-    tasks = Repo.all(list_tasks_query())
-    |> Maestro.Ops.load!([:display_name])
+    tasks =
+      Repo.all(list_tasks_query())
+      |> Maestro.Ops.load!([:display_name])
+
     assign(socket, :tasks, tasks)
   end
 
@@ -42,8 +44,7 @@ defmodule MaestroWeb.TasksLive do
         <div class="flex items-center justify-between mb-8">
           <h1 class="text-4xl font-bold">Tasks</h1>
           <.link navigate={~p"/tasks/new"} class="btn btn-primary">
-            <.icon name="hero-plus" class="w-5 h-5" />
-            New Task
+            <.icon name="hero-plus" class="w-5 h-5" /> New Task
           </.link>
         </div>
 
@@ -63,4 +64,12 @@ defmodule MaestroWeb.TasksLive do
   def list_tasks_query do
     from t in Task, order_by: [desc: t.updated_at]
   end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_params(socket, _action, _params),
+    do: socket
 end

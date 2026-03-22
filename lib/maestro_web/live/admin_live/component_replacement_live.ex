@@ -64,7 +64,8 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
       %{
         name: "section_card",
         description: "Replace card div pattern with <.section_card>",
-        pattern: ~s{<div class="card bg-base-100 shadow-xl(?: ([^"]*))?">\n  <div class="card-body">},
+        pattern:
+          ~s{<div class="card bg-base-100 shadow-xl(?: ([^"]*))?">\n  <div class="card-body">},
         replacement: ~s{<.section_card class="\\1">},
         close_pattern: ~s{  </div>\n</div>},
         close_replacement: ~s{</.section_card>}
@@ -72,7 +73,8 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
       %{
         name: "stats_grid",
         description: "Replace stats div pattern with <.stats_grid>",
-        pattern: ~s{<div class="stats stats-vertical lg:stats-horizontal shadow(?: ([^"]*))?"(?: [^>]*)?>},
+        pattern:
+          ~s{<div class="stats stats-vertical lg:stats-horizontal shadow(?: ([^"]*))?"(?: [^>]*)?>},
         replacement: ~s{<.stats_grid class="\\1">},
         close_pattern: ~s{</div>},
         close_replacement: ~s{</.stats_grid>}
@@ -171,9 +173,9 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   defp transform_html(html, %{name: "section_card"}) do
     try do
       {:ok, doc} = Floki.parse_fragment(html)
-      
+
       transformed = transform_section_card(doc)
-      
+
       result = render_component_html(transformed)
       {result, nil}
     rescue
@@ -184,9 +186,9 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   defp transform_html(html, %{name: "stats_grid"}) do
     try do
       {:ok, doc} = Floki.parse_fragment(html)
-      
+
       transformed = transform_stats_grid(doc)
-      
+
       result = render_component_html(transformed)
       {result, nil}
     rescue
@@ -198,7 +200,7 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
        when is_binary(pattern) and is_binary(replacement) do
     try do
       regex = Regex.compile!(pattern)
-      
+
       step1 = Regex.replace(regex, html, replacement)
 
       step2 =
@@ -221,32 +223,34 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
     |> Enum.map(&render_node/1)
     |> Enum.join("")
   end
-  
+
   defp render_node({:component, name, attrs, children}) do
-    attrs_str = case attrs do
-      [] -> ""
-      attrs -> " " <> Enum.map_join(attrs, " ", fn {k, v} -> ~s(#{k}="#{v}") end)
-    end
-    
+    attrs_str =
+      case attrs do
+        [] -> ""
+        attrs -> " " <> Enum.map_join(attrs, " ", fn {k, v} -> ~s(#{k}="#{v}") end)
+      end
+
     children_html = Enum.map_join(children, "", &render_node/1)
     "<.#{name}#{attrs_str}>\n  #{String.replace(children_html, "\n", "\n  ")}\n</.#{name}>"
   end
-  
+
   defp render_node({tag, attrs, children}) when is_binary(tag) do
-    attrs_str = case attrs do
-      [] -> ""
-      attrs -> " " <> Enum.map_join(attrs, " ", fn {k, v} -> ~s(#{k}="#{v}") end)
-    end
-    
+    attrs_str =
+      case attrs do
+        [] -> ""
+        attrs -> " " <> Enum.map_join(attrs, " ", fn {k, v} -> ~s(#{k}="#{v}") end)
+      end
+
     children_html = Enum.map_join(children, "", &render_node/1)
-    
+
     if children_html == "" do
       "<#{tag}#{attrs_str} />"
     else
       "<#{tag}#{attrs_str}>#{children_html}</#{tag}>"
     end
   end
-  
+
   defp render_node(text) when is_binary(text), do: text
   defp render_node({:comment, comment}), do: "<!--#{comment}-->"
 
@@ -257,33 +261,40 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
     Floki.traverse_and_update(doc, fn
       {"div", attrs, children} = node ->
         class = Floki.attribute([node], "class") |> List.first()
-        
+
         if class && String.contains?(class, "card bg-base-100 shadow-xl") do
           # Extract extra classes (anything beyond the base pattern)
-          extra_classes = class
+          extra_classes =
+            class
             |> String.replace("card bg-base-100 shadow-xl", "")
             |> String.trim()
-          
+
           # Find and unwrap card-body
-          inner_content = case children do
-            [{"div", inner_attrs, inner_children}] ->
-              inner_class = Floki.attribute([{"div", inner_attrs, inner_children}], "class") |> List.first()
-              if inner_class == "card-body" do
-                inner_children
-              else
+          inner_content =
+            case children do
+              [{"div", inner_attrs, inner_children}] ->
+                inner_class =
+                  Floki.attribute([{"div", inner_attrs, inner_children}], "class") |> List.first()
+
+                if inner_class == "card-body" do
+                  inner_children
+                else
+                  children
+                end
+
+              _ ->
                 children
-              end
-            _ -> children
-          end
-          
+            end
+
           # Build component call
           component_attrs = if extra_classes != "", do: [{"class", extra_classes}], else: []
           {:component, "section_card", component_attrs, inner_content}
         else
           node
         end
-        
-      node -> node
+
+      node ->
+        node
     end)
   end
 
@@ -292,20 +303,21 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
     Floki.traverse_and_update(doc, fn
       {"div", attrs, children} = node ->
         class = Floki.attribute([node], "class") |> List.first()
-        
+
         if class && String.contains?(class, "stats stats-vertical lg:stats-horizontal") do
           # Extract extra classes
           base_pattern = ~r/stats\s+stats-vertical\s+lg:stats-horizontal\s+shadow\s*/
           extra_classes = String.replace(class, base_pattern, "") |> String.trim()
-          
+
           # Build component call
           component_attrs = if extra_classes != "", do: [{"class", extra_classes}], else: []
           {:component, "stats_grid", component_attrs, children}
         else
           node
         end
-        
-      node -> node
+
+      node ->
+        node
     end)
   end
 
@@ -327,7 +339,10 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
                 <button
                   class={[
                     "btn btn-sm w-full justify-start",
-                    if(@selected_example == index && !@use_custom, do: "btn-primary", else: "btn-ghost")
+                    if(@selected_example == index && !@use_custom,
+                      do: "btn-primary",
+                      else: "btn-ghost"
+                    )
                   ]}
                   phx-click="select_example"
                   phx-value-index={index}
@@ -358,7 +373,10 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
                 <button
                   class={[
                     "btn btn-sm w-full justify-start",
-                    if(@selected_pattern == index && !@use_custom, do: "btn-primary", else: "btn-ghost")
+                    if(@selected_pattern == index && !@use_custom,
+                      do: "btn-primary",
+                      else: "btn-ghost"
+                    )
                   ]}
                   phx-click="select_pattern"
                   phx-value-index={index}
@@ -417,7 +435,9 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
                     </code>
                   </div>
                   <div>
-                    <div class="text-xs font-semibold text-base-content/70 mb-1">Close Replacement:</div>
+                    <div class="text-xs font-semibold text-base-content/70 mb-1">
+                      Close Replacement:
+                    </div>
                     <code class="block text-xs bg-base-200 p-2 rounded break-all">
                       {@current_pattern.close_replacement}
                     </code>
@@ -461,4 +481,12 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
     </Layouts.app>
     """
   end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_params(socket, _action, _params),
+    do: socket
 end

@@ -8,12 +8,13 @@ defmodule MaestroWeb.ProjectDetailLive do
   def mount(%{"slug" => slug}, _session, socket) do
     case Ops.get_project_by_slug(slug) do
       nil ->
-        {:ok, socket |> put_flash(:error, "Project not found") |> push_navigate(to: ~p"/projects")}
-      
+        {:ok,
+         socket |> put_flash(:error, "Project not found") |> push_navigate(to: ~p"/projects")}
+
       project ->
         maestro_capacity = read_session_capacity()
         project_capacity = read_project_session_capacity(project)
-        
+
         {:ok,
          socket
          |> assign(:project, project)
@@ -31,9 +32,9 @@ defmodule MaestroWeb.ProjectDetailLive do
 
   def handle_event("reorder_startup", %{"items" => items, "project" => project}, socket) do
     paths = Enum.map(items, & &1["path"])
-    
+
     startup_file = Path.join([File.cwd!(), "agents", "startup", "#{String.upcase(project)}.md"])
-    
+
     if File.exists?(startup_file) do
       write_custom_startup_order(startup_file, paths, project)
       {:noreply, socket |> put_flash(:info, "Startup order saved!")}
@@ -41,29 +42,32 @@ defmodule MaestroWeb.ProjectDetailLive do
       {:noreply, socket |> put_flash(:error, "Startup file not found")}
     end
   end
-  
+
   defp write_custom_startup_order(file_path, paths, project) do
     content = File.read!(file_path)
-    
+
     custom_order_section = """
     ## Custom Startup Order
-    
+
     This project uses a custom startup sequence:
-    
+
     """
-    
-    custom_order_section = custom_order_section <> Enum.map_join(paths, "\n", fn path ->
-      "#{Enum.find_index(paths, &(&1 == path)) + 1}. `#{path}`"
-    end)
-    
+
+    custom_order_section =
+      custom_order_section <>
+        Enum.map_join(paths, "\n", fn path ->
+          "#{Enum.find_index(paths, &(&1 == path)) + 1}. `#{path}`"
+        end)
+
     custom_order_section = custom_order_section <> "\n\n---\n\n"
-    
-    updated_content = if String.contains?(content, "## Custom Startup Order") do
-      Regex.replace(~r/## Custom Startup Order.*?---\n\n/s, content, custom_order_section)
-    else
-      custom_order_section <> content
-    end
-    
+
+    updated_content =
+      if String.contains?(content, "## Custom Startup Order") do
+        Regex.replace(~r/## Custom Startup Order.*?---\n\n/s, content, custom_order_section)
+      else
+        custom_order_section <> content
+      end
+
     File.write!(file_path, updated_content)
   end
 
@@ -104,7 +108,7 @@ defmodule MaestroWeb.ProjectDetailLive do
               <% end %>
             </div>
           </div>
-          
+
           <p :if={@project.description} class="text-lg text-base-content/70 mt-2">
             {@project.description}
           </p>
@@ -114,13 +118,14 @@ defmodule MaestroWeb.ProjectDetailLive do
           <div class="card-body">
             <div class="flex items-center justify-between mb-4">
               <h2 class="card-title">Tasks</h2>
-              <.link navigate={~p"/tasks/new?entity_type=Project&entity_id=#{@project.id}"} class="btn btn-sm btn-primary">
-                <.icon name="hero-plus" class="w-4 h-4" />
-                New Task
+              <.link
+                navigate={~p"/tasks/new?entity_type=Project&entity_id=#{@project.id}"}
+                class="btn btn-sm btn-primary"
+              >
+                <.icon name="hero-plus" class="w-4 h-4" /> New Task
               </.link>
             </div>
             <MaestroWeb.Components.TaskTable.task_table
-              
               id="project-tasks-table"
               query_fn={fn -> project_tasks_query(@project.id) end}
             />
@@ -133,22 +138,21 @@ defmodule MaestroWeb.ProjectDetailLive do
           </div>
 
           <div class="lg:col-span-2">
-
             <div class="card bg-base-100 shadow-xl mb-6">
               <div class="card-body">
                 <h2 class="card-title">Project Info</h2>
-                
+
                 <div class="space-y-3">
                   <div>
                     <div class="text-sm text-base-content/60">Web Port</div>
                     <div class="font-mono text-lg">{@project.web_port}</div>
                   </div>
-                  
+
                   <div>
                     <div class="text-sm text-base-content/60">Debugger Port</div>
                     <div class="font-mono text-lg">{@project.debugger_port}</div>
                   </div>
-                  
+
                   <div>
                     <div class="text-sm text-base-content/60">Slug</div>
                     <div class="font-mono">{@project.slug}</div>
@@ -167,41 +171,37 @@ defmodule MaestroWeb.ProjectDetailLive do
             <div class="card bg-base-100 shadow-xl">
               <div class="card-body">
                 <h2 class="card-title">Quick Links</h2>
-                
+
                 <div class="space-y-2">
-                  <a 
+                  <a
                     href={"http://localhost:#{@project.web_port}"}
                     target="_blank"
                     class="btn btn-primary btn-block gap-2"
                   >
-                    <.icon name="hero-globe-alt" class="w-5 h-5" />
-                    Open Web App
+                    <.icon name="hero-globe-alt" class="w-5 h-5" /> Open Web App
                   </a>
-                  
-                  <a 
+
+                  <a
                     href={"http://localhost:#{@project.debugger_port}"}
                     target="_blank"
                     class="btn btn-secondary btn-block gap-2"
                   >
-                    <.icon name="hero-bug-ant" class="w-5 h-5" />
-                    Open Debugger
+                    <.icon name="hero-bug-ant" class="w-5 h-5" /> Open Debugger
                   </a>
-                  
-                  <a 
+
+                  <a
                     href={@project.github_url}
                     target="_blank"
                     class="btn btn-ghost btn-block gap-2"
                   >
-                    <.icon name="hero-code-bracket" class="w-5 h-5" />
-                    View on GitHub
+                    <.icon name="hero-code-bracket" class="w-5 h-5" /> View on GitHub
                   </a>
-                  
-                  <button 
+
+                  <button
                     phx-click="open_in_vscodium"
                     class="btn btn-accent btn-block gap-2"
                   >
-                    <.icon name="hero-code-bracket-square" class="w-5 h-5" />
-                    Open in Editor
+                    <.icon name="hero-code-bracket-square" class="w-5 h-5" /> Open in Editor
                   </button>
                 </div>
               </div>
@@ -212,21 +212,18 @@ defmodule MaestroWeb.ProjectDetailLive do
         <div class="card bg-base-100 shadow-xl mt-6">
           <div class="card-body">
             <h2 class="card-title">Actions</h2>
-            
+
             <div class="flex gap-4">
               <button class="btn btn-success gap-2">
-                <.icon name="hero-play" class="w-5 h-5" />
-                Start Project
+                <.icon name="hero-play" class="w-5 h-5" /> Start Project
               </button>
-              
+
               <button class="btn btn-error gap-2">
-                <.icon name="hero-stop" class="w-5 h-5" />
-                Stop Project
+                <.icon name="hero-stop" class="w-5 h-5" /> Stop Project
               </button>
-              
+
               <button class="btn btn-warning gap-2">
-                <.icon name="hero-arrow-path" class="w-5 h-5" />
-                Restart Project
+                <.icon name="hero-arrow-path" class="w-5 h-5" /> Restart Project
               </button>
             </div>
           </div>
@@ -238,11 +235,11 @@ defmodule MaestroWeb.ProjectDetailLive do
 
   defp project_git_status(assigns) do
     project_path = Path.expand("~/dev/#{assigns.project.slug}")
-    
+
     ~H"""
     <div id={"git-status-#{@project.id}"} data-project-path={project_path}>
-      <button 
-        class="btn btn-sm btn-ghost gap-2" 
+      <button
+        class="btn btn-sm btn-ghost gap-2"
         phx-click={JS.exec("onclick", to: "#git-load-btn-#{@project.id}")}
         id={"git-load-btn-#{@project.id}"}
         onclick={"window.loadProjectGitInfo('#{@project.id}', '#{project_path}')"}
@@ -250,21 +247,21 @@ defmodule MaestroWeb.ProjectDetailLive do
         <.icon name="hero-code-bracket" class="w-4 h-4" />
         <span id={"git-branch-#{@project.id}"}>Click to load...</span>
       </button>
-      
+
       <div id={"git-info-#{@project.id}"} class="mt-4" style="display: none;">
         <div class="space-y-2">
           <div>
             <div class="text-sm text-base-content/60">Current Branch</div>
             <div class="font-mono" id={"git-current-#{@project.id}"}></div>
           </div>
-          
+
           <div id={"git-badges-#{@project.id}"} class="flex gap-2"></div>
-          
+
           <div id={"git-branches-#{@project.id}"}></div>
         </div>
       </div>
     </div>
-    
+
     <script>
       window.loadProjectGitInfo = function(projectId, projectPath) {
         const url = `/api/git/info?project_path=${encodeURIComponent(projectPath)}`;
@@ -316,10 +313,10 @@ defmodule MaestroWeb.ProjectDetailLive do
   defp status_badge_class(status) when status in [:running, "running"], do: "badge-success"
   defp status_badge_class(status) when status in [:stopped, "stopped"], do: "badge-error"
   defp status_badge_class(_), do: "badge-ghost"
-  
+
   defp read_session_capacity do
     capacity_file = Path.join([File.cwd!(), "SESS_CAP.md"])
-    
+
     if File.exists?(capacity_file) do
       File.read!(capacity_file)
       |> String.trim()
@@ -327,11 +324,11 @@ defmodule MaestroWeb.ProjectDetailLive do
       nil
     end
   end
-  
+
   defp read_project_session_capacity(project) do
     project_path = Path.expand("~/dev/#{project.slug}")
     capacity_file = Path.join([project_path, "SESS_CAP.md"])
-    
+
     if File.exists?(capacity_file) do
       File.read!(capacity_file)
       |> String.trim()
@@ -339,4 +336,12 @@ defmodule MaestroWeb.ProjectDetailLive do
       nil
     end
   end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_params(socket, _action, _params),
+    do: socket
 end

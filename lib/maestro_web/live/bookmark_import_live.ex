@@ -23,19 +23,21 @@ defmodule MaestroWeb.BookmarkImportLive do
 
   def handle_event("import", _params, socket) do
     socket = assign(socket, :importing, true)
-    
+
     uploaded_files =
       consume_uploaded_entries(socket, :bookmarks, fn %{path: path}, _entry ->
         html_content = File.read!(path)
-        
+
         case BookmarkImporter.import_from_html(html_content, "User", "1") do
           {:ok, results} ->
-            success_count = Enum.count(results, fn
-              {:ok, _} -> true
-              _ -> false
-            end)
+            success_count =
+              Enum.count(results, fn
+                {:ok, _} -> true
+                _ -> false
+              end)
+
             {:ok, %{success_count: success_count, total: length(results)}}
-          
+
           {:error, reason} ->
             {:postpone, reason}
         end
@@ -48,13 +50,13 @@ defmodule MaestroWeb.BookmarkImportLive do
          |> assign(:importing, false)
          |> put_flash(:info, "Imported #{success} of #{total} bookmarks successfully")
          |> push_navigate(to: ~p"/resources")}
-      
+
       [] ->
         {:noreply,
          socket
          |> assign(:importing, false)
          |> put_flash(:error, "Please select a file to import")}
-      
+
       _ ->
         {:noreply,
          socket
@@ -71,7 +73,7 @@ defmodule MaestroWeb.BookmarkImportLive do
         <div class="mb-8">
           <h2 class="text-2xl font-semibold">Import Bookmarks</h2>
           <p class="text-base-content/60 mt-2">
-            Upload an HTML bookmarks file exported from your browser. 
+            Upload an HTML bookmarks file exported from your browser.
             Folders will be converted to tags with hierarchical relationships.
           </p>
         </div>
@@ -83,10 +85,10 @@ defmodule MaestroWeb.BookmarkImportLive do
                 <label class="label">
                   <span class="label-text">Bookmark File</span>
                 </label>
-                
+
                 <div class="border-2 border-dashed border-base-300 rounded-lg p-8 text-center">
                   <.live_file_input upload={@uploads.bookmarks} class="hidden" id="bookmark-upload" />
-                  
+
                   <label for="bookmark-upload" class="cursor-pointer">
                     <.icon name="hero-arrow-up-tray" class="w-12 h-12 mx-auto text-base-content/40" />
                     <p class="mt-2 text-sm text-base-content/60">
@@ -109,7 +111,7 @@ defmodule MaestroWeb.BookmarkImportLive do
                         </p>
                       </div>
                     </div>
-                    
+
                     <button
                       type="button"
                       phx-click="cancel-upload"
@@ -138,17 +140,15 @@ defmodule MaestroWeb.BookmarkImportLive do
                 <.link navigate={~p"/resources"} class="btn btn-ghost">
                   Cancel
                 </.link>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   class="btn btn-primary"
                   disabled={@importing || @uploads.bookmarks.entries == []}
                 >
                   <%= if @importing do %>
-                    <span class="loading loading-spinner loading-sm"></span>
-                    Importing...
+                    <span class="loading loading-spinner loading-sm"></span> Importing...
                   <% else %>
-                    <.icon name="hero-arrow-down-tray" class="w-5 h-5" />
-                    Import Bookmarks
+                    <.icon name="hero-arrow-down-tray" class="w-5 h-5" /> Import Bookmarks
                   <% end %>
                 </button>
               </div>
@@ -159,7 +159,7 @@ defmodule MaestroWeb.BookmarkImportLive do
         <div class="mt-8 card bg-base-200">
           <div class="card-body">
             <h3 class="font-semibold">How to export bookmarks</h3>
-            
+
             <div class="mt-4 space-y-4">
               <div>
                 <h4 class="font-medium">Chrome / Edge</h4>
@@ -168,7 +168,7 @@ defmodule MaestroWeb.BookmarkImportLive do
                   <li>Click the three dots in the bookmark manager → Export bookmarks</li>
                 </ol>
               </div>
-              
+
               <div>
                 <h4 class="font-medium">Firefox</h4>
                 <ol class="list-decimal list-inside text-sm text-base-content/80 mt-1 space-y-1">
@@ -176,7 +176,7 @@ defmodule MaestroWeb.BookmarkImportLive do
                   <li>Import and Backup → Export Bookmarks to HTML...</li>
                 </ol>
               </div>
-              
+
               <div>
                 <h4 class="font-medium">Safari</h4>
                 <ol class="list-decimal list-inside text-sm text-base-content/80 mt-1 space-y-1">
@@ -203,4 +203,11 @@ defmodule MaestroWeb.BookmarkImportLive do
   defp error_to_string(:not_accepted), do: "Invalid file type. Please upload an HTML file."
   defp error_to_string(:too_many_files), do: "Only one file allowed"
   defp error_to_string(err), do: "Upload error: #{inspect(err)}"
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_params(socket, _action, _params),
+    do: socket
 end

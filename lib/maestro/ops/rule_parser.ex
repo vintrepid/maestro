@@ -306,6 +306,68 @@ defmodule Maestro.Ops.RuleParser do
   defp startup_categorize("agents_symlink"), do: :architecture
   defp startup_categorize(_), do: :architecture
 
+  @doc """
+  Parse a directory of Claude memory markdown files into rule attribute maps.
+  Each file's body (after frontmatter) becomes one candidate rule.
+  """
+  def parse_memory_dir(dir, library_name \\ "claude-memory") do
+    Path.wildcard(Path.join(dir, "*.md"))
+    |> Enum.reject(&String.ends_with?(&1, "MEMORY.md"))
+    |> Enum.flat_map(fn path ->
+      content = File.read!(path)
+      {frontmatter, body} = split_frontmatter(content)
+      body = String.trim(body)
+
+      if String.length(body) >= @min_rule_length do
+        name = frontmatter["name"] || Path.basename(path, ".md")
+        type = frontmatter["type"] || "project"
+
+        [%{
+          content: body,
+          content_hash: content_hash(body),
+          category: memory_categorize(type),
+          severity: memory_severity(type),
+          source_project_slug: library_name,
+          source_commit: nil,
+          source_context: "#{library_name}:#{name}",
+          applies_to: ["all"],
+          tags: [library_name, type]
+        }]
+      else
+        []
+      end
+    end)
+  end
+
+  defp split_frontmatter(content) do
+    case Regex.run(~r/\A---\n(.*?)\n---\n(.*)\z/s, content) do
+      [_, fm, body] ->
+        parsed =
+          fm
+          |> String.split("\n")
+          |> Enum.reduce(%{}, fn line, acc ->
+            case String.split(line, ": ", parts: 2) do
+              [key, val] -> Map.put(acc, String.trim(key), String.trim(val))
+              _ -> acc
+            end
+          end)
+
+        {parsed, body}
+
+      _ ->
+        {%{}, content}
+    end
+  end
+
+  defp memory_categorize("feedback"), do: :architecture
+  defp memory_categorize("user"), do: :architecture
+  defp memory_categorize("project"), do: :architecture
+  defp memory_categorize("reference"), do: :architecture
+  defp memory_categorize(_), do: :architecture
+
+  defp memory_severity("feedback"), do: :should
+  defp memory_severity(_), do: :prefer
+
   @doc "Extract sub-rule name from a file path."
   def sub_rule_name(path) do
     parts = path |> Path.relative_to("deps") |> String.split("/")

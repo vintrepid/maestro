@@ -57,12 +57,18 @@ defmodule MaestroWeb.Layouts do
               <.icon name="hero-square-3-stack-3d" class="w-5 h-5" />
               Concepts
             </a>
+            <a href="/audit" class="btn btn-ghost">
+              <.icon name="hero-clipboard-document-check" class="w-5 h-5" />
+              Audit
+            </a>
           </div>
           <div class="navbar-end gap-2">
             <.git_dropdown />
             <.user_menu current_user={@current_user} />
           </div>
         </div>
+
+        <.agent_dashboard />
 
         <main class="container mx-auto px-4 py-2 max-w-7xl flex-1">
           {render_slot(@inner_block)}
@@ -73,6 +79,91 @@ defmodule MaestroWeb.Layouts do
     <.flash_group flash={@flash} />
     """
   end
+
+  def agent_dashboard(assigns) do
+    task = Maestro.Ops.AgentDashboard.current_task()
+    files = Maestro.Ops.AgentDashboard.all_files()
+
+    assigns =
+      assigns
+      |> assign(:task, task)
+      |> assign(:files, files)
+      |> assign(:pending, Map.get(task, "pending", []))
+      |> assign(:status, Map.get(task, "status", "idle"))
+      |> assign(:summary, Map.get(task, "summary", ""))
+      |> assign(:session_date, Map.get(task, "session_date", ""))
+
+    ~H"""
+    <div class="agent-dashboard">
+      <div class="collapse collapse-arrow bg-base-200 border-b border-base-300">
+        <input type="checkbox" id="agent-dashboard-toggle" />
+        <div class="collapse-title py-2 px-4 min-h-0 flex items-center gap-3 text-sm">
+          <span class="badge badge-primary badge-sm">Agent</span>
+          <span class="opacity-70 truncate">{@summary}</span>
+          <span class={"badge badge-sm #{status_badge(@status)}"}>{@status}</span>
+          <span class="badge badge-ghost badge-sm">{length(@files)} files changed</span>
+        </div>
+        <div class="collapse-content px-4 pb-4">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-2">
+            <%!-- Task State --%>
+            <div>
+              <h4 class="font-semibold text-xs uppercase opacity-50 mb-2">Current Task</h4>
+              <p class="text-sm mb-2">{@summary}</p>
+              <p class="text-xs opacity-50">{@session_date}</p>
+              <%= if @pending != [] do %>
+                <h4 class="font-semibold text-xs uppercase opacity-50 mt-3 mb-1">Pending</h4>
+                <ul class="text-sm space-y-1">
+                  <%= for item <- @pending do %>
+                    <li class="flex items-center gap-1">
+                      <span class="text-warning">*</span>
+                      {item}
+                    </li>
+                  <% end %>
+                </ul>
+              <% end %>
+            </div>
+
+            <%!-- Changed Files --%>
+            <div class="lg:col-span-2">
+              <h4 class="font-semibold text-xs uppercase opacity-50 mb-2">
+                Changed Files ({length(@files)})
+              </h4>
+              <div class="max-h-48 overflow-y-auto">
+                <table class="table table-xs">
+                  <tbody>
+                    <%= for file <- @files do %>
+                      <tr class="hover">
+                        <td>
+                          <span class={"badge badge-xs #{file_type_badge(file.type)}"}>
+                            {file.type}
+                          </span>
+                        </td>
+                        <td class="font-mono text-xs">{file.path}</td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp status_badge("in_progress"), do: "badge-warning"
+  defp status_badge("complete"), do: "badge-success"
+  defp status_badge("blocked"), do: "badge-error"
+  defp status_badge(_), do: "badge-ghost"
+
+  defp file_type_badge(:elixir), do: "badge-primary"
+  defp file_type_badge(:heex), do: "badge-secondary"
+  defp file_type_badge(:css), do: "badge-accent"
+  defp file_type_badge(:js), do: "badge-warning"
+  defp file_type_badge(:json), do: "badge-info"
+  defp file_type_badge(:markdown), do: "badge-ghost"
+  defp file_type_badge(_), do: "badge-ghost"
 
   def git_dropdown(assigns) do
     ~H"""
