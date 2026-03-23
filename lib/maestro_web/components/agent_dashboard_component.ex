@@ -52,21 +52,49 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   # --- Events ---
 
   @impl true
-  def handle_event("run_task", %{"task_input" => description}, socket) when description != "" do
-    Task.start(fn ->
-      System.cmd("mix", ["maestro.agent.run", "claude-code", "maestro.agent.session", description],
-        stderr_to_stdout: true
-      )
-    end)
+  def handle_event("start_session", %{"task_input" => description}, socket) when description != "" do
+    alias Maestro.Agents.Logger
+
+    {:ok, agent, session} = Logger.start_session("claude-code", description,
+      type: :claude_code, model: "claude-opus-4-6"
+    )
+
+    Logger.log_request(agent, session, :user_prompt, description)
 
     {:noreply, assign(socket, task_input: "")}
   end
 
-  def handle_event("run_task", _params, socket) do
+  def handle_event("start_session", _params, socket) do
     {:noreply, socket}
   end
 
-  def handle_event("update_input", %{"task_input" => value}, socket) do
+  def handle_event("complete_session", _params, socket) do
+    case AgentDashboard.active_session() do
+      nil -> {:noreply, socket}
+      session ->
+        db_session = Maestro.Repo.get!(Maestro.Agents.Session, session.id)
+        Maestro.Agents.Logger.end_session(db_session)
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("log_milestone", %{"milestone" => milestone}, socket) when milestone != "" do
+    case AgentDashboard.active_session() do
+      nil -> {:noreply, socket}
+      session ->
+        agent = Maestro.Repo.get!(Maestro.Agents.Agent, session.agent_id)
+        db_session = Maestro.Repo.get!(Maestro.Agents.Session, session.id)
+        Maestro.Agents.Logger.log_request(agent, db_session, :agent_response, milestone)
+        {:noreply, assign(socket, task_input: "")}
+    end
+  end
+
+  def handle_event("log_milestone", _params, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("update_input", params, socket) do
+    value = params["task_input"] || params["milestone"] || ""
     {:noreply, assign(socket, task_input: value)}
   end
 
@@ -119,21 +147,45 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
           <a href="/agents" class="btn btn-ghost btn-xs ml-auto" phx-click={JS.toggle()}>View All</a>
         </div>
         <div class={["px-4 pb-4", !@expanded && "hidden"]}>
-          <%!-- Task Input --%>
-          <form phx-submit="run_task" phx-target={@myself} class="flex gap-2 mb-3">
-            <textarea
-              name="task_input"
-              placeholder="Describe a task to run..."
-              rows="2"
-              class="textarea textarea-sm textarea-bordered flex-1 leading-tight"
-              phx-change="update_input"
-              phx-target={@myself}
-              disabled={@running}
-            >{@task_input}</textarea>
-            <button type="submit" class="btn btn-sm btn-primary self-end" disabled={@running || @task_input == ""}>
-              Run
-            </button>
-          </form>
+          <%!-- Session Controls --%>
+          <%= if @running do %>
+            <div class="flex gap-2 mb-3">
+              <form phx-submit="log_milestone" phx-target={@myself} class="flex gap-2 flex-1">
+                <textarea
+                  name="milestone"
+                  placeholder="Log a milestone..."
+                  rows="2"
+                  class="textarea textarea-sm textarea-bordered flex-1 leading-tight"
+                  phx-change="update_input"
+                  phx-target={@myself}
+                >{@task_input}</textarea>
+                <button type="submit" class="btn btn-sm btn-ghost self-end" disabled={@task_input == ""}>
+                  Log
+                </button>
+              </form>
+              <button
+                phx-click="complete_session"
+                phx-target={@myself}
+                class="btn btn-sm btn-success self-end"
+              >
+                Complete
+              </button>
+            </div>
+          <% else %>
+            <form phx-submit="start_session" phx-target={@myself} class="flex gap-2 mb-3">
+              <textarea
+                name="task_input"
+                placeholder="Describe a new task..."
+                rows="2"
+                class="textarea textarea-sm textarea-bordered flex-1 leading-tight"
+                phx-change="update_input"
+                phx-target={@myself}
+              >{@task_input}</textarea>
+              <button type="submit" class="btn btn-sm btn-primary self-end" disabled={@task_input == ""}>
+                Start
+              </button>
+            </form>
+          <% end %>
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <%!-- Session + Task --%>
