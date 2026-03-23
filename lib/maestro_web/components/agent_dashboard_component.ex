@@ -33,7 +33,7 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
 
   @impl true
   def mount(socket) do
-    {:ok, assign(socket, task_input: "", running: false, subscribed: false)}
+    {:ok, assign(socket, task_input: "", running: false, subscribed: false, expanded: true)}
   end
 
   @impl true
@@ -53,15 +53,13 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
 
   @impl true
   def handle_event("run_task", %{"task_input" => description}, socket) when description != "" do
-    socket = assign(socket, running: true, task_input: "")
-
     Task.start(fn ->
       System.cmd("mix", ["maestro.agent.run", "claude-code", "maestro.agent.session", description],
         stderr_to_stdout: true
       )
     end)
 
-    {:noreply, socket}
+    {:noreply, assign(socket, task_input: "")}
   end
 
   def handle_event("run_task", _params, socket) do
@@ -70,6 +68,10 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
 
   def handle_event("update_input", %{"task_input" => value}, socket) do
     {:noreply, assign(socket, task_input: value)}
+  end
+
+  def handle_event("toggle_expanded", _params, socket) do
+    {:noreply, assign(socket, expanded: !socket.assigns.expanded)}
   end
 
   # --- PubSub handlers ---
@@ -94,9 +96,13 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   def render(assigns) do
     ~H"""
     <div class="agent-dashboard" id="agent-dashboard">
-      <div class="collapse collapse-arrow bg-base-200 border-b border-base-300">
-        <input type="checkbox" id="agent-dashboard-toggle" />
-        <div class="collapse-title py-2 px-4 min-h-0 flex items-center gap-3 text-sm">
+      <div class="bg-base-200 border-b border-base-300">
+        <div
+          class="py-2 px-4 flex items-center gap-3 text-sm cursor-pointer hover:bg-base-300 transition-colors"
+          phx-click="toggle_expanded"
+          phx-target={@myself}
+        >
+          <span class={"transition-transform #{if @expanded, do: "rotate-90", else: ""}"}>&#9654;</span>
           <%= if @session do %>
             <span class="badge badge-primary badge-sm">{@agent_name}</span>
             <span class="opacity-70 truncate">{@session.task_description || @summary}</span>
@@ -106,28 +112,26 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
             <span class="opacity-70 truncate">{@summary}</span>
             <span class={"badge badge-sm #{status_badge(@status)}"}>{@status}</span>
           <% end %>
+          <%= if @running do %>
+            <span class="loading loading-spinner loading-xs"></span>
+          <% end %>
           <span class="badge badge-ghost badge-sm">{length(@files)} files</span>
-          <a href="/agents" class="btn btn-ghost btn-xs ml-auto">View All</a>
+          <a href="/agents" class="btn btn-ghost btn-xs ml-auto" phx-click={JS.toggle()}>View All</a>
         </div>
-        <div class="collapse-content px-4 pb-4">
+        <div class={["px-4 pb-4", !@expanded && "hidden"]}>
           <%!-- Task Input --%>
           <form phx-submit="run_task" phx-target={@myself} class="flex gap-2 mb-3">
-            <input
-              type="text"
+            <textarea
               name="task_input"
-              value={@task_input}
               placeholder="Describe a task to run..."
-              class="input input-sm input-bordered flex-1"
+              rows="2"
+              class="textarea textarea-sm textarea-bordered flex-1 leading-tight"
               phx-change="update_input"
               phx-target={@myself}
               disabled={@running}
-            />
-            <button type="submit" class="btn btn-sm btn-primary" disabled={@running || @task_input == ""}>
-              <%= if @running do %>
-                <span class="loading loading-spinner loading-xs"></span>
-              <% else %>
-                Run
-              <% end %>
+            >{@task_input}</textarea>
+            <button type="submit" class="btn btn-sm btn-primary self-end" disabled={@running || @task_input == ""}>
+              Run
             </button>
           </form>
 
@@ -209,7 +213,8 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   defp load_data(socket) do
     task = AgentDashboard.current_task()
     files = AgentDashboard.all_files()
-    session = AgentDashboard.active_session() || AgentDashboard.latest_session()
+    active = AgentDashboard.active_session()
+    session = active || AgentDashboard.latest_session()
     recent_requests = if session, do: AgentDashboard.recent_requests(session.id, 5), else: []
     agent_name = if session, do: AgentDashboard.agent_name(session.agent_id), else: nil
 
@@ -222,7 +227,8 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
       session_date: Map.get(task, "session_date", ""),
       session: session,
       recent_requests: recent_requests,
-      agent_name: agent_name
+      agent_name: agent_name,
+      running: active != nil
     )
   end
 
