@@ -61,6 +61,10 @@ defmodule MaestroWeb.Layouts do
               <.icon name="hero-clipboard-document-check" class="w-5 h-5" />
               Audit
             </a>
+            <a href="/agents" class="btn btn-ghost">
+              <.icon name="hero-cpu-chip" class="w-5 h-5" />
+              Agents
+            </a>
           </div>
           <div class="navbar-end gap-2">
             <.git_dropdown />
