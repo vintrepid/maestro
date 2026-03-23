@@ -72,7 +72,7 @@ defmodule MaestroWeb.Layouts do
           </div>
         </div>
 
-        <.agent_dashboard />
+        <.live_component module={MaestroWeb.Components.AgentDashboardComponent} id="agent-dashboard" />
 
         <main class="container mx-auto px-4 py-2 max-w-7xl flex-1">
           {render_slot(@inner_block)}
@@ -83,8 +83,6 @@ defmodule MaestroWeb.Layouts do
     <.flash_group flash={@flash} />
     """
   end
-
-  defdelegate agent_dashboard(assigns), to: MaestroWeb.Components.AgentDashboardComponent
 
   def git_dropdown(assigns) do
     ~H"""
