@@ -40,7 +40,8 @@ defmodule Maestro.Ops.Rule do
         :content, :category, :severity, :source_project_slug,
         :source_commit, :source_context, :applies_to, :tags,
         :library_id, :rule_source_id, :content_hash,
-        :fix_type, :fix_template, :fix_target, :fix_search
+        :fix_type, :fix_template, :fix_target, :fix_search,
+        :notes
       ]
     end
 
@@ -170,6 +171,11 @@ defmodule Maestro.Ops.Rule do
 
     attribute :retired_reason, :string do
       public? true
+    end
+
+    attribute :notes, :string do
+      public? true
+      description "Curator notes — freeform comments during review"
     end
 
     attribute :lint_pattern, :string do

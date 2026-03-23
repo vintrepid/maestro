@@ -78,6 +78,27 @@ defmodule MaestroWeb.RulesLive do
     {:noreply, socket |> refresh_table() |> put_flash(:info, "Rule deleted")}
   end
 
+  def handle_event("save_notes", %{"id" => id, "notes" => notes}, socket) do
+    Rule.by_id!(id) |> Rule.update(%{notes: notes})
+    {:noreply, socket}
+  end
+
+  def handle_event("filter_source", %{"source" => source}, socket) do
+    query = Rule |> filter(source_project_slug == ^source) |> sort(updated_at: :desc)
+    {:noreply, assign(socket, :query, query) |> refresh_table()}
+  end
+
+  def handle_event("filter_source_status", %{"source" => source, "status" => status}, socket) do
+    status_atom = String.to_existing_atom(status)
+
+    query =
+      Rule
+      |> filter(source_project_slug == ^source and status == ^status_atom)
+      |> sort(updated_at: :desc)
+
+    {:noreply, assign(socket, :query, query) |> refresh_table()}
+  end
+
   def handle_event("toggle_stats", _params, socket) do
     {:noreply, assign(socket, :show_stats, !socket.assigns.show_stats)}
   end
@@ -134,10 +155,9 @@ defmodule MaestroWeb.RulesLive do
                   <thead>
                     <tr>
                       <th>Source</th>
-                      <th class="text-center">Ver</th>
-                      <th class="text-center">Rules</th>
                       <th class="text-center">Coverage</th>
                       <th class="text-center text-success">A</th>
+                      <th class="text-center text-warning">P</th>
                       <th class="text-center text-info">L</th>
                       <th class="text-center text-base-content/40">R</th>
                     </tr>
@@ -145,9 +165,14 @@ defmodule MaestroWeb.RulesLive do
                   <tbody>
                     <%= for d <- @deps_info do %>
                       <tr>
-                        <td class="font-mono text-xs">{d.dep}</td>
-                        <td class="text-center text-xs text-base-content/50">{d.version}</td>
-                        <td class="text-center">{d.source_count}</td>
+                        <td
+                          class="font-mono text-xs cursor-pointer hover:underline"
+                          phx-click="filter_source"
+                          phx-value-source={d.dep}
+                        >
+                          {d.dep}
+                          <span class="text-base-content/40 ml-1">{d.version}</span>
+                        </td>
                         <td class="text-center">
                           <progress
                             class={[
@@ -163,9 +188,49 @@ defmodule MaestroWeb.RulesLive do
                           />
                           <span class="text-xs ml-1">{d.coverage_pct}%</span>
                         </td>
-                        <td class="text-center text-success">{d.approved}</td>
-                        <td class="text-center text-info">{d.linter}</td>
-                        <td class="text-center text-base-content/40">{d.retired}</td>
+                        <td class="text-center">
+                          <span
+                            class="text-success cursor-pointer hover:underline"
+                            phx-click="filter_source_status"
+                            phx-value-source={d.dep}
+                            phx-value-status="approved"
+                          >
+                            {d.approved}
+                          </span>
+                        </td>
+                        <td class="text-center">
+                          <span
+                            class={[
+                              "cursor-pointer hover:underline",
+                              if(d.proposed > 0, do: "text-warning font-semibold", else: "text-base-content/40")
+                            ]}
+                            phx-click="filter_source_status"
+                            phx-value-source={d.dep}
+                            phx-value-status="proposed"
+                          >
+                            {d.proposed}
+                          </span>
+                        </td>
+                        <td class="text-center">
+                          <span
+                            class="text-info cursor-pointer hover:underline"
+                            phx-click="filter_source_status"
+                            phx-value-source={d.dep}
+                            phx-value-status="linter"
+                          >
+                            {d.linter}
+                          </span>
+                        </td>
+                        <td class="text-center">
+                          <span
+                            class="text-base-content/40 cursor-pointer hover:underline"
+                            phx-click="filter_source_status"
+                            phx-value-source={d.dep}
+                            phx-value-status="retired"
+                          >
+                            {d.retired}
+                          </span>
+                        </td>
                       </tr>
                     <% end %>
                   </tbody>
@@ -257,6 +322,18 @@ defmodule MaestroWeb.RulesLive do
             <p class="text-sm whitespace-pre-wrap max-w-xl truncate">
               {String.slice(rule.content, 0, 200)}
             </p>
+          </:col>
+
+          <:col :let={rule} field="notes" label="Notes">
+            <form phx-change="save_notes" phx-debounce="500">
+              <input type="hidden" name="id" value={rule.id} />
+              <textarea
+                name="notes"
+                placeholder="Add note..."
+                rows="2"
+                class="textarea textarea-xs textarea-bordered w-40 leading-tight"
+              >{rule.notes}</textarea>
+            </form>
           </:col>
 
           <:col :let={rule} field="id" label="">

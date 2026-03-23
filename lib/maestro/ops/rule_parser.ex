@@ -39,7 +39,12 @@ defmodule Maestro.Ops.RuleParser do
 
   @doc "Normalize content for comparison: trim, collapse whitespace, downcase."
   def normalize(content) do
-    content |> String.trim() |> String.replace(~r/\s+/, " ") |> String.downcase()
+    content
+    |> String.trim()
+    |> String.replace(~r/^(\*\*(Always|Never|ALWAYS|NEVER|Must|Avoid)\*\*\s*)+/i, "")
+    |> String.replace(~r/^(- )+/, "")
+    |> String.replace(~r/\s+/, " ")
+    |> String.downcase()
   end
 
   @doc "SHA256 hash of raw file content (for RuleSource change detection)."
@@ -176,7 +181,7 @@ defmodule Maestro.Ops.RuleParser do
         %{
           content: rule_text,
           content_hash: content_hash(rule_text),
-          category: agents_categorize(sub),
+          category: agents_categorize(sub, rule_text),
           severity: detect_severity(rule_text),
           source_project_slug: library_name,
           source_commit: nil,
@@ -220,21 +225,35 @@ defmodule Maestro.Ops.RuleParser do
     end
   end
 
-  defp agents_categorize("project"), do: :liveview
-  defp agents_categorize("phoenix-v1-8" <> _), do: :liveview
-  defp agents_categorize("js-and-css"), do: :css
-  defp agents_categorize("ui-ux" <> _), do: :css
-  defp agents_categorize("ui-ux-design"), do: :css
-  defp agents_categorize("elixir"), do: :elixir
-  defp agents_categorize("mix"), do: :elixir
-  defp agents_categorize("test"), do: :testing
-  defp agents_categorize("phoenix-html"), do: :heex
-  defp agents_categorize("phoenix-liveview" <> _), do: :liveview
-  defp agents_categorize("phoenix"), do: :routing
-  defp agents_categorize("liveview-streams"), do: :liveview
-  defp agents_categorize("liveview-javascript" <> _), do: :liveview
-  defp agents_categorize("liveview-tests"), do: :testing
-  defp agents_categorize(_), do: :liveview
+  # Category from section heading — with content-based fallback
+  defp agents_categorize(sub, _content) when sub in ["js-and-css", "ui-ux", "ui-ux-design"], do: :css
+  defp agents_categorize("elixir", _content), do: :elixir
+  defp agents_categorize("mix", _content), do: :elixir
+  defp agents_categorize(sub, _content) when sub in ["test", "liveview-tests", "testing"], do: :testing
+  defp agents_categorize("phoenix-html", _content), do: :heex
+  defp agents_categorize(sub, _content) when sub in ["phoenix-liveview", "liveview-streams", "liveview-javascript"], do: :liveview
+  defp agents_categorize("phoenix-v1-8" <> _, _content), do: :liveview
+  defp agents_categorize("phoenix-liveview" <> _, _content), do: :liveview
+  defp agents_categorize("liveview-javascript" <> _, _content), do: :liveview
+  defp agents_categorize("phoenix", _content), do: :routing
+
+  # Fallback: classify by content keywords
+  defp agents_categorize(_sub, content) do
+    content_lower = String.downcase(content)
+
+    cond do
+      String.contains?(content_lower, ["ash.", "ash_", "changeset", "resource "]) -> :ash
+      String.contains?(content_lower, ["liveview", "live_view", "socket", "handle_event", "phx-"]) -> :liveview
+      String.contains?(content_lower, ["heex", "~h\"", ".heex", "<."]) -> :heex
+      String.contains?(content_lower, ["genserver", "supervisor", "otp", "application.start"]) -> :elixir
+      String.contains?(content_lower, ["mix test", "assert ", "exunit", "test \""]) -> :testing
+      String.contains?(content_lower, ["router", "route", "plug ", "pipeline"]) -> :routing
+      String.contains?(content_lower, ["tailwind", "css", "daisyui"]) -> :css
+      String.contains?(content_lower, ["git ", "branch", "commit", "deploy"]) -> :architecture
+      String.contains?(content_lower, ["task", "agent", "maestro", "coordinate"]) -> :architecture
+      true -> :architecture
+    end
+  end
 
   @doc """
   Parse a startup.json file into rule attribute maps.
@@ -242,62 +261,41 @@ defmodule Maestro.Ops.RuleParser do
   """
   def parse_startup_json(path, library_name \\ "maestro-startup") do
     json = path |> File.read!() |> Jason.decode!()
+    basename = Path.basename(path, ".json") |> String.downcase()
 
-    rules = []
+    # Collect all string values from the JSON recursively
+    text_values = extract_json_texts(json)
 
-    # Extract rules from embedded markdown in source_files
-    source_files = get_in(json, ["bootstrap", "content", "source_files"]) || %{}
+    # Parse each text value as potential markdown containing rules
+    text_values
+    |> Enum.flat_map(fn text ->
+      text
+      |> String.split("\n")
+      |> chunk_rules()
+      |> Enum.filter(&(String.length(String.trim(&1)) >= @min_rule_length))
+    end)
+    |> Enum.map(fn rule_text ->
+      rule_text = String.trim(rule_text)
 
-    rules =
-      Enum.reduce(source_files, rules, fn {filename, content}, acc ->
-        sub = filename |> String.replace_suffix(".md", "") |> String.downcase()
-
-        parsed =
-          content
-          |> String.split("\n")
-          |> chunk_rules()
-          |> Enum.filter(&(String.length(String.trim(&1)) >= @min_rule_length))
-          |> Enum.map(fn rule_text ->
-            rule_text = String.trim(rule_text)
-
-            %{
-              content: rule_text,
-              content_hash: content_hash(rule_text),
-              category: startup_categorize(sub),
-              severity: detect_severity(rule_text),
-              source_project_slug: library_name,
-              source_commit: nil,
-              source_context: "#{library_name}:#{sub}",
-              applies_to: ["all"],
-              tags: [library_name, sub] |> Enum.uniq()
-            }
-          end)
-
-        acc ++ parsed
-      end)
-
-    # Extract anti-patterns as rules
-    anti_patterns = json["anti_patterns"] || []
-
-    anti_rules =
-      anti_patterns
-      |> Enum.filter(&(is_binary(&1) and String.length(&1) >= @min_rule_length))
-      |> Enum.map(fn text ->
-        %{
-          content: text,
-          content_hash: content_hash(text),
-          category: :architecture,
-          severity: :should,
-          source_project_slug: library_name,
-          source_commit: nil,
-          source_context: "#{library_name}:anti_patterns",
-          applies_to: ["all"],
-          tags: [library_name, "anti_patterns"]
-        }
-      end)
-
-    rules ++ anti_rules
+      %{
+        content: rule_text,
+        content_hash: content_hash(rule_text),
+        category: startup_categorize(basename),
+        severity: detect_severity(rule_text),
+        source_project_slug: library_name,
+        source_commit: nil,
+        source_context: "#{library_name}:#{basename}",
+        applies_to: ["all"],
+        tags: [library_name, basename] |> Enum.uniq()
+      }
+    end)
   end
+
+  # Recursively extract all string values from a JSON structure
+  defp extract_json_texts(value) when is_binary(value) and byte_size(value) >= 40, do: [value]
+  defp extract_json_texts(value) when is_map(value), do: Enum.flat_map(Map.values(value), &extract_json_texts/1)
+  defp extract_json_texts(value) when is_list(value), do: Enum.flat_map(value, &extract_json_texts/1)
+  defp extract_json_texts(_), do: []
 
   defp startup_categorize("critical_10"), do: :architecture
   defp startup_categorize("guidelines"), do: :architecture

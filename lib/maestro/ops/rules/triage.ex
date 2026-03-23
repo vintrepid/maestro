@@ -27,7 +27,6 @@ defmodule Maestro.Ops.Rules.Triage do
       approve?(content, len, source) ->
         %{status: :approved}
 
-      len > 200 -> %{status: :approved}
       len < 80 -> %{status: :retired, reason: "Too short to be actionable"}
       true -> %{status: :approved}
     end
@@ -54,6 +53,21 @@ defmodule Maestro.Ops.Rules.Triage do
 
       Regex.match?(~r/^- `\w+`\s*-\s*(enables?|shows?|includes?|configur)/, content) and len < 100 ->
         "Config option fragment"
+
+      describes_structure?(content) ->
+        "Descriptive prose — describes structure, not a rule"
+
+      obsolete_workflow?(content) ->
+        "Obsolete workflow — references retired systems"
+
+      ui_copy?(content) ->
+        "UI copy or status note — not a rule"
+
+      vague_advice?(content, len) ->
+        "Vague advice — no checkable pattern"
+
+      readme_prose?(content) ->
+        "README prose — project description, not a rule"
 
       true ->
         nil
@@ -99,5 +113,87 @@ defmodule Maestro.Ops.Rules.Triage do
 
   defp too_basic?(content) do
     Enum.any?(@basic_patterns, &Regex.match?(&1, content))
+  end
+
+  # --- Structural/descriptive prose ---
+  # Matches content that describes what something IS rather than prescribing what to DO.
+  # Directory listings, file descriptions, "contains X" patterns.
+  # @prefix handles optional severity markers that quality gate may prepend.
+  @prefix ~S"(?:\*\*(?:Always|Never|ALWAYS|NEVER)\*\*\s*)?(?:- )?"
+
+  @structure_patterns [
+    # "**dirname/** - Description" or "**file.md** - Description" or "**path/{var}** - ..."
+    Regex.compile!(@prefix <> ~S"\*\*[^*]+\*\*\s*-\s+(Historical|Contains|Shared|Business|Project|All |Start here|Into \d)", "i"),
+    # "X contains all Y" / "X contains task info"
+    Regex.compile!(@prefix <> ~S"\S+ contains all \S+", "i"),
+    # "Organized X/ - Into N clusters"
+    Regex.compile!(@prefix <> ~S"Organized \w+", "i"),
+    # README headers
+    ~r/^#\s+(AI Agent|Guidelines|Documentation)/i,
+    ~r/^\*\*GitHub Re/
+  ]
+
+  defp describes_structure?(content) do
+    Enum.any?(@structure_patterns, &Regex.match?(&1, content))
+  end
+
+  # --- Obsolete workflow references ---
+  # Old systems: bundles, mix session.capacity, CHANGELOG-first branching,
+  # task runner UI, mix bundles.track, Ruby git hooks
+  @obsolete_patterns [
+    # Old task/bundle coordination system
+    ~r/mix session\.capacity/,
+    ~r/mix bundles\.track/,
+    ~r/mix maestro\.task\.request/,
+    ~r/bundles?/i,
+    ~r/bundling/i,
+    ~r/\[task_coordination\]/,
+    ~r/\[agent_operations\]/,
+    ~r/entity_type:.*entity_id:/,
+    # Old git/workflow patterns
+    ~r/commit CHANGELOG\.md first/i,
+    ~r/Ruby installed.*--no-verify/,
+    ~r/--no-verify.*bypass hooks/,
+    ~r/ex_cldr backend must be configured/,
+    # Stale date/status markers
+    ~r/\(curated:\s*\d{4}-\d{2}-\d{2}\)/,
+    ~r/\_\(ready\)\_/
+  ]
+
+  defp obsolete_workflow?(content) do
+    Enum.any?(@obsolete_patterns, &Regex.match?(&1, content))
+  end
+
+  # --- UI copy / status notes ---
+  @ui_copy_patterns [
+    ~r/^- \*\*(Info|Success|Warning|Error) (alert|feedback|message)\*\*/i,
+    ~r/^- ✅\s/,
+    ~r/"Ready to run\?/,
+    ~r/"Task coordinated successfully/,
+    ~r/Click '.*' to /
+  ]
+
+  defp ui_copy?(content) do
+    Enum.any?(@ui_copy_patterns, &Regex.match?(&1, content))
+  end
+
+  # --- Vague advice without checkable patterns ---
+  # Short rules that describe what to do but have no code, no pattern, no "how"
+  @vague_patterns [
+    ~r/^- Keep these focused on/,
+    ~r/^- One branch per task/,
+    ~r/^- List iteration for /
+  ]
+
+  defp vague_advice?(content, len) do
+    len < 120 and Enum.any?(@vague_patterns, &Regex.match?(&1, content))
+  end
+
+  # --- README / intro prose ---
+  # Long blocks that are project descriptions, not rules
+  defp readme_prose?(content) do
+    String.starts_with?(content, "# ") and
+      String.length(content) > 300 and
+      not Regex.match?(~r/\*\*(Always|Never|ALWAYS|NEVER|Must|Avoid)\*\*/i, content)
   end
 end

@@ -27,8 +27,21 @@ defmodule Maestro.Ops.Rules.Dedup do
   @doc "Check if content is a near-duplicate of any existing normalized content."
   def near_duplicate?(content, existing_normalized, threshold \\ 0.85) do
     normalized = RuleParser.normalize(content)
+    norm_len = String.length(normalized)
 
-    String.length(normalized) > 80 and
-      Enum.any?(existing_normalized, &(String.jaro_distance(normalized, &1) > threshold))
+    Enum.any?(existing_normalized, fn existing ->
+      existing_len = String.length(existing)
+
+      cond do
+        # Prefix match: one is the start of the other (quality gate appends "why" clauses)
+        norm_len > 20 and String.starts_with?(existing, normalized) -> true
+        existing_len > 20 and String.starts_with?(normalized, existing) -> true
+
+        # Jaro similarity for longer content
+        norm_len > 80 -> String.jaro_distance(normalized, existing) > threshold
+
+        true -> false
+      end
+    end)
   end
 end

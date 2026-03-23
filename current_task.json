@@ -1,23 +1,26 @@
 {
   "pending": [
-    "38 proposed rules need curation at /rules"
+    "67 proposed rules need curation at /rules",
+    "141 rules still skipped in audit — need checkable patterns in content",
+    "Agent Dashboard is WIP — add more sections as needed"
   ],
   "status": "in_progress",
   "state": {
-    "approved_rules": 146,
-    "proposed_rules": 38,
+    "total_rules": 1261,
+    "approved_rules": 159,
+    "proposed_rules": 67,
+    "linter_rules": 22,
+    "retired_rules": 1013,
     "quality_pass_rate": "100%",
     "site_audit": {
-      "avg_score": "90%",
-      "failures": [
-        "architecture: 2",
-        "css: 16",
-        "heex: 1",
-        "pubsub: 15"
-      ],
+      "avg_score": "96%",
+      "checks_per_page": 58,
+      "total_failures": 39,
       "pages": 17
-    }
+    },
+    "external_sources": "28 files auto-discovered from project root",
+    "agent_dashboard": "Live on all pages — task state, changed files, click-to-open"
   },
   "session_date": "2026-03-22",
-  "summary": "Built rules quality pipeline, site audit with fix_it system, memory ingestion, rules.curate pipeline with RULES.md + rules.json + lean AGENTS.md outputs"
+  "summary": "Data-driven audit + curate pipeline, Agent Dashboard, 28 root files ingested, 159 approved rules"
 }

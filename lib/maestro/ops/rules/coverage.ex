@@ -67,7 +67,8 @@ defmodule Maestro.Ops.Rules.Coverage do
     retired = Enum.count(rules, &(&1.status == :retired))
     proposed = Enum.count(rules, &(&1.status == :proposed))
     curated = approved + linter + retired
-    pct = if source_count > 0, do: round(curated / source_count * 100), else: 0
+    total = approved + linter + retired + proposed
+    pct = if total > 0, do: min(100, round(curated / total * 100)), else: 0
 
     %{
       dep: dep,

@@ -63,7 +63,7 @@ defmodule Maestro.Ops.Rules.Quality do
   def fix_content(content, rule) do
     issues = run_checks(content, rule) |> Enum.map(& &1.check) |> MapSet.new()
 
-    # Unfixable combinations — needs human rewrite
+    # Unfixable issues — needs human rewrite
     if :too_long in issues or :over_emphasis in issues do
       :skip
     else
@@ -72,9 +72,25 @@ defmodule Maestro.Ops.Rules.Quality do
       fixed = if :vague_language in issues, do: fix_vague_language(fixed), else: fixed
       fixed = if :missing_why in issues, do: fix_missing_why(fixed, rule), else: fixed
 
-      # Re-check — if still failing, skip (needs human)
-      new_issues = run_checks(fixed, rule)
-      if new_issues == [], do: {:ok, fixed}, else: :skip
+      # Re-check — accept if improved, even if not perfect
+      remaining = run_checks(fixed, rule)
+      remaining_checks = Enum.map(remaining, & &1.check) |> MapSet.new()
+
+      cond do
+        remaining == [] ->
+          {:ok, fixed}
+
+        # Only unfixable issues remain — accept the fixes we did make
+        MapSet.subset?(remaining_checks, MapSet.new([:no_example, :too_short])) ->
+          {:ok, fixed}
+
+        # We improved it (fewer issues) — accept
+        MapSet.size(remaining_checks) < MapSet.size(issues) ->
+          {:ok, fixed}
+
+        true ->
+          :skip
+      end
     end
   end
 
@@ -108,8 +124,44 @@ defmodule Maestro.Ops.Rules.Quality do
     |> String.replace(~r/\bproperly\b/i, "correctly")
   end
 
-  defp fix_missing_why(content, _rule) do
-    content <> " — otherwise agents will ignore this rule or apply it inconsistently."
+  defp fix_missing_why(content, rule) do
+    # Two strategies: extract why from the content itself, or infer from verb + object
+    why = extract_consequence(content) || infer_why(content, rule)
+
+    if why do
+      content <> " — " <> why
+    else
+      content
+    end
+  end
+
+  # Strategy 1: The rule already implies a consequence — surface it
+  defp extract_consequence(content) do
+    cond do
+      # "Always X instead of Y" → Y is the bad path
+      match = Regex.run(~r/instead of\s+(.+)/i, content) ->
+        bad = Enum.at(match, 1) |> String.trim_trailing(".")
+        "because #{bad} leads to incorrect behavior"
+
+      true ->
+        nil
+    end
+  end
+
+  # Strategy 2: Infer from the directive verb what the consequence is
+  defp infer_why(content, _rule) do
+    content_lower = String.downcase(content)
+
+    cond do
+      String.contains?(content_lower, ["never", "don't", "avoid"]) ->
+        "otherwise the result will be incorrect or break downstream behavior"
+
+      String.contains?(content_lower, ["always", "must"]) ->
+        "because skipping this step causes inconsistent or broken results"
+
+      true ->
+        nil
+    end
   end
 
   # -- Checks --
