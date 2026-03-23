@@ -4,6 +4,7 @@ defmodule MaestroWeb.RulesLive do
   alias Maestro.Ops.Rule
   alias Maestro.Ops.Rules.{Coverage, Quality}
   import Ash.Query
+  import Ecto.Query, only: [from: 2]
 
   @status_options [
     {"Proposed", "proposed"},
@@ -27,6 +28,14 @@ defmodule MaestroWeb.RulesLive do
     {"Testing", "testing"}
   ]
 
+  @bundle_options [
+    {"Universal", "universal"},
+    {"UI", "ui"},
+    {"Model", "model"},
+    {"DevOps", "devops"},
+    {"Maestro", "maestro"}
+  ]
+
   @impl true
   def mount(_params, _session, socket) do
     source_options = build_source_options()
@@ -48,6 +57,8 @@ defmodule MaestroWeb.RulesLive do
      |> assign(:skills, Coverage.skills())
      |> assign(:quality_summary, quality_summary)
      |> assign(:quality_by_id, quality_by_id)
+     |> assign(:bundle_stats, load_bundle_stats())
+     |> assign(:status_totals, load_status_totals())
      |> assign(:show_stats, true)}
   end
 
@@ -78,9 +89,29 @@ defmodule MaestroWeb.RulesLive do
     {:noreply, socket |> refresh_table() |> put_flash(:info, "Rule deleted")}
   end
 
-  def handle_event("save_notes", %{"id" => id, "notes" => notes}, socket) do
+  def handle_event("save_notes", %{"rule_id" => id, "notes" => notes}, socket) do
     Rule.by_id!(id) |> Rule.update(%{notes: notes})
     {:noreply, socket}
+  end
+
+  def handle_event("export_bundles", _params, socket) do
+    case System.cmd("mix", ["maestro.rules.export"], stderr_to_stdout: true) do
+      {_output, 0} ->
+        {:noreply, put_flash(socket, :info, "Bundles exported successfully")}
+
+      {output, _} ->
+        {:noreply, put_flash(socket, :error, "Export failed: #{String.slice(output, 0, 200)}")}
+    end
+  end
+
+  def handle_event("reprioritize", _params, socket) do
+    {updated, _skipped} = Maestro.Ops.Rules.Prioritizer.auto_assign_all()
+
+    {:noreply,
+     socket
+     |> assign(:bundle_stats, load_bundle_stats())
+     |> refresh_table()
+     |> put_flash(:info, "Reprioritized #{updated} rules")}
   end
 
   def handle_event("filter_source", %{"source" => source}, socket) do
@@ -116,6 +147,38 @@ defmodule MaestroWeb.RulesLive do
     |> Enum.map(&{&1, &1})
   end
 
+  defp load_bundle_stats do
+    Maestro.Repo.all(
+      from r in "rules",
+        where: r.status == "approved",
+        group_by: r.bundle,
+        select: {r.bundle, count(r.id)},
+        order_by: [desc: count(r.id)]
+    )
+  end
+
+  defp load_status_totals do
+    Maestro.Repo.all(
+      from r in "rules",
+        group_by: r.status,
+        select: {r.status, count(r.id)}
+    )
+  end
+
+  defp status_count(totals, status) do
+    case Enum.find(totals, fn {s, _} -> s == status end) do
+      {_, count} -> count
+      nil -> 0
+    end
+  end
+
+  defp max_bundle_count(stats) do
+    case stats do
+      [] -> 1
+      stats -> stats |> Enum.map(fn {_, c} -> c end) |> Enum.max()
+    end
+  end
+
   defp status_badge_class(:proposed), do: "badge-warning"
   defp status_badge_class(:approved), do: "badge-success"
   defp status_badge_class(:retired), do: "badge-ghost"
@@ -127,139 +190,156 @@ defmodule MaestroWeb.RulesLive do
   defp severity_badge_class(:prefer), do: "badge-info"
   defp severity_badge_class(_), do: ""
 
+  defp bundle_badge_class("universal"), do: "badge-primary"
+  defp bundle_badge_class(:universal), do: "badge-primary"
+  defp bundle_badge_class("ui"), do: "badge-secondary"
+  defp bundle_badge_class(:ui), do: "badge-secondary"
+  defp bundle_badge_class("model"), do: "badge-accent"
+  defp bundle_badge_class(:model), do: "badge-accent"
+  defp bundle_badge_class("devops"), do: "badge-info"
+  defp bundle_badge_class(:devops), do: "badge-info"
+  defp bundle_badge_class("maestro"), do: "badge-warning"
+  defp bundle_badge_class(:maestro), do: "badge-warning"
+  defp bundle_badge_class(_), do: "badge-ghost"
+
+  defp bundle_progress_class("universal"), do: "progress-primary"
+  defp bundle_progress_class("model"), do: "progress-accent"
+  defp bundle_progress_class("ui"), do: "progress-secondary"
+  defp bundle_progress_class("devops"), do: "progress-info"
+  defp bundle_progress_class("maestro"), do: "progress-warning"
+  defp bundle_progress_class(_), do: ""
+
+  defp priority_color(p) when p >= 80, do: "text-error font-semibold"
+  defp priority_color(p) when p >= 60, do: "text-warning"
+  defp priority_color(_), do: "text-base-content/50"
+
+  defp coverage_color(pct) when pct >= 80, do: "text-success"
+  defp coverage_color(pct) when pct >= 40, do: "text-warning"
+  defp coverage_color(_), do: "text-error"
+
   @impl true
   def render(assigns) do
     assigns =
       assigns
       |> assign(:status_options, @status_options)
       |> assign(:category_options, @category_options)
+      |> assign(:bundle_options, @bundle_options)
 
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="max-w-7xl mx-auto px-8 py-6">
         <div class="flex items-center justify-between mb-4">
-          <h1 class="text-3xl font-bold">Rules</h1>
-          <button phx-click="toggle_stats" class="btn btn-ghost btn-sm">
-            <.icon name="hero-chart-bar" class="w-4 h-4" />
-            {if @show_stats, do: "Hide", else: "Show"} Stats
-          </button>
+          <div>
+            <h1 class="text-3xl font-bold">Rules</h1>
+            <p class="text-sm opacity-60 mt-1">
+              {Enum.sum(Enum.map(@status_totals, fn {_s, c} -> c end))} total
+              · {status_count(@status_totals, "approved")} approved
+              · {status_count(@status_totals, "proposed")} proposed
+            </p>
+          </div>
+          <div class="flex gap-2">
+            <button phx-click="export_bundles" class="btn btn-sm btn-primary btn-outline">
+              <.icon name="hero-arrow-down-tray" class="w-4 h-4" />
+              Export Bundles
+            </button>
+            <button phx-click="reprioritize" class="btn btn-sm btn-ghost">
+              <.icon name="hero-arrow-path" class="w-4 h-4" />
+              Reprioritize
+            </button>
+            <button phx-click="toggle_stats" class="btn btn-ghost btn-sm">
+              <.icon name="hero-chart-bar" class="w-4 h-4" />
+              {if @show_stats, do: "Hide", else: "Show"} Stats
+            </button>
+          </div>
         </div>
 
-        <%!-- Coverage Dashboard --%>
+        <%!-- Stats Dashboard --%>
         <%= if @show_stats do %>
-          <div class="card bg-base-200 mb-4">
-            <div class="card-body p-4">
-              <h3 class="font-semibold text-sm mb-2">Curation Coverage</h3>
-              <div class="overflow-x-auto">
-                <table class="table table-xs">
-                  <thead>
-                    <tr>
-                      <th>Source</th>
-                      <th class="text-center">Coverage</th>
-                      <th class="text-center text-success">A</th>
-                      <th class="text-center text-warning">P</th>
-                      <th class="text-center text-info">L</th>
-                      <th class="text-center text-base-content/40">R</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <%= for d <- @deps_info do %>
-                      <tr>
-                        <td
-                          class="font-mono text-xs cursor-pointer hover:underline"
-                          phx-click="filter_source"
-                          phx-value-source={d.dep}
-                        >
-                          {d.dep}
-                          <span class="text-base-content/40 ml-1">{d.version}</span>
-                        </td>
-                        <td class="text-center">
-                          <progress
-                            class={[
-                              "progress w-12",
-                              cond do
-                                d.coverage_pct >= 80 -> "progress-success"
-                                d.coverage_pct >= 40 -> "progress-warning"
-                                true -> "progress-error"
-                              end
-                            ]}
-                            value={d.coverage_pct}
-                            max="100"
-                          />
-                          <span class="text-xs ml-1">{d.coverage_pct}%</span>
-                        </td>
-                        <td class="text-center">
-                          <span
-                            class="text-success cursor-pointer hover:underline"
-                            phx-click="filter_source_status"
-                            phx-value-source={d.dep}
-                            phx-value-status="approved"
-                          >
-                            {d.approved}
-                          </span>
-                        </td>
-                        <td class="text-center">
-                          <span
-                            class={[
-                              "cursor-pointer hover:underline",
-                              if(d.proposed > 0, do: "text-warning font-semibold", else: "text-base-content/40")
-                            ]}
-                            phx-click="filter_source_status"
-                            phx-value-source={d.dep}
-                            phx-value-status="proposed"
-                          >
-                            {d.proposed}
-                          </span>
-                        </td>
-                        <td class="text-center">
-                          <span
-                            class="text-info cursor-pointer hover:underline"
-                            phx-click="filter_source_status"
-                            phx-value-source={d.dep}
-                            phx-value-status="linter"
-                          >
-                            {d.linter}
-                          </span>
-                        </td>
-                        <td class="text-center">
-                          <span
-                            class="text-base-content/40 cursor-pointer hover:underline"
-                            phx-click="filter_source_status"
-                            phx-value-source={d.dep}
-                            phx-value-status="retired"
-                          >
-                            {d.retired}
-                          </span>
-                        </td>
-                      </tr>
-                    <% end %>
-                  </tbody>
-                </table>
-              </div>
-              <%= if @skills != [] do %>
-                <div class="flex gap-2 mt-2">
-                  <%= for skill <- @skills do %>
-                    <div class="badge badge-outline badge-sm gap-1">
-                      <span class="font-semibold">{skill.name}</span>
-                      <span class="text-base-content/40">{length(skill.library_names)} libs</span>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <%!-- Bundle Distribution --%>
+            <div class="card bg-base-200">
+              <div class="card-body p-4">
+                <h3 class="font-semibold text-sm mb-3">Bundle Distribution</h3>
+                <div class="space-y-2">
+                  <%= for {bundle, count} <- @bundle_stats do %>
+                    <div class="flex items-center gap-3">
+                      <span class={["badge badge-sm w-20 justify-center", bundle_badge_class(bundle)]}>{bundle}</span>
+                      <progress
+                        class={["progress flex-1", bundle_progress_class(bundle)]}
+                        value={count}
+                        max={max_bundle_count(@bundle_stats)}
+                      />
+                      <span class="text-sm font-mono w-8 text-right">{count}</span>
                     </div>
                   <% end %>
                 </div>
-              <% end %>
+                <p class="text-xs opacity-40 mt-2">
+                  Agents read <code>rules.json</code> (universal) + specialized bundle.
+                  Generated by <code>mix maestro.rules.export</code>.
+                </p>
+              </div>
+            </div>
 
-              <%!-- Quality Gate --%>
-              <div class="quality-gate-summary">
-                <h3>Quality Gate</h3>
-                <div class="quality-gate-stats">
+            <%!-- Quality + Coverage --%>
+            <div class="card bg-base-200">
+              <div class="card-body p-4">
+                <h3 class="font-semibold text-sm mb-3">Quality + Coverage</h3>
+                <div class="flex gap-3 mb-3">
                   <span class="badge badge-success gap-1">
-                    Pass <span class="badge badge-success badge-xs">{@quality_summary.pass}</span>
+                    Pass <span class="font-mono">{@quality_summary.pass}</span>
                   </span>
                   <span class="badge badge-error gap-1">
-                    Fail <span class="badge badge-error badge-xs">{@quality_summary.fail}</span>
+                    Fail <span class="font-mono">{@quality_summary.fail}</span>
                   </span>
                   <span class="badge badge-outline gap-1">
                     {@quality_summary.pass_rate}% pass rate
                   </span>
+                </div>
+                <div class="overflow-x-auto max-h-48">
+                  <table class="table table-xs">
+                    <thead>
+                      <tr>
+                        <th>Source</th>
+                        <th class="text-center">Cov</th>
+                        <th class="text-center text-success">A</th>
+                        <th class="text-center text-warning">P</th>
+                        <th class="text-center text-info">L</th>
+                        <th class="text-center text-base-content/40">R</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <%= for d <- @deps_info do %>
+                        <tr>
+                          <td
+                            class="font-mono text-xs cursor-pointer hover:underline"
+                            phx-click="filter_source"
+                            phx-value-source={d.dep}
+                          >
+                            {d.dep}
+                          </td>
+                          <td class="text-center">
+                            <span class={["text-xs font-mono", coverage_color(d.coverage_pct)]}>{d.coverage_pct}%</span>
+                          </td>
+                          <td class="text-center">
+                            <span class="text-success cursor-pointer hover:underline"
+                              phx-click="filter_source_status" phx-value-source={d.dep} phx-value-status="approved">{d.approved}</span>
+                          </td>
+                          <td class="text-center">
+                            <span class={["cursor-pointer hover:underline", if(d.proposed > 0, do: "text-warning font-semibold", else: "text-base-content/40")]}
+                              phx-click="filter_source_status" phx-value-source={d.dep} phx-value-status="proposed">{d.proposed}</span>
+                          </td>
+                          <td class="text-center">
+                            <span class="text-info cursor-pointer hover:underline"
+                              phx-click="filter_source_status" phx-value-source={d.dep} phx-value-status="linter">{d.linter}</span>
+                          </td>
+                          <td class="text-center">
+                            <span class="text-base-content/40 cursor-pointer hover:underline"
+                              phx-click="filter_source_status" phx-value-source={d.dep} phx-value-status="retired">{d.retired}</span>
+                          </td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -300,22 +380,31 @@ defmodule MaestroWeb.RulesLive do
 
           <:col
             :let={rule}
+            field="bundle"
+            label="Bundle"
+            sort
+            filter={[type: :select, options: @bundle_options]}
+          >
+            <span class={["badge badge-sm", bundle_badge_class(rule.bundle)]}>{rule.bundle}</span>
+          </:col>
+
+          <:col
+            :let={rule}
+            field="priority"
+            label="Pri"
+            sort
+          >
+            <span class={["font-mono text-xs", priority_color(rule.priority)]}>{rule.priority}</span>
+          </:col>
+
+          <:col
+            :let={rule}
             field="category"
             label="Category"
             sort
             filter={[type: :select, options: @category_options]}
           >
             {rule.category}
-          </:col>
-
-          <:col
-            :let={rule}
-            field="source_project_slug"
-            label="Source"
-            sort
-            filter={[type: :select, options: @source_options]}
-          >
-            <span class="text-xs">{rule.source_project_slug}</span>
           </:col>
 
           <:col :let={rule} field="content" label="Content" filter>
@@ -326,7 +415,7 @@ defmodule MaestroWeb.RulesLive do
 
           <:col :let={rule} field="notes" label="Notes">
             <form phx-change="save_notes" phx-debounce="500">
-              <input type="hidden" name="id" value={rule.id} />
+              <input type="hidden" name="rule_id" value={rule.id} />
               <textarea
                 name="notes"
                 placeholder="Add note..."
