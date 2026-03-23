@@ -25,6 +25,7 @@ defmodule Maestro.Agents.Request do
     end
 
     update :respond do
+      require_atomic? false
       accept [:response, :response_metadata, :duration_ms]
       change set_attribute(:responded_at, &DateTime.utc_now/0)
       change fn changeset, _ctx ->

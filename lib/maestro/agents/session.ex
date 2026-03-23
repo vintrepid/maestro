@@ -24,12 +24,14 @@ defmodule Maestro.Agents.Session do
     end
 
     update :finish do
+      require_atomic? false
       accept []
       change set_attribute(:status, :completed)
       change set_attribute(:ended_at, &DateTime.utc_now/0)
     end
 
     update :fail do
+      require_atomic? false
       accept [:metadata]
       change set_attribute(:status, :failed)
       change set_attribute(:ended_at, &DateTime.utc_now/0)

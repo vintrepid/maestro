@@ -41,7 +41,7 @@ defmodule Maestro.Ops.Rule do
         :source_commit, :source_context, :applies_to, :tags,
         :library_id, :rule_source_id, :content_hash,
         :fix_type, :fix_template, :fix_target, :fix_search,
-        :notes
+        :notes, :priority, :bundle
       ]
     end
 
@@ -96,6 +96,12 @@ defmodule Maestro.Ops.Rule do
         status == :approved and
         (contains(applies_to, "all") or contains(applies_to, ^arg(:project_type)))
       )
+    end
+
+    read :by_bundle do
+      argument :bundle, :atom, allow_nil?: false
+      filter expr(status == :approved and (bundle == ^arg(:bundle) or bundle == :universal))
+      prepare build(sort: [priority: :desc, severity: :asc])
     end
   end
 
@@ -162,6 +168,19 @@ defmodule Maestro.Ops.Rule do
       default []
       public? true
       description "Freeform tags for grouping into skills"
+    end
+
+    attribute :priority, :integer do
+      default 50
+      public? true
+      description "1-100, higher = more important. Used for bundle sizing."
+    end
+
+    attribute :bundle, :atom do
+      constraints one_of: [:universal, :ui, :model, :devops, :maestro]
+      default :universal
+      public? true
+      description "Which agent bundle this rule belongs to"
     end
 
     attribute :content_hash, :string do
@@ -273,5 +292,6 @@ defmodule Maestro.Ops.Rule do
     define :linter
     define :by_content_hash, args: [:content_hash]
     define :by_id, get_by: [:id], action: :read
+    define :by_bundle, args: [:bundle]
   end
 end
