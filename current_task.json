@@ -1,26 +1,39 @@
 {
   "pending": [
-    "67 proposed rules need curation at /rules",
+    "Agent Dashboard is a LiveComponent but not yet a full LiveView — needs PubSub-driven auto-refresh without page reload",
+    "mix maestro.map should run as part of mix maestro.rules.export or a unified mix maestro.update",
+    "Add @moduledoc to every module you touch — most modules still lack documentation",
+    "1 proposed rule still needs curation at /rules",
     "141 rules still skipped in audit — need checkable patterns in content",
-    "Agent Dashboard is WIP — add more sections as needed"
+    "Layouts.ex still has git_dropdown, user_menu, theme_selector inline — extract to components"
   ],
   "status": "in_progress",
   "state": {
-    "total_rules": 1261,
-    "approved_rules": 159,
-    "proposed_rules": 67,
-    "linter_rules": 22,
-    "retired_rules": 1013,
-    "quality_pass_rate": "100%",
-    "site_audit": {
-      "avg_score": "96%",
-      "checks_per_page": 58,
-      "total_failures": 39,
-      "pages": 17
+    "total_rules": 1777,
+    "approved_rules": 196,
+    "proposed_rules": 1,
+    "bundles": {
+      "universal": 43,
+      "ui": 61,
+      "model": 79,
+      "maestro": 13
     },
-    "external_sources": "28 files auto-discovered from project root",
-    "agent_dashboard": "Live on all pages — task state, changed files, click-to-open"
+    "rules_json_size": "43 rules, 12KB (down from 197/67KB)",
+    "agents_domain": {
+      "agents": 1,
+      "sessions": 9,
+      "tables": ["agents", "agent_sessions", "agent_requests"]
+    },
+    "agent_dashboard": "LiveComponent on all pages — session controls, milestone logging, PubSub-driven",
+    "startup_chain": "MAP.md (108 modules) → rules.json (43 rules) → current_task.json",
+    "mix_tasks": [
+      "maestro.map — generates MAP.md codebase architecture index",
+      "maestro.rules.export — generates rule bundles, rules.json, AGENTS.md, RULES.md",
+      "maestro.agent.run — wraps any mix task with agent session logging",
+      "maestro.agent.session — general-purpose session marker for the runner",
+      "maestro.deploy — Fly.io deploy with commit + smoke check docs (in maestro_tool)"
+    ]
   },
-  "session_date": "2026-03-22",
-  "summary": "Data-driven audit + curate pipeline, Agent Dashboard, 28 root files ingested, 159 approved rules"
+  "session_date": "2026-03-23",
+  "summary": "Agents domain, session logging, rule bundles/priorities, MAP.md, deploy task, dashboard LiveComponent with task input"
 }
