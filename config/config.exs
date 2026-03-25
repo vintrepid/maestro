@@ -73,7 +73,7 @@ config :spark,
 config :maestro,
   ecto_repos: [Maestro.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [Maestro.Accounts, Maestro.Ops, Maestro.Agents, Maestro.Swim],
+  ash_domains: [Maestro.Accounts, Maestro.Ops, Maestro.Agents],
   editor_command: "codium",
   current_app: "Maestro"
 

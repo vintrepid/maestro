@@ -65,10 +65,6 @@ defmodule MaestroWeb.Layouts do
               <.icon name="hero-cpu-chip" class="w-5 h-5" />
               Agents
             </a>
-            <a href="/swim" class="btn btn-ghost">
-              <.icon name="hero-trophy" class="w-5 h-5" />
-              Swim
-            </a>
           </div>
           <div class="navbar-end gap-2">
             <.git_dropdown />
