@@ -2,18 +2,21 @@ defmodule Maestro.Swim do
   @moduledoc """
   Domain for swim meet management.
 
-  Manages swimmers, meets, and entries imported from SD3 (SDIF v3) files.
+  Manages swimmers, meets, events, and entries imported from swim data files.
 
   ## Resources
 
     - `Maestro.Swim.Meet` — A swim meet (name, date, location)
     - `Maestro.Swim.Swimmer` — A swimmer (name, DOB, gender, team, USA Swimming ID)
-    - `Maestro.Swim.Entry` — An entry linking a swimmer to an event in a meet (with seed time)
+    - `Maestro.Swim.Entry` — An entry linking a swimmer to an event in a meet
+    - `Maestro.Swim.Event` — An event definition (distance, stroke, gender, category)
+    - `Maestro.Swim.SourceFile` — Tracks imported data files
 
-  ## Tools
+  ## Parsers
 
-    - `Maestro.Swim.Sd3Parser` — Parses SD3 files into structs
-    - `Mix.Tasks.Maestro.Swim.Import` — Imports an SD3 file into the database
+    - `Maestro.Swim.Sd3Parser` — USA Swimming SD3 (SDIF v3) fixed-width files
+    - `Maestro.Swim.HyvParser` — Hy-Tek .hyv event files
+    - `Maestro.Swim.Ev3Parser` — Hy-Tek .ev3 event files
   """
 
   use Ash.Domain, otp_app: :maestro
@@ -22,5 +25,7 @@ defmodule Maestro.Swim do
     resource Maestro.Swim.Meet
     resource Maestro.Swim.Swimmer
     resource Maestro.Swim.Entry
+    resource Maestro.Swim.Event
+    resource Maestro.Swim.SourceFile
   end
 end
