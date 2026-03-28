@@ -6,7 +6,66 @@
       "mcp__Tidewave__get_logs",
       "WebSearch",
       "mcp__Tidewave__execute_sql_query",
-      "mcp__Tidewave-Web__restart_app_server"
+      "mcp__Tidewave-Web__restart_app_server",
+      "mcp__Tidewave__search_package_docs",
+      "mcp__Tidewave__get_ash_resources",
+      "mcp__Tidewave__get_ecto_schemas",
+      "mcp__Tidewave__get_source_location",
+      "mcp__Tidewave__get_docs",
+      "WebFetch(domain:hexdocs.pm)",
+      "WebFetch(domain:daisyui.com)",
+      "WebFetch(domain:fly.io)",
+      "WebFetch(domain:docs.sentry.io)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(mix compile:*)",
+      "Bash(mix compile)",
+      "Bash(mix deps.get)",
+      "Bash(mix deps:*)",
+      "Bash(mix ecto.migrate:*)",
+      "Bash(mix ecto.migrations)",
+      "Bash(mix ecto.create)",
+      "Bash(mix ash_postgres.generate_migrations:*)",
+      "Bash(mix ash.codegen:*)",
+      "Bash(mix deps.unlock --unused)",
+      "Bash(mix run:*)",
+      "Bash(mix test:*)",
+      "Bash(mix precommit:*)",
+      "Bash(mix help:*)",
+      "Bash(mix hex.info:*)",
+      "Bash(mix usage_rules.sync:*)",
+      "Bash(mix maestro:*)",
+      "Bash(mix maestro_tool:*)",
+      "Bash(mix project.setup:*)",
+      "Bash(git status:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(fly deploy:*)",
+      "Bash(fly apps list)",
+      "Bash(fly logs:*)",
+      "Bash(fly secrets list:*)",
+      "Bash(fly scale:*)",
+      "Bash(fly ssh:*)",
+      "Bash(ls:*)",
+      "Bash(echo:*)",
+      "Skill(claude-api)",
+      "Skill(claude-api:*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/task_hook.sh"
+          }
+        ]
+      }
     ]
   }
 }

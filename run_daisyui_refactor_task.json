@@ -1,0 +1,32 @@
+{
+  "task": "Run mix maestro.refactor_to_daisyui on the Maestro app itself",
+  "urgency": "normal",
+  "context": "The refactor tool is now fully AST-based (no regex). It uses MaestroTool.HEExParser to parse HEEx, traverse the AST, transform class attributes, and render back. Both DaisyuiRefactor (component replacement) and CssExtractor (utility extraction) are ready. Time to eat our own cooking.",
+  "steps": [
+    "Run `mix maestro.refactor_to_daisyui` (dry run) to see what raw Tailwind patterns exist in Maestro's own templates",
+    "Review the analysis — decide which patterns to refactor vs. skip",
+    "Run `mix maestro.refactor_to_daisyui --apply` to apply component refactoring (buttons → btn, cards → card, etc.)",
+    "Run `mix maestro.refactor_to_daisyui --extract-css` to identify repeated utility patterns that should be semantic CSS classes",
+    "If extraction looks good, run `mix maestro.refactor_to_daisyui --extract-css --apply --css-file assets/css/maestro-components.css` to generate the CSS file and rewrite templates",
+    "Add `@import \"./maestro-components.css\";` to app.css if the file was generated",
+    "Verify the app compiles and renders correctly",
+    "Review changes with `git diff` — fix any issues the tool missed or got wrong",
+    "Report back what worked, what didn't, and what patterns the tool should handle better"
+  ],
+  "tool_location": "/Users/vince/dev/forks/maestro_tool/lib/mix/tasks/maestro/refactor_to_daisyui.ex",
+  "engine_modules": [
+    "/Users/vince/dev/forks/maestro_tool/lib/maestro/daisyui_refactor.ex — component refactoring (btn, card, badge, footer, navbar, rating)",
+    "/Users/vince/dev/forks/maestro_tool/lib/maestro/css_extractor.ex — repeated utility pattern extraction",
+    "/Users/vince/dev/forks/maestro_tool/lib/maestro/heex_parser.ex — HEEx AST parser (shared foundation)"
+  ],
+  "key_principle": "This is the tool testing itself on a real codebase. Any issues found should be fixed IN THE TOOL, not manually in the templates. Report gaps so the tool improves.",
+  "expected_patterns": {
+    "buttons": "Any <a> or <button> with px-* py-* bg-* rounded-full font-bold → btn btn-primary/secondary",
+    "cards": "divs with rounded-md overflow-hidden → card + card-body + card-title",
+    "badges": "spans with text-xs rounded-full font-bold uppercase → badge",
+    "footer": "<footer> elements → footer bg-neutral text-neutral-content",
+    "navbar": "<header> elements → navbar",
+    "star_ratings": "div with flex gap-* containing hero-star-solid icons → rating",
+    "css_extraction": "repeated utility combos (3+ utils, 2+ occurrences) → semantic CSS classes"
+  }
+}

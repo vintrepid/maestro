@@ -40,13 +40,18 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   def update(_assigns, socket) do
     socket =
       if !socket.assigns.subscribed do
-        AgentPubSub.subscribe()
+        Phoenix.PubSub.subscribe(Maestro.PubSub, Maestro.Ops.TaskPubSub.topic())
         assign(socket, subscribed: true)
       else
         socket
       end
 
     {:ok, load_data(socket)}
+  end
+
+  @impl true
+  def handle_info({:task_changed, _action, _task}, socket) do
+    {:noreply, load_data(socket)}
   end
 
   # --- Events ---
@@ -90,6 +95,24 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   end
 
   def handle_event("log_milestone", _params, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("approve_task", _params, socket) do
+    if socket.assigns.task do
+      task = Maestro.Ops.Task.by_id!(socket.assigns.task.id)
+      Maestro.Ops.Task.update(task, %{notes: "Plan approved by user at #{DateTime.utc_now()}"}, authorize?: false)
+    end
+
+    {:noreply, socket}
+  end
+
+  def handle_event("complete_task", _params, socket) do
+    if socket.assigns.task do
+      task = Maestro.Ops.Task.by_id!(socket.assigns.task.id)
+      Maestro.Ops.Task.mark_complete(task)
+    end
+
     {:noreply, socket}
   end
 
@@ -187,47 +210,30 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
             </form>
           <% end %>
 
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <%!-- Session + Task --%>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <%!-- Current Task --%>
             <div>
-              <h4 class="font-semibold text-xs uppercase opacity-50 mb-2">Current Session</h4>
-              <%= if @session do %>
-                <p class="text-sm mb-1">{@session.task_description}</p>
-                <p class="text-xs opacity-50">{format_datetime(@session.inserted_at)}</p>
+              <h4 class="font-semibold text-xs uppercase opacity-50 mb-2">Current Task</h4>
+              <%= if @task do %>
+                <p class="text-sm font-semibold mb-1">{@task.title}</p>
+                <p class="text-xs opacity-50 mb-2">{@session_date}</p>
+                <%= if @task.description do %>
+                  <div class="prose prose-sm max-w-none compact-prose max-h-48 overflow-y-auto text-xs">
+                    {raw(Earmark.as_html!(@task.description))}
+                  </div>
+                <% end %>
+                <%= if @task.status == "in_progress" do %>
+                  <div class="flex gap-2 mt-3">
+                    <button phx-click="approve_task" phx-target={@myself} class="btn btn-xs btn-success">
+                      Approve Plan
+                    </button>
+                    <button phx-click="complete_task" phx-target={@myself} class="btn btn-xs btn-ghost">
+                      Complete
+                    </button>
+                  </div>
+                <% end %>
               <% else %>
-                <p class="text-sm mb-2">{@summary}</p>
-                <p class="text-xs opacity-50">{@session_date}</p>
-              <% end %>
-              <%= if @pending != [] do %>
-                <h4 class="font-semibold text-xs uppercase opacity-50 mt-3 mb-1">Pending</h4>
-                <ul class="text-sm space-y-1">
-                  <%= for item <- @pending do %>
-                    <li class="flex items-center gap-1">
-                      <span class="text-warning">*</span>
-                      {item}
-                    </li>
-                  <% end %>
-                </ul>
-              <% end %>
-            </div>
-
-            <%!-- Recent Requests --%>
-            <div>
-              <h4 class="font-semibold text-xs uppercase opacity-50 mb-2">Recent Activity</h4>
-              <%= if @recent_requests == [] do %>
-                <p class="text-xs opacity-40">No logged requests yet</p>
-              <% else %>
-                <div class="space-y-1 max-h-48 overflow-y-auto">
-                  <%= for req <- @recent_requests do %>
-                    <div class="text-xs p-1 rounded bg-base-100">
-                      <span class={"badge badge-xs #{kind_badge(req.kind)}"}>{req.kind}</span>
-                      <span class="opacity-70 truncate ml-1">{truncate_text(req.content, 80)}</span>
-                      <%= if req.duration_ms do %>
-                        <span class="opacity-40 ml-1">{req.duration_ms}ms</span>
-                      <% end %>
-                    </div>
-                  <% end %>
-                </div>
+                <p class="text-xs opacity-40">No active task</p>
               <% end %>
             </div>
 

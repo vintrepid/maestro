@@ -1,7 +1,8 @@
 defmodule Maestro.Ops.Task do
   use Ash.Resource,
     domain: Maestro.Ops,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    simple_notifiers: [Maestro.Ops.TaskPubSub]
 
   postgres do
     table "tasks"

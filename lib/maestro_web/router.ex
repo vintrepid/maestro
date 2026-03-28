@@ -66,6 +66,11 @@ defmodule MaestroWeb.Router do
     end
   end
 
+  scope "/api", MaestroWeb do
+    pipe_through :api
+    post "/tasks/hook", TaskApiController, :create_or_update
+  end
+
   scope "/", MaestroWeb do
     pipe_through :browser
 

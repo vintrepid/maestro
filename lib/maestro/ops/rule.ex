@@ -62,6 +62,11 @@ defmodule Maestro.Ops.Rule do
       change set_attribute(:status, :linter)
     end
 
+    update :mark_anti_pattern do
+      accept []
+      change set_attribute(:status, :anti_pattern)
+    end
+
     update :reset_to_proposed do
       accept []
       change set_attribute(:status, :proposed)
@@ -138,7 +143,7 @@ defmodule Maestro.Ops.Rule do
     end
 
     attribute :status, :atom do
-      constraints one_of: [:proposed, :approved, :retired, :linter]
+      constraints one_of: [:proposed, :approved, :retired, :linter, :anti_pattern]
       default :proposed
       public? true
     end
@@ -288,6 +293,7 @@ defmodule Maestro.Ops.Rule do
     define :approved
     define :proposed
     define :mark_linter
+    define :mark_anti_pattern
     define :reset_to_proposed
     define :linter
     define :by_content_hash, args: [:content_hash]

@@ -1,5 +1,5 @@
 # Model Rules
-# 95 rules · Generated 2026-03-23
+# 95 rules · Generated 2026-03-27
 
 ## Architecture
 MUST: - **Never** merge without approval — otherwise the result will be incorrect or break downstream behavior

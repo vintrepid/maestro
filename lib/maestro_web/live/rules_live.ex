@@ -35,6 +35,7 @@ defmodule MaestroWeb.RulesLive do
   - RULES.md — full rules documentation
   """
   use MaestroWeb, :live_view
+  use Cinder.UrlSync
 
   alias Maestro.Ops.Rule
   alias Maestro.Ops.Rules.{Coverage, Quality}
@@ -45,6 +46,7 @@ defmodule MaestroWeb.RulesLive do
     {"Proposed", "proposed"},
     {"Approved", "approved"},
     {"Linter", "linter"},
+    {"Anti-pattern", "anti_pattern"},
     {"Retired", "retired"}
   ]
 
@@ -136,6 +138,16 @@ defmodule MaestroWeb.RulesLive do
   def handle_event("mark_linter", %{"id" => id}, socket) do
     Rule.by_id!(id) |> Rule.mark_linter()
     {:noreply, socket |> refresh_table() |> put_flash(:info, "Marked as linter rule")}
+  end
+
+  def handle_event("mark_anti_pattern", %{"id" => id}, socket) do
+    Rule.by_id!(id) |> Rule.mark_anti_pattern()
+
+    {:noreply,
+     socket
+     |> assign(:status_totals, load_status_totals())
+     |> refresh_table()
+     |> put_flash(:info, "Marked as anti-pattern")}
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
@@ -345,6 +357,7 @@ defmodule MaestroWeb.RulesLive do
   defp status_badge_class(:approved), do: "badge-success"
   defp status_badge_class(:retired), do: "badge-ghost"
   defp status_badge_class(:linter), do: "badge-info"
+  defp status_badge_class(:anti_pattern), do: "badge-error"
   defp status_badge_class(_), do: ""
 
   defp severity_badge_class(:must), do: "badge-error"
@@ -546,6 +559,7 @@ defmodule MaestroWeb.RulesLive do
         <Cinder.collection
           id="rules-table"
           query={@query}
+          url_state={@url_state}
           page_size={50}
           theme="daisy_ui"
           selectable
@@ -614,7 +628,7 @@ defmodule MaestroWeb.RulesLive do
           </:col>
 
           <:col :let={rule} field="notes" label="Notes">
-            <form phx-change="save_notes">
+            <form phx-change="save_notes" phx-debounce="blur">
               <input type="hidden" name="rule_id" value={rule.id} />
               <textarea
                 name="notes"
@@ -642,8 +656,15 @@ defmodule MaestroWeb.RulesLive do
                 >
                   Linter
                 </button>
+                <button
+                  phx-click="mark_anti_pattern"
+                  phx-value-id={rule.id}
+                  class="btn btn-xs btn-error btn-outline"
+                >
+                  Anti
+                </button>
               <% end %>
-              <%= if rule.status not in [:retired, :linter] do %>
+              <%= if rule.status not in [:retired, :linter, :anti_pattern] do %>
                 <button
                   phx-click="retire"
                   phx-value-id={rule.id}
@@ -674,10 +695,8 @@ defmodule MaestroWeb.RulesLive do
   end
 
   @impl true
-  def handle_params(params, _uri, socket) do
-    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  def handle_params(params, uri, socket) do
+    socket = Cinder.UrlSync.handle_params(params, uri, socket)
+    {:noreply, socket}
   end
-
-  defp apply_params(socket, _action, _params),
-    do: socket
 end
