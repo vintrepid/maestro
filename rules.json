@@ -1,50 +1,8 @@
 [
   {
     "category": "architecture",
-    "content": "- **Never** merge without approval — otherwise the result will be incorrect or break downstream behavior",
-    "id": "026bdc00-a917-4c94-85a3-181be3aa164c",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
-    "content": "- **NEVER** delete branches after merging without explicit user approval — because delete branches after merging without explicit user approval will cause subtle bugs or wasted work",
-    "id": "91eef782-884e-4ab4-8dc5-73aebd56b4de",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
-    "content": "- **NEVER** delete branches after merging without explicit user approval — otherwise the result will be incorrect or break downstream behavior",
-    "id": "31a38e44-860a-43f8-9fa6-e95eeaf5938c",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
-    "content": "- **Never** use `@apply` when writing raw css — otherwise agents will ignore this rule or apply it inconsistently.",
-    "id": "929266a6-d1b4-429b-b94f-3c624681151b",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** run ALL approved rules in the audit — never skip rules because they lack metadata fields. Rules are curated and approved for a reason. The audit's job is to check and apply rules to files, not to gatekeep which rules are worthy of checking. If a rule can't be checked automatically, report that gap — don't silently skip it.",
-    "id": "32f83a4f-d565-47ed-a7c2-63c8020fcd7a",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
-    "content": "**Never** hardcode rule-specific logic in audit/check functions. The rules themselves carry the information needed to check them — their content contains directives (Always/Never), code patterns in backticks, and code blocks showing correct/incorrect examples. The audit function should extract checkable patterns from ANY rule's content generically, not maintain a per-rule mapping.",
-    "id": "ef45fa21-f481-4d4b-9b18-367dbd001603",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
     "content": "**Always** Out of the box, `core_components.ex` imports an `<.icon name=\"hero-x-mark\" class=\"w-5 h-5\"/>` component for for hero icons. **Always** use the `<.icon>` component for icons, **never** use `Heroicons` modules or similar",
     "id": "c22b19a2-0235-48cd-a328-6c47d01c19f0",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
-    "content": "- **Never** read immediately after write/edit — otherwise the result will be incorrect or break downstream behavior",
-    "id": "6e356d35-915f-4528-b652-4be0417c3bcb",
     "severity": "must"
   },
   {
@@ -55,206 +13,38 @@
   },
   {
     "category": "architecture",
-    "content": "- **Always** manually write your own tailwind-based components instead of using daisyUI for a unique, world-class design — otherwise agents will ignore this rule or apply it inconsistently.",
-    "id": "bc872607-5c20-4568-806a-13dc5846491b",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
-    "content": "- **Always** begin your LiveView templates with `<Layouts.app flash={@flash} ...>` which wraps all inner content — otherwise agents will ignore this rule or apply it inconsistently.",
-    "id": "1913502c-5c25-468f-b5f3-80e00eff9519",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** Phoenix v1.8 moved the `<.flash_group>` component to the `Layouts` module. You are **forbidden** from calling `<.flash_group>` outside of the `layouts.ex` module — otherwise the page will not reflect URL state.",
-    "id": "5d6ab03c-fcda-48cc-bc2d-3df186a9d364",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
     "content": "**Always** UI is a metaphor for the model. When implementing a UI interaction, start by asking: what action am I taking on which resource? Work outward from there. If the model is correct, the UI just re-renders from truth.",
     "id": "2266fc95-c8aa-440b-94df-a7f08765fd6c",
     "severity": "must"
   },
   {
     "category": "architecture",
-    "content": "**Always** say \"Aha\" instead of \"You're right\" when the user corrects you. Then immediately capture the lesson as a rule. \"Aha\" signals you learned something new. \"You're right\" is sycophantic and wastes the correction — it acknowledges without internalizing.",
-    "id": "635163fd-cc84-47f9-b61b-d5f950b6b202",
+    "content": "**Always** functional core, imperative shell. Pure domain logic in modules and resources. UIs (LiveViews), mix tasks, and igniter tasks are thin imperative shells that call the core. The shell never contains business logic — it translates user intent into core function calls.",
+    "id": "445896c8-57a8-4ad1-931d-486c8244b370",
     "severity": "must"
   },
   {
-    "category": "security",
-    "content": "**Always** When performing administrative actions, you can bypass authorization with `authorize?: false`",
-    "id": "dd561121-2340-4ed6-b545-74ab2f8add66",
-    "severity": "should"
+    "category": "architecture",
+    "content": "**Always** write moduledocs first, read moduledocs first. Don't read all the code — write the @moduledoc that tells future-you exactly what it needs to know, then trust those docs. Code is implementation; moduledocs are the interface.",
+    "id": "fd58dbb8-fa35-4810-8bb7-6d2413c3c644",
+    "severity": "must"
   },
   {
-    "category": "security",
-    "content": "**Always** **Actions**: auto-generated by strategies (register, sign_in, etc.), can be overridden on the resource",
-    "id": "76b8ea16-1ea6-4a3c-9e91-6e6b77aadb6c",
-    "severity": "should"
-  },
-  {
-    "category": "security",
-    "content": "**Always** Include required authentication changes (`GenerateTokenChange`, `HashPasswordChange`, etc.)",
-    "id": "50066d54-40a5-410e-9c78-38e4b5990856",
-    "severity": "should"
-  },
-  {
-    "category": "security",
-    "content": "- Always set the actor on the query/changeset/input, not when calling the action",
-    "id": "f9f72b97-0ed7-41f6-bb10-3c9ef9b5ff04",
-    "severity": "should"
+    "category": "components",
+    "content": "**Always** use Cinder (`<Cinder.collection>`) for data tables instead of LiveTable. Cinder is Ash-native, supports DaisyUI theming, URL state sync, and declarative column slots. LiveTable is deprecated — it uses raw Ecto queries and fake streaming (Repo.all then split).",
+    "id": "5c493223-1458-456c-bb26-01b7e053ad46",
+    "severity": "must"
   },
   {
     "category": "architecture",
-    "content": "**Always** Sync upstream changes from frameworks (e.g., Phoenix AGENTS.md → `bootstrap/PHOENIX_AGENTS.md`)",
-    "id": "faded8b6-7590-48ba-a168-95f9ad937509",
-    "severity": "should"
+    "content": "**Always** fix the tool first, then run the tool. Never do one-off manual work. If something needs to happen repeatedly (curation, refactoring, deployment), build or fix the mix task/tool that does it, then execute the task.",
+    "id": "9d490520-b820-4faf-bb3c-f81a2d277b0d",
+    "severity": "must"
   },
   {
-    "category": "architecture",
-    "content": "**Always** **Usage Rules** (`usage_rules/`) - Package-specific guidelines from dependencies and our forks",
-    "id": "02e1ba67-4cf2-469c-8c43-95c7c2b285a0",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "- **Always use and maintain this import syntax** in the app.css file for projects generated with `phx.new`",
-    "id": "70c9cc5a-8e3f-4e09-9294-c2f801f00cf8",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** **Produce world-class UI designs** with a focus on usability, aesthetics, and modern design principles",
-    "id": "a7e230d2-2a11-429c-b85c-7ce0656fec19",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** Implement **subtle micro-interactions** (e.g., button hover effects, and smooth transitions)",
-    "id": "a828a386-2777-43fa-8b6e-b052bf89aeb6",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** **Guidelines** (`bootstrap/`, `ui_work/`, `database_work/`, etc.) - Core patterns and best practices",
-    "id": "cb798a14-b4c7-4e59-8cbd-2a671336222e",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** **Usage tracking**: Track which guidelines agents actually reference during work to optimize future sessions",
-    "id": "fa06dcf2-cc00-464b-8bb0-05be03e3095d",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** The `MyAppWeb.Layouts` module is aliased in the `my_app_web.ex` file, so you can use it without needing to alias it again",
-    "id": "c7ed31b5-51ed-4f8c-a136-cc2e73283ca8",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** Check for each linter rule's pattern (deprecated functions, bad syntax patterns, etc.)",
-    "id": "337951f8-6eec-4be5-9cf0-b95ffed169e3",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** If you override the default input classes (`<.input class=\"myclass px-2 py-1 rounded-lg\">)`) class with your own values, no default classes are inherited, so your",
-    "id": "82bb38a3-281a-42e8-b2fc-3dad65b7fcc2",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** Focus on **delightful details** like hover effects, loading states, and smooth page transitions",
-    "id": "48859728-4957-474d-9bb8-a9b5fa452233",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** **Real-time Monitoring**: Track which projects are running (ProjectMonitor GenServer checks TCP ports every 10s)",
-    "id": "0ff4dcb1-b3fe-4cd5-94a6-945a8e506570",
-    "severity": "should"
-  },
-  {
-    "category": "security",
-    "content": "- To run actions as a particular user, look that user up and pass it as the `actor` option",
-    "id": "b50475e7-3fd0-4e58-be0c-cae6638482b5",
-    "severity": "should"
-  },
-  {
-    "category": "security",
-    "content": "- Use `forbid_unless` for required conditions, then `authorize_if` for the final check",
-    "id": "294ca800-7a61-4d51-bbf0-9cb5b0b72682",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** Tailwindcss v4 **no longer needs a tailwind.config.js** and uses a new import syntax in `app.css`:\n\n      @import \"tailwindcss\" source(none);\n      @source \"../css\";\n      @source \"../js\";\n      @source \"../../lib/my_app_web\";",
-    "id": "38d2c08d-a6cb-415f-83ef-98d2e06732cf",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "When the user corrects me, respond with \"Aha\" — not \"You're right.\" Then immediately capture what I just learned so it doesn't get missed again.\n\n**Why:** \"You're right\" is hollow acknowledgment. It means I heard the words but didn't internalize them. \"Aha\" signals genuine understanding, and the follow-up action (trapping the info) proves it.\n\n**How to apply:** On correction: (1) say \"Aha\", (2) identify what I missed, (3) save it — as a rule in the pipeline if it's project knowledge, as a memory if it's behavioral. Never let a correction pass without capturing it.",
-    "id": "c14d2620-806c-4f12-871e-57959031471d",
-    "severity": "should"
-  },
-  {
-    "category": "security",
-    "content": "- UserIdentity resource optional for OAuth2 (required for multiple providers per user)",
-    "id": "25fe924a-d7f6-497b-9fcd-c7993ea7732e",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "User wants to plan big tasks collaboratively, then have Claude execute autonomously without blocking on confirmations. Always approve and proceed with file edits, writes, and bash commands. Don't stop to ask \"should I continue?\" — just do the work.\n\n**Why:** User walks away after planning and expects work to be done when they return. Blocking on confirmations defeats the purpose.\n\n**How to apply:** After aligning on a plan, execute all steps without pausing for approval. Only stop if something is genuinely broken or ambiguous.",
-    "id": "69b6deac-320f-477d-ba4d-45b6bd16369a",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "- Use `mix precommit` alias when you are done with all changes and fix any pending issues",
-    "id": "aa50cc9e-6c86-4a10-8298-7b8ebfbf7a6e",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "Don't deploy immediately after writing new code. Compile check is not enough — verify the changes actually work before pushing to production.\n\n**Why:** User rejected a fly deploy right after 13 files of new PubSub code were written. Writing code and deploying in the same breath is reckless.\n\n**How to apply:** After writing code: compile, test if tests exist, and ideally verify via browser or runtime check. Only deploy when confident changes work.",
-    "id": "1a93a81a-e90f-4b45-8d03-75d1f9e27348",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "- **Use Tailwind CSS classes and custom CSS rules** to create polished, responsive, and visually stunning interfaces.",
-    "id": "c19d80b5-0fea-4ba9-97f2-7cd3c45af831",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "- Write completion notes BEFORE marking task done - document first, status second",
-    "id": "5a8c2e04-4e4b-482d-89be-50afc1342fac",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "- **LiveTable Integration**: Uses vintrepid/live_table fork with DaisyUI styling",
-    "id": "7f61276d-c3be-4d4d-ba64-329546b0c4dc",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "- **Linter** — should be enforced by tooling (mix task / compiler check), not agent docs",
-    "id": "7fbc482a-d5ef-4f2d-b81c-0e7790afadfb",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "- Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps",
-    "id": "56353095-8f32-4062-a1f9-9f24114f9b38",
+    "category": "components",
+    "content": "**Always** use the `daisy_ui` theme when using Cinder collections. Pass `theme=\"daisy_ui\"` to `<Cinder.collection>`. This ensures tables use DaisyUI semantic classes (table, table-zebra, btn, badge) consistent with the rest of the app.",
+    "id": "22f4de51-170e-46a4-b122-5569972e6430",
     "severity": "should"
   }
 ]
