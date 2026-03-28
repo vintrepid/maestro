@@ -20,6 +20,15 @@ if System.get_env("PHX_SERVER") do
   config :maestro, MaestroWeb.Endpoint, server: true
 end
 
+# Enable FunWithFlags PubSub cache busting when the web server is running.
+# Mix tasks don't start PubSub, so FWF crashes trying to subscribe.
+if System.get_env("PHX_SERVER") do
+  config :fun_with_flags, :cache_bust_notifications,
+    enabled: true,
+    adapter: FunWithFlags.Notifications.PhoenixPubSub,
+    client: Maestro.PubSub
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

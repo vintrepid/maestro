@@ -135,6 +135,4 @@ config :phoenix, :json_library, Jason
 import_config "#{config_env()}.exs"
 
 config :fun_with_flags, :cache_bust_notifications,
-  enabled: true,
-  adapter: FunWithFlags.Notifications.PhoenixPubSub,
-  client: Maestro.PubSub
+  enabled: false

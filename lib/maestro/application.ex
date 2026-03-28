@@ -18,11 +18,27 @@ defmodule Maestro.Application do
       Maestro.Ops.ProjectMonitor,
       Maestro.Ops.AppState,
       MaestroWeb.Endpoint,
-      {AshAuthentication.Supervisor, [otp_app: :maestro]}
+      {AshAuthentication.Supervisor, [otp_app: :maestro]},
+      # Enable FunWithFlags PubSub AFTER PubSub is started.
+      # This avoids the race condition where FWF tries to subscribe before PubSub is ready.
+      {Task, fn -> enable_fwf_pubsub() end}
     ]
 
     opts = [strategy: :one_for_one, name: Maestro.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp enable_fwf_pubsub do
+    # Give PubSub a moment to fully initialize
+    Process.sleep(500)
+
+    if Process.whereis(Maestro.PubSub) do
+      Application.put_env(:fun_with_flags, :cache_bust_notifications,
+        enabled: true,
+        adapter: FunWithFlags.Notifications.PhoenixPubSub,
+        client: Maestro.PubSub
+      )
+    end
   end
 
   @impl true

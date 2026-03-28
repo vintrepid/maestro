@@ -15,11 +15,13 @@ defmodule Maestro.Ops.TaskPubSub do
 
   @impl true
   def notify(%Ash.Notifier.Notification{resource: Maestro.Ops.Task} = notification) do
-    Phoenix.PubSub.broadcast(
-      Maestro.PubSub,
-      @topic,
-      {:task_changed, notification.action.name, notification.data}
-    )
+    if Process.whereis(Maestro.PubSub) do
+      Phoenix.PubSub.broadcast(
+        Maestro.PubSub,
+        @topic,
+        {:task_changed, notification.action.name, notification.data}
+      )
+    end
 
     :ok
   end
