@@ -287,7 +287,7 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
       session: nil,
       recent_requests: [],
       agent_name: "claude-code",
-      running: task != nil
+      running: task != nil and to_string(task.status) == "in_progress" and AgentDashboard.active_session() != nil
     )
   end
 
