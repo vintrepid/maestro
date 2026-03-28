@@ -13,6 +13,7 @@ defmodule MaestroWeb.Layouts do
   attr :flash, :map, required: true
   attr :current_scope, :map, default: nil
   attr :current_user, :map, default: nil
+  attr :live?, :boolean, default: true
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -21,7 +22,7 @@ defmodule MaestroWeb.Layouts do
     rescue
       _ -> nil
     end
-    
+
     assigns = assign(assigns, :current_project, current_project)
     
     ~H"""
@@ -72,7 +73,7 @@ defmodule MaestroWeb.Layouts do
           </div>
         </div>
 
-        <%= if assigns[:socket] do %>
+        <%= if @live? do %>
           <.live_component module={MaestroWeb.Components.AgentDashboardComponent} id="agent-dashboard" />
         <% end %>
 
