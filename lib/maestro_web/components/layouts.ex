@@ -72,7 +72,9 @@ defmodule MaestroWeb.Layouts do
           </div>
         </div>
 
-        <.live_component module={MaestroWeb.Components.AgentDashboardComponent} id="agent-dashboard" />
+        <%= if assigns[:socket] do %>
+          <.live_component module={MaestroWeb.Components.AgentDashboardComponent} id="agent-dashboard" />
+        <% end %>
 
         <main class="container mx-auto px-4 py-2 max-w-7xl flex-1">
           {render_slot(@inner_block)}
