@@ -2,30 +2,12 @@
    https://tailwindcss.com/docs/configuration */
 
 @import "tailwindcss" source(none);
-@import "../../deps/live_table/priv/static/live-table.css";
 @import "easymde/dist/easymde.min.css";
 @source "../../deps/ash_authentication_phoenix";
+@source "../../deps/cinder";
 @source "../css";
 @source "../js";
 @source "../../lib/maestro_web";
-
-/* Fix for LiveTable CSS - Tailwind v4 compatibility */
-/* Override ring-opacity-5 with ring-black/5 syntax */
-.live-table-dropdown-menu,
-.live-table-select-dropdown,
-.live-table-actions-menu {
-  @apply ring-1 ring-black/5 dark:ring-gray-700/50;
-}
-
-/* Global select styling - proper height for text visibility */
-.select {
-  @apply text-sm;
-}
-
-/* Fix small selects - they're too short for text */
-.select-sm {
-  @apply h-10; /* Override DaisyUI select-sm height */
-}
 
 /* A Tailwind plugin that makes "hero-#{ICON}" classes available.
    The heroicons installation itself is managed by your mix.exs */
@@ -77,37 +59,38 @@
   --noise: 0;
 }
 
+/* DaisyUI Theme Garden — light theme with blue primary, no orange */
 @plugin "../vendor/daisyui-theme" {
   name: "light";
   default: true;
   prefersdark: false;
   color-scheme: "light";
-  --color-base-100: oklch(98% 0 0);
-  --color-base-200: oklch(96% 0.001 286.375);
-  --color-base-300: oklch(92% 0.004 286.32);
-  --color-base-content: oklch(21% 0.006 285.885);
-  --color-primary: oklch(70% 0.213 47.604);
-  --color-primary-content: oklch(98% 0.016 73.684);
-  --color-secondary: oklch(55% 0.027 264.364);
-  --color-secondary-content: oklch(98% 0.002 247.839);
-  --color-accent: oklch(0% 0 0);
-  --color-accent-content: oklch(100% 0 0);
-  --color-neutral: oklch(44% 0.017 285.786);
+  --color-base-100: oklch(98% 0.002 247.839);
+  --color-base-200: oklch(95% 0.004 264.364);
+  --color-base-300: oklch(90% 0.006 264.364);
+  --color-base-content: oklch(25% 0.01 264.364);
+  --color-primary: oklch(55% 0.2 259.815);
+  --color-primary-content: oklch(98% 0.01 259.815);
+  --color-secondary: oklch(50% 0.15 293.756);
+  --color-secondary-content: oklch(98% 0.01 293.756);
+  --color-accent: oklch(55% 0.17 184.704);
+  --color-accent-content: oklch(98% 0.01 184.704);
+  --color-neutral: oklch(40% 0.015 264.364);
   --color-neutral-content: oklch(98% 0 0);
-  --color-info: oklch(62% 0.214 259.815);
-  --color-info-content: oklch(97% 0.014 254.604);
-  --color-success: oklch(70% 0.14 182.503);
-  --color-success-content: oklch(98% 0.014 180.72);
-  --color-warning: oklch(66% 0.179 58.318);
-  --color-warning-content: oklch(98% 0.022 95.277);
-  --color-error: oklch(58% 0.253 17.585);
-  --color-error-content: oklch(96% 0.015 12.422);
-  --radius-selector: 0.25rem;
-  --radius-field: 0.25rem;
+  --color-info: oklch(62% 0.19 241.966);
+  --color-info-content: oklch(97% 0.014 241.966);
+  --color-success: oklch(65% 0.15 160);
+  --color-success-content: oklch(98% 0.014 160);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-content: oklch(30% 0.02 85);
+  --color-error: oklch(58% 0.22 27);
+  --color-error-content: oklch(96% 0.015 27);
+  --radius-selector: 0.375rem;
+  --radius-field: 0.375rem;
   --radius-box: 0.5rem;
-  --size-selector: 0.21875rem;
-  --size-field: 0.21875rem;
-  --border: 1.5px;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
   --depth: 1;
   --noise: 0;
 }

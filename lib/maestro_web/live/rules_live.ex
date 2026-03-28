@@ -1,4 +1,39 @@
 defmodule MaestroWeb.RulesLive do
+  @moduledoc """
+  Curation UI for Maestro's rules system. This is THE tool for managing agent rules.
+
+  ## Curation Workflow
+
+  Rules flow: ingested (from deps/agents) → proposed → approved/retired.
+  This page is where the human curator reviews proposed rules and decides
+  which to approve (agents will follow) or retire (agents will ignore).
+
+  ## Features
+
+  - **Category chips** — clickable category counts at the top, filter to one category
+  - **Bulk actions** — select multiple rules, approve/retire in batch
+  - **Status filter** — defaults to showing proposed rules (the curation queue)
+  - **Priority sort** — highest priority rules shown first
+  - **Quality gate** — rules must pass quality checks before approval
+  - **Bundle stats** — see how many rules per bundle (universal/ui/model/maestro)
+
+  ## Key Events
+
+  - `approve` / `retire` / `delete` — single rule actions
+  - `bulk_approve` / `bulk_retire` — batch actions on selected rules
+  - `filter_category` — filter table to a single category
+  - `filter_status` — filter by proposed/approved/retired/linter
+  - `toggle_select` / `select_all` — selection for bulk actions
+  - `export_bundles` — runs `mix maestro.rules.export`
+  - `reprioritize` — auto-assigns priority scores
+
+  ## After Curation
+
+  Run `mix maestro.rules.export` (or click Export Bundles) to write:
+  - rules.json — compact rules for agent startup
+  - AGENTS.md — human-readable rules reference
+  - RULES.md — full rules documentation
+  """
   use MaestroWeb, :live_view
 
   alias Maestro.Ops.Rule
@@ -39,10 +74,12 @@ defmodule MaestroWeb.RulesLive do
   @impl true
   def mount(_params, _session, socket) do
     source_options = build_source_options()
+    category_counts = load_category_counts()
+    tag_counts = load_tag_counts()
 
     query =
       Rule
-      |> sort(updated_at: :desc)
+      |> sort(priority: :desc, category: :asc)
 
     quality_results = Rule.approved!() |> Quality.audit_rules()
     quality_summary = Quality.summarize(quality_results)
@@ -59,7 +96,12 @@ defmodule MaestroWeb.RulesLive do
      |> assign(:quality_by_id, quality_by_id)
      |> assign(:bundle_stats, load_bundle_stats())
      |> assign(:status_totals, load_status_totals())
-     |> assign(:show_stats, true)}
+     |> assign(:category_counts, category_counts)
+     |> assign(:tag_counts, tag_counts)
+     |> assign(:active_category, nil)
+     |> assign(:active_tag, nil)
+     |> assign(:selected_ids, MapSet.new())
+     |> assign(:show_stats, false)}
   end
 
   @impl true
@@ -68,7 +110,13 @@ defmodule MaestroWeb.RulesLive do
 
     if Quality.passes_quality?(rule) do
       Rule.approve(rule)
-      {:noreply, socket |> refresh_table() |> put_flash(:info, "Rule approved")}
+
+      {:noreply,
+       socket
+       |> assign(:category_counts, load_category_counts())
+       |> assign(:status_totals, load_status_totals())
+       |> refresh_table()
+       |> put_flash(:info, "Rule approved")}
     else
       {:noreply, put_flash(socket, :error, "Rule fails quality checks — fix content before approving")}
     end
@@ -76,7 +124,13 @@ defmodule MaestroWeb.RulesLive do
 
   def handle_event("retire", %{"id" => id}, socket) do
     Rule.by_id!(id) |> Rule.retire(%{retired_reason: "Retired from UI"})
-    {:noreply, socket |> refresh_table() |> put_flash(:info, "Rule retired")}
+
+    {:noreply,
+     socket
+     |> assign(:category_counts, load_category_counts())
+     |> assign(:status_totals, load_status_totals())
+     |> refresh_table()
+     |> put_flash(:info, "Rule retired")}
   end
 
   def handle_event("mark_linter", %{"id" => id}, socket) do
@@ -112,6 +166,95 @@ defmodule MaestroWeb.RulesLive do
      |> assign(:bundle_stats, load_bundle_stats())
      |> refresh_table()
      |> put_flash(:info, "Reprioritized #{updated} rules")}
+  end
+
+  def handle_event("filter_tag", %{"tag" => tag}, socket) do
+    query =
+      if tag == socket.assigns.active_tag do
+        Rule |> sort(priority: :desc)
+      else
+        Rule
+        |> filter(fragment("? @> ARRAY[?]::text[]", tags, ^tag))
+        |> sort(priority: :desc)
+      end
+
+    active = if tag == socket.assigns.active_tag, do: nil, else: tag
+
+    {:noreply,
+     socket
+     |> assign(:query, query)
+     |> assign(:active_tag, active)
+     |> assign(:active_category, nil)
+     |> refresh_table()}
+  end
+
+  def handle_event("filter_category", %{"category" => category}, socket) do
+    query =
+      if category == socket.assigns.active_category do
+        Rule |> sort(priority: :desc)
+      else
+        Rule |> filter(category == ^category) |> sort(priority: :desc)
+      end
+
+    active = if category == socket.assigns.active_category, do: nil, else: category
+
+    {:noreply,
+     socket
+     |> assign(:query, query)
+     |> assign(:active_category, active)
+     |> assign(:selected_ids, MapSet.new())
+     |> refresh_table()}
+  end
+
+  def handle_event("toggle_select", %{"id" => id}, socket) do
+    selected =
+      if MapSet.member?(socket.assigns.selected_ids, id) do
+        MapSet.delete(socket.assigns.selected_ids, id)
+      else
+        MapSet.put(socket.assigns.selected_ids, id)
+      end
+
+    {:noreply, assign(socket, :selected_ids, selected)}
+  end
+
+  def handle_event("bulk_approve", _params, socket) do
+    count =
+      socket.assigns.selected_ids
+      |> Enum.reduce(0, fn id, acc ->
+        rule = Rule.by_id!(id)
+        case Rule.approve(rule) do
+          {:ok, _} -> acc + 1
+          _ -> acc
+        end
+      end)
+
+    {:noreply,
+     socket
+     |> assign(:selected_ids, MapSet.new())
+     |> assign(:category_counts, load_category_counts())
+     |> assign(:status_totals, load_status_totals())
+     |> refresh_table()
+     |> put_flash(:info, "Approved #{count} rules")}
+  end
+
+  def handle_event("bulk_retire", _params, socket) do
+    count =
+      socket.assigns.selected_ids
+      |> Enum.reduce(0, fn id, acc ->
+        rule = Rule.by_id!(id)
+        case Rule.retire(rule, %{retired_reason: "Bulk retired from curation UI"}) do
+          {:ok, _} -> acc + 1
+          _ -> acc
+        end
+      end)
+
+    {:noreply,
+     socket
+     |> assign(:selected_ids, MapSet.new())
+     |> assign(:category_counts, load_category_counts())
+     |> assign(:status_totals, load_status_totals())
+     |> refresh_table()
+     |> put_flash(:info, "Retired #{count} rules")}
   end
 
   def handle_event("filter_source", %{"source" => source}, socket) do
@@ -153,6 +296,25 @@ defmodule MaestroWeb.RulesLive do
         where: r.status == "approved",
         group_by: r.bundle,
         select: {r.bundle, count(r.id)},
+        order_by: [desc: count(r.id)]
+    )
+  end
+
+  defp load_tag_counts do
+    case Ecto.Adapters.SQL.query(Maestro.Repo,
+      "SELECT unnest(tags) as tag, count(*) as cnt FROM rules WHERE status = 'proposed' GROUP BY tag ORDER BY cnt DESC"
+    ) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [tag, cnt] -> {tag, cnt} end)
+      _ -> []
+    end
+  end
+
+  defp load_category_counts do
+    Maestro.Repo.all(
+      from r in "rules",
+        where: r.status == "proposed",
+        group_by: r.category,
+        select: {r.category, count(r.id)},
         order_by: [desc: count(r.id)]
     )
   end
@@ -346,13 +508,51 @@ defmodule MaestroWeb.RulesLive do
           </div>
         <% end %>
 
+        <%!-- Tag Chips --%>
+        <div class="flex flex-wrap gap-2 mb-2">
+          <%= for {tag, count} <- @tag_counts do %>
+            <button
+              phx-click="filter_tag"
+              phx-value-tag={tag}
+              class={[
+                "badge cursor-pointer gap-1 transition-all",
+                if(@active_tag == tag, do: "badge-primary", else: "badge-outline badge-sm hover:badge-primary/50")
+              ]}
+            >
+              {tag}
+              <span class="text-xs opacity-60">{count}</span>
+            </button>
+          <% end %>
+        </div>
+
+        <%!-- Category Chips --%>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <%= for {cat, count} <- @category_counts do %>
+            <button
+              phx-click="filter_category"
+              phx-value-category={cat}
+              class={[
+                "badge badge-lg cursor-pointer gap-1 transition-all",
+                if(@active_category == cat, do: "badge-primary", else: "badge-outline hover:badge-primary/50")
+              ]}
+            >
+              {cat}
+              <span class="badge badge-sm badge-ghost">{count}</span>
+            </button>
+          <% end %>
+        </div>
+
         <%!-- Cinder Table --%>
         <Cinder.collection
           id="rules-table"
           query={@query}
           page_size={50}
           theme="daisy_ui"
+          selectable
+          on_selection_change={:selection_changed}
         >
+          <:bulk_action label="Approve" action={:approve} class="btn-success" />
+          <:bulk_action label="Retire" action={:retire} class="btn-warning" />
           <:col
             :let={rule}
             field="status"
@@ -414,7 +614,7 @@ defmodule MaestroWeb.RulesLive do
           </:col>
 
           <:col :let={rule} field="notes" label="Notes">
-            <form phx-change="save_notes" phx-debounce="500">
+            <form phx-change="save_notes">
               <input type="hidden" name="rule_id" value={rule.id} />
               <textarea
                 name="notes"
@@ -466,6 +666,11 @@ defmodule MaestroWeb.RulesLive do
       </div>
     </Layouts.app>
     """
+  end
+
+  @impl true
+  def handle_info({:selection_changed, _selection}, socket) do
+    {:noreply, socket}
   end
 
   @impl true

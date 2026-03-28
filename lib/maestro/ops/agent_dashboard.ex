@@ -7,13 +7,23 @@ defmodule Maestro.Ops.AgentDashboard do
   import Ecto.Query
   alias Maestro.Repo
 
-  @task_file "current_task.json"
-
+  @doc "Returns the most recent in-progress Task, or nil."
   def current_task do
-    case File.read(@task_file) do
-      {:ok, content} -> Jason.decode!(content)
-      _ -> %{}
-    end
+    Repo.one(
+      from t in "tasks",
+        where: t.status == "in_progress",
+        order_by: [desc: t.updated_at],
+        limit: 1,
+        select: %{
+          id: t.id,
+          title: t.title,
+          description: t.description,
+          notes: t.notes,
+          status: t.status,
+          task_type: t.task_type,
+          updated_at: t.updated_at
+        }
+    )
   end
 
   @doc "Returns the most recent active session, or nil."

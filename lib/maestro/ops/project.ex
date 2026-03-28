@@ -13,14 +13,18 @@ defmodule Maestro.Ops.Project do
   actions do
     defaults [:read, :destroy]
 
+    read :active do
+      filter expr(status != :inactive)
+    end
+
     create :create do
       primary? true
-      accept [:name, :slug, :description, :web_port, :debugger_port, :github_url]
+      accept [:name, :slug, :description, :web_port, :debugger_port, :github_url, :prod_url]
     end
 
     update :update do
       primary? true
-      accept [:name, :slug, :description, :web_port, :debugger_port, :github_url, :status]
+      accept [:name, :slug, :description, :web_port, :debugger_port, :github_url, :prod_url, :status]
     end
   end
 
@@ -60,8 +64,12 @@ defmodule Maestro.Ops.Project do
       public? true
     end
 
+    attribute :prod_url, :string do
+      public? true
+    end
+
     attribute :status, :atom do
-      constraints one_of: [:unknown, :running, :stopped]
+      constraints one_of: [:unknown, :running, :stopped, :inactive]
       default :unknown
       public? true
     end
@@ -78,6 +86,7 @@ defmodule Maestro.Ops.Project do
   code_interface do
     define :create
     define :read
+    define :active
     define :update
     define :destroy
     define :by_id, get_by: [:id], action: :read

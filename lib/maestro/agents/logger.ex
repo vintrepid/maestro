@@ -37,6 +37,7 @@ defmodule Maestro.Agents.Logger do
         metadata: Keyword.get(opts, :metadata, %{})
       })
 
+    PubSub.broadcast_request(request)
     request
   end
 
@@ -44,11 +45,15 @@ defmodule Maestro.Agents.Logger do
   Logs the response to a previously created request.
   """
   def log_response(request, response, opts \\ []) do
-    Request.respond(request, %{
-      response: response,
-      response_metadata: Keyword.get(opts, :metadata, %{}),
-      duration_ms: Keyword.get(opts, :duration_ms)
-    })
+    {:ok, updated} =
+      Request.respond(request, %{
+        response: response,
+        response_metadata: Keyword.get(opts, :metadata, %{}),
+        duration_ms: Keyword.get(opts, :duration_ms)
+      })
+
+    PubSub.broadcast_response(updated)
+    {:ok, updated}
   end
 
   @doc """

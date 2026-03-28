@@ -45,7 +45,9 @@ defmodule MaestroWeb.Router do
       on_mount: [{MaestroWeb.LiveUserAuth, :load_current_user}] do
       live "/", HomeLive, :index
       live "/projects", DashboardLive, :projects
+      live "/projects/new", ProjectFormLive, :new
       live "/projects/:slug", ProjectDetailLive, :show
+      live "/projects/:slug/edit", ProjectFormLive, :edit
       live "/resources", ResourcesLive, :index
       live "/resources/new", ResourceFormLive, :new
       live "/resources/:id/edit", ResourceFormLive, :edit

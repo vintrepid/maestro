@@ -265,22 +265,18 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   defp load_data(socket) do
     task = AgentDashboard.current_task()
     files = AgentDashboard.all_files()
-    active = AgentDashboard.active_session()
-    session = active || AgentDashboard.latest_session()
-    recent_requests = if session, do: AgentDashboard.recent_requests(session.id, 5), else: []
-    agent_name = if session, do: AgentDashboard.agent_name(session.agent_id), else: nil
 
     assign(socket,
       task: task,
       files: files,
-      pending: Map.get(task, "pending", []),
-      status: Map.get(task, "status", "idle"),
-      summary: Map.get(task, "summary", ""),
-      session_date: Map.get(task, "session_date", ""),
-      session: session,
-      recent_requests: recent_requests,
-      agent_name: agent_name,
-      running: active != nil
+      pending: [],
+      status: if(task, do: to_string(task.status), else: "idle"),
+      summary: if(task, do: task.title, else: ""),
+      session_date: if(task, do: Calendar.strftime(task.updated_at, "%Y-%m-%d %H:%M"), else: ""),
+      session: nil,
+      recent_requests: [],
+      agent_name: "claude-code",
+      running: task != nil
     )
   end
 
