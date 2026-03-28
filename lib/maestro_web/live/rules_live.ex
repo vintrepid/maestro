@@ -312,12 +312,46 @@ defmodule MaestroWeb.RulesLive do
     )
   end
 
-  defp load_tag_counts do
+  defp load_tag_counts(filters \\ %{}) do
+    {where_clause, params} = build_tag_query_filters(filters)
+
     case Ecto.Adapters.SQL.query(Maestro.Repo,
-      "SELECT unnest(tags) as tag, count(*) as cnt FROM rules WHERE status = 'proposed' GROUP BY tag ORDER BY cnt DESC"
+      "SELECT unnest(tags) as tag, count(*) as cnt FROM rules#{where_clause} GROUP BY tag ORDER BY cnt DESC",
+      params
     ) do
       {:ok, %{rows: rows}} -> Enum.map(rows, fn [tag, cnt] -> {tag, cnt} end)
       _ -> []
+    end
+  end
+
+  defp build_tag_query_filters(filters) when map_size(filters) == 0, do: {" WHERE status = 'proposed'", []}
+  defp build_tag_query_filters(filters) do
+    conditions = []
+    params = []
+    idx = 1
+
+    {conditions, params, idx} =
+      case Map.get(filters, "status") do
+        nil -> {conditions, params, idx}
+        status -> {conditions ++ ["status = $#{idx}"], params ++ [status], idx + 1}
+      end
+
+    {conditions, params, idx} =
+      case Map.get(filters, "category") do
+        nil -> {conditions, params, idx}
+        category -> {conditions ++ ["category = $#{idx}"], params ++ [category], idx + 1}
+      end
+
+    {conditions, params, _idx} =
+      case Map.get(filters, "severity") do
+        nil -> {conditions, params, idx}
+        severity -> {conditions ++ ["severity = $#{idx}"], params ++ [severity], idx + 1}
+      end
+
+    if conditions == [] do
+      {"", []}
+    else
+      {" WHERE " <> Enum.join(conditions, " AND "), params}
     end
   end
 
@@ -697,6 +731,14 @@ defmodule MaestroWeb.RulesLive do
   @impl true
   def handle_params(params, uri, socket) do
     socket = Cinder.UrlSync.handle_params(params, uri, socket)
-    {:noreply, socket}
+    # Refresh tag cloud from the same filters the Cinder table is using
+    filters = extract_cinder_filters(params)
+    {:noreply, assign(socket, :tag_counts, load_tag_counts(filters))}
+  end
+
+  defp extract_cinder_filters(params) do
+    params
+    |> Enum.filter(fn {k, _v} -> k in ~w(status category severity) end)
+    |> Map.new()
   end
 end
