@@ -225,11 +225,44 @@ const AgentDashboard = {
   }
 };
 
+const Mermaid = {
+  mounted() {
+    this.renderDiagram();
+  },
+  updated() {
+    this.renderDiagram();
+  },
+  renderDiagram() {
+    const code = this.el.dataset.mermaid;
+    if (!code) return;
+    if (!window.mermaid) {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
+      script.onload = () => {
+        window.mermaid.initialize({ startOnLoad: false, theme: "dark" });
+        this.doRender(code);
+      };
+      document.head.appendChild(script);
+    } else {
+      this.doRender(code);
+    }
+  },
+  async doRender(code) {
+    const id = "mermaid-" + Date.now();
+    try {
+      const { svg } = await window.mermaid.render(id, code);
+      this.el.innerHTML = svg;
+    } catch (e) {
+      this.el.innerHTML = "<pre class='text-error text-sm'>" + e.message + "</pre><pre class='text-xs opacity-50 mt-2'>" + code.replace(/</g, "&lt;") + "</pre>";
+    }
+  }
+};
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook, GitDropdownHook, ShiftClickHook, AgentDashboard},
+  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook, GitDropdownHook, ShiftClickHook, AgentDashboard, Mermaid},
 })
 
 window.addEventListener("phx:theme-changed", (e) => {

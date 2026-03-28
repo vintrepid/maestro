@@ -1,63 +1,31 @@
 defmodule MaestroWeb.ConceptsLive do
+  @moduledoc """
+  Concept map of approved rules, visualized as a Mermaid diagram.
+
+  Shows rules grouped by bundle (universal/ui/model) and category,
+  with tag-based relationships between rules. Generated from the
+  Rules DB — always reflects current approved state.
+  """
+
   use MaestroWeb, :live_view
-  import MaestroWeb.Live.Helpers.FileOpener
+  import Ecto.Query
 
   @impl true
   def mount(_params, _session, socket) do
-    svg_path = Path.join([Application.app_dir(:maestro), "priv", "static", "images", "concept_dag.svg"])
-    svg_exists = File.exists?(svg_path)
-    
+    rules = load_rules()
+    mermaid = build_mermaid(rules)
+
     {:ok,
      socket
-     |> assign(:page_title, "Guideline Concepts")
-     |> assign(:svg_exists, svg_exists)
-     |> assign(:fullscreen, false)
-     |> assign(:current_dir, nil)
-     |> assign(:current_file, nil)
-     |> assign(:svg_cache, %{})}
+     |> assign(:page_title, "Concepts")
+     |> assign(:rules, rules)
+     |> assign(:mermaid, mermaid)
+     |> assign(:stats, build_stats(rules))}
   end
 
   @impl true
-  def handle_params(params, _uri, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
-  end
-
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:current_dir, nil)
-    |> assign(:current_file, nil)
-  end
-
-  defp apply_action(socket, :directory, %{"dir" => dir}) do
-    agents_dir = Path.expand("~/dev/agents")
-    dir_path = Path.join(agents_dir, dir)
-    
-    # Always regenerate for now during development
-    if File.dir?(dir_path) do
-      generate_directory_dag(dir, dir_path)
-    end
-    
-    socket
-    |> assign(:current_dir, dir)
-    |> assign(:current_file, nil)
-    |> update(:svg_cache, &Map.put(&1, dir, true))
-  end
-
-  defp apply_action(socket, :file, %{"dir" => dir, "file" => file}) do
-    socket
-    |> assign(:current_dir, dir)
-    |> assign(:current_file, URI.decode(file))
-  end
-
-  @impl true
-  def handle_event("open_file", %{"path" => path}, socket) do
-    open_file(path)
+  def handle_params(_params, _uri, socket) do
     {:noreply, socket}
-  end
-
-  @impl true
-  def handle_event("toggle_fullscreen", _params, socket) do
-    {:noreply, assign(socket, :fullscreen, !socket.assigns.fullscreen)}
   end
 
   @impl true
@@ -65,187 +33,156 @@ defmodule MaestroWeb.ConceptsLive do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="max-w-7xl mx-auto px-4 py-6">
-        <%= if @current_file do %>
-          <div class="mb-4">
-            <.link navigate="/concepts" class="btn btn-sm btn-ghost">← Back to map</.link>
-            <.link navigate={"/concepts/#{@current_dir}"} class="btn btn-sm btn-ghost">← Back to {@current_dir}</.link>
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-3xl font-bold">Rules Concept Map</h1>
+          <div class="flex gap-2 text-sm">
+            <span class="badge badge-primary">{@stats.total} rules</span>
+            <span class="badge badge-ghost">{@stats.categories} categories</span>
+            <span class="badge badge-ghost">{@stats.bundles} bundles</span>
+            <span class="badge badge-ghost">{@stats.tags} tags</span>
           </div>
-          <h1 class="text-2xl font-bold mb-4"><%= @current_file %></h1>
-          <%= render_file_content(assigns) %>
-        <% else %>
-          <%= if @current_dir do %>
-            <div class="mb-4">
-              <.link navigate="/concepts" class="btn btn-sm btn-ghost">← Back to map</.link>
-            </div>
-            <h1 class="text-2xl font-bold mb-4"><%= String.capitalize(@current_dir) %> Directory</h1>
-            <%= render_directory_content(assigns) %>
-          <% else %>
-            <h1 class="text-2xl font-bold mb-4">Guideline Concept Relationships</h1>
-            
-            <div class="prose prose-sm max-w-none mb-4">
-              <p class="text-sm">
-                Click on nodes in the diagram to explore directories and files.
-              </p>
-            </div>
+        </div>
 
-            <%= if @svg_exists do %>
-              <%= if @fullscreen do %>
-                <div class="fixed inset-0 z-50 bg-base-100 flex flex-col" phx-window-keydown="toggle_fullscreen" phx-key="Escape">
-                  <div class="navbar bg-base-200">
-                    <div class="navbar-start"><h2 class="text-xl font-bold">Concept DAG</h2></div>
-                    <div class="navbar-end">
-                      <button phx-click="toggle_fullscreen" class="btn btn-ghost btn-sm btn-circle">
-                        <.icon name="hero-x-mark" class="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                  <div class="flex-1 overflow-auto p-8">
-                    <div class="[&>svg]:w-full [&>svg]:h-auto">
-                      <%= raw(load_svg_content()) %>
-                    </div>
-                  </div>
-                </div>
-              <% else %>
-                <div class="card bg-base-100 shadow-xl card-compact">
-                  <div class="card-body p-4 overflow-auto max-h-[80vh]">
-                    <div 
-                      phx-hook="ShiftClickHook"
-                      id="concept-svg-container"
-                      class="cursor-pointer [&>svg]:w-full [&>svg]:h-auto"
-                    >
-                      <%= raw(load_svg_content()) %>
-                    </div>
-                  </div>
-                </div>
-              <% end %>
-            <% else %>
-              <div class="alert alert-warning">
-                <.icon name="hero-exclamation-triangle" class="w-6 h-6" />
-                <div>
-                  <h3 class="font-bold">SVG not generated yet</h3>
-                  <div class="text-sm">Run: <code class="bg-base-300 px-2 py-1 rounded">mix concept.update</code></div>
-                </div>
-              </div>
-            <% end %>
-          <% end %>
-        <% end %>
+        <div class="card bg-base-100 shadow-xl mb-6">
+          <div class="card-body p-4 overflow-x-auto">
+            <div id="mermaid-container" phx-hook="Mermaid" data-mermaid={@mermaid}>
+              <pre class="mermaid">{@mermaid}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div :for={{bundle, rules} <- group_by_bundle(@rules)} class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+              <h3 class="card-title text-sm">
+                <span class={"badge #{bundle_class(bundle)}"}>{bundle || "unbundled"}</span>
+                <span class="text-xs opacity-50">{length(rules)} rules</span>
+              </h3>
+              <ul class="text-xs space-y-1 mt-2">
+                <li :for={rule <- rules} class="flex items-start gap-2">
+                  <span class={"badge badge-xs #{severity_class(rule.severity)} mt-0.5"}>{rule.severity}</span>
+                  <span class="truncate opacity-80">{truncate(rule.content, 60)}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </Layouts.app>
     """
   end
 
-  defp render_directory_content(assigns) do
-    agents_dir = Path.expand("~/dev/agents")
-    dir_path = Path.join(agents_dir, assigns.current_dir)
-    
-    if File.dir?(dir_path) do
-      ~H"""
-      <div class="mb-4">
-        <p class="text-sm text-base-content/70">Concept map showing relationships between files in this directory. Click nodes to view files.</p>
-      </div>
-      <div class="card bg-base-100 shadow-xl card-compact">
-        <div class="card-body p-0 overflow-auto">
-          <div class="hover:opacity-80 transition-opacity">
-            <%= raw(load_directory_svg(assigns.current_dir)) %>
-          </div>
-        </div>
-      </div>
-      """
-    else
-      ~H"""
-      <div class="alert alert-warning">
-        Directory not found: <%= @current_dir %>
-      </div>
-      """
-    end
+  defp load_rules do
+    Maestro.Repo.all(
+      from r in "rules",
+        where: r.status == "approved",
+        order_by: [asc: r.category, desc: r.severity],
+        select: %{
+          id: r.id,
+          category: r.category,
+          bundle: r.bundle,
+          severity: r.severity,
+          tags: r.tags,
+          content: r.content
+        }
+    )
   end
 
-  defp render_file_content(assigns) do
-    agents_dir = Path.expand("~/dev/agents")
-    file_path = Path.join([agents_dir, assigns.current_dir, assigns.current_file])
-    
-    if File.exists?(file_path) do
-      content = File.read!(file_path)
-      assigns = assign(assigns, :content, content)
-      
-      ~H"""
-      <div class="prose prose-sm max-w-none">
-        <pre class="bg-base-200 p-4 rounded overflow-x-auto"><%= @content %></pre>
-      </div>
-      """
-    else
-      ~H"""
-      <div class="alert alert-warning">
-        File not found: <%= @current_file %>
-      </div>
-      """
-    end
-  end
-
-  defp load_svg_content do
-    svg_path = Path.join([Application.app_dir(:maestro), "priv", "static", "images", "concept_dag.svg"])
-    if File.exists?(svg_path) do
-      File.read!(svg_path)
-    else
-      ""
-    end
-  end
-
-  defp generate_directory_dag(dir_name, dir_path) do
-    require Logger
-    Logger.info("Generating directory DAG for: #{dir_name}")
-    
-    files = File.ls!(dir_path)
-    |> Enum.filter(&(!String.starts_with?(&1, ".")))
-    |> Enum.sort()
-    
-    # Generate DOT content for this directory
-    dot_content = """
-    digraph #{String.replace(dir_name, "-", "_")}Directory {
-      rankdir=LR;
-      node [shape=box, style=filled, fillcolor=lightblue];
-      
-      #{Enum.map_join(files, "\n", fn file ->
-        id = String.replace(file, ~r/[^a-zA-Z0-9]/, "_")
-        label = String.replace(file, "_", " ")
-        url = "/concepts/#{dir_name}/#{URI.encode(file)}"
-        "  #{id} [label=\"#{label}\" URL=\"#{url}\"];"
-      end)}
-      
-      // Show temporal relationships for session files
-      #{generate_session_relationships(files)}
+  defp build_stats(rules) do
+    %{
+      total: length(rules),
+      categories: rules |> Enum.map(& &1.category) |> Enum.uniq() |> length(),
+      bundles: rules |> Enum.map(& &1.bundle) |> Enum.uniq() |> length(),
+      tags: rules |> Enum.flat_map(& (&1.tags || [])) |> Enum.uniq() |> length()
     }
+  end
+
+  defp build_mermaid(rules) do
+    by_bundle = Enum.group_by(rules, & &1.bundle)
+
+    bundle_sections =
+      Enum.map_join(by_bundle, "\n", fn {bundle, bundle_rules} ->
+        bundle_name = bundle || "unbundled"
+        safe_bundle = safe_id(bundle_name)
+
+        by_category = Enum.group_by(bundle_rules, & &1.category)
+
+        category_nodes =
+          Enum.map_join(by_category, "\n", fn {category, cat_rules} ->
+            safe_cat = safe_id("#{bundle_name}_#{category}")
+            rule_count = length(cat_rules)
+            severities = cat_rules |> Enum.map(& &1.severity) |> Enum.frequencies()
+            must_count = Map.get(severities, "must", 0)
+            should_count = Map.get(severities, "should", 0)
+            label = "#{category}\\n#{must_count} must, #{should_count} should"
+            "    #{safe_cat}[\"#{label}\"]"
+          end)
+
+        connections =
+          Enum.map_join(by_category, "\n", fn {category, _} ->
+            safe_cat = safe_id("#{bundle_name}_#{category}")
+            "    #{safe_bundle} --> #{safe_cat}"
+          end)
+
+        """
+            #{safe_bundle}{{\"#{bundle_name}\\n#{length(bundle_rules)} rules\"}}
+        #{category_nodes}
+        #{connections}
+        """
+      end)
+
+    # Tag-based connections between categories across bundles
+    tag_connections = build_tag_connections(rules)
+
     """
-    
-    # Write DOT file
-    dot_path = "CONCEPT_DAG_#{dir_name}.dot"
-    File.write!(dot_path, dot_content)
-    
-    # Generate SVG
-    svg_path = Path.join(["priv", "static", "images", "concept_dag_#{dir_name}.svg"])
-    File.mkdir_p!(Path.dirname(svg_path))
-    System.cmd("dot", ["-Tsvg", dot_path, "-o", svg_path])
+    graph TD
+    #{bundle_sections}
+    #{tag_connections}
+    """
   end
 
-  defp generate_session_relationships(files) do
-    files
-    |> Enum.filter(&String.contains?(&1, "SESSION_LEARNINGS"))
-    |> Enum.sort()
-    |> Enum.chunk_every(2, 1, :discard)
-    |> Enum.map(fn [file1, file2] ->
-      id1 = String.replace(file1, ~r/[^a-zA-Z0-9]/, "_")
-      id2 = String.replace(file2, ~r/[^a-zA-Z0-9]/, "_")
-      "  #{id1} -> #{id2} [label=\"followed by\"];"
+  defp build_tag_connections(rules) do
+    # Group rules by tags, find tags that span multiple categories
+    rules
+    |> Enum.flat_map(fn rule ->
+      (rule.tags || [])
+      |> Enum.map(fn tag -> {tag, "#{rule.bundle || "unbundled"}_#{rule.category}"} end)
     end)
-    |> Enum.join("\n")
+    |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+    |> Enum.filter(fn {_tag, categories} -> length(Enum.uniq(categories)) > 1 end)
+    |> Enum.map_join("\n", fn {tag, categories} ->
+      cats = Enum.uniq(categories)
+      [first | rest] = cats
+      Enum.map_join(rest, "\n", fn cat ->
+        "    #{safe_id(first)} -.-|#{tag}| #{safe_id(cat)}"
+      end)
+    end)
   end
 
-  defp load_directory_svg(dir_name) do
-    svg_path = Path.join([Application.app_dir(:maestro), "priv", "static", "images", "concept_dag_#{dir_name}.svg"])
-    if File.exists?(svg_path) do
-      File.read!(svg_path)
-    else
-      "<p>Loading...</p>"
-    end
+  defp group_by_bundle(rules) do
+    rules
+    |> Enum.group_by(& &1.bundle)
+    |> Enum.sort_by(fn {bundle, _} -> bundle || "zzz" end)
   end
+
+  defp safe_id(str) do
+    str
+    |> to_string()
+    |> String.replace(~r/[^a-zA-Z0-9]/, "_")
+    |> String.trim("_")
+  end
+
+  defp truncate(nil, _), do: ""
+  defp truncate(str, max) when byte_size(str) <= max, do: str
+  defp truncate(str, max), do: String.slice(str, 0, max) <> "..."
+
+  defp bundle_class("universal"), do: "badge-primary"
+  defp bundle_class("ui"), do: "badge-secondary"
+  defp bundle_class("model"), do: "badge-accent"
+  defp bundle_class("maestro"), do: "badge-info"
+  defp bundle_class(_), do: "badge-ghost"
+
+  defp severity_class("must"), do: "badge-error"
+  defp severity_class("should"), do: "badge-warning"
+  defp severity_class(_), do: "badge-ghost"
 end

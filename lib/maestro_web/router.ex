@@ -36,14 +36,10 @@ defmodule MaestroWeb.Router do
   scope "/", MaestroWeb do
     pipe_through :browser
 
-    get "/concepts", ConceptsController, :index
-    get "/concepts/:dir", ConceptsController, :directory
-    get "/concepts/:dir/:file", ConceptsController, :file
-    get "/concepts/bundles/:bundle/graph", ConceptsController, :bundle_graph
-
     live_session :authenticated_routes,
       on_mount: [{MaestroWeb.LiveUserAuth, :load_current_user}] do
       live "/", HomeLive, :index
+      live "/concepts", ConceptsLive, :index
       live "/projects", DashboardLive, :projects
       live "/projects/new", ProjectFormLive, :new
       live "/projects/:slug", ProjectDetailLive, :show
