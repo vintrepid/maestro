@@ -122,7 +122,12 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   end
 
   def handle_event("toggle_expanded", _params, socket) do
-    {:noreply, assign(socket, expanded: !socket.assigns.expanded)}
+    new_expanded = !socket.assigns.expanded
+    {:noreply, push_event(assign(socket, expanded: new_expanded), "dashboard-state", %{expanded: new_expanded})}
+  end
+
+  def handle_event("restore_state", %{"expanded" => expanded}, socket) do
+    {:noreply, assign(socket, expanded: expanded)}
   end
 
   # --- PubSub handlers ---
@@ -146,7 +151,7 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="agent-dashboard" id="agent-dashboard">
+    <div class="agent-dashboard" id="agent-dashboard" phx-hook="AgentDashboard">
       <div class="bg-base-200 border-b border-base-300">
         <div
           class="py-2 px-4 flex items-center gap-3 text-sm cursor-pointer hover:bg-base-300 transition-colors"

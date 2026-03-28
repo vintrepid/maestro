@@ -213,11 +213,23 @@ const ShiftClickHook = {
   }
 };
 
+const AgentDashboard = {
+  mounted() {
+    const saved = localStorage.getItem("agent-dashboard-expanded");
+    if (saved !== null) {
+      this.pushEventTo("#agent-dashboard", "restore_state", { expanded: saved === "true" });
+    }
+    this.handleEvent("dashboard-state", ({ expanded }) => {
+      localStorage.setItem("agent-dashboard-expanded", expanded);
+    });
+  }
+};
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook, GitDropdownHook, ShiftClickHook},
+  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook, GitDropdownHook, ShiftClickHook, AgentDashboard},
 })
 
 window.addEventListener("phx:theme-changed", (e) => {
