@@ -126,9 +126,14 @@ p.description {
   @apply text-base-content/70 text-sm;
 }
 
-/* Page header spacing */
+/* Page header — flex row with title left, actions right */
 .page-header {
-  @apply mb-6;
+  @apply flex flex-wrap items-baseline justify-between gap-2 mb-4;
+}
+
+/* Filter chip rows (tag cloud, category chips) */
+.filter-chips {
+  @apply flex flex-wrap gap-1.5 mb-3;
 }
 
 /* Search form spacing */
@@ -177,9 +182,9 @@ table .line-number {
   @apply text-base-content/40 text-xs italic;
 }
 
-/* Page Section Wrapper */
+/* Page Section Wrapper — extra breathing room inside <main> */
 .page-section {
-  @apply container mx-auto px-6 py-8 max-w-7xl;
+  @apply py-4;
 }
 
 /* Simple Card - Auto-style children */

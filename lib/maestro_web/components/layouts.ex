@@ -58,6 +58,10 @@ defmodule MaestroWeb.Layouts do
               <.icon name="hero-square-3-stack-3d" class="w-5 h-5" />
               Concepts
             </a>
+            <a href="/rules" class="btn btn-ghost">
+              <.icon name="hero-document-text" class="w-5 h-5" />
+              Rules
+            </a>
             <a href="/audit" class="btn btn-ghost">
               <.icon name="hero-clipboard-document-check" class="w-5 h-5" />
               Audit

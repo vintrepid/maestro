@@ -72,7 +72,8 @@ defmodule Maestro.Ops.Rule.Facade do
   @doc "Returns the default sorted query for the rules table."
   @spec default_query() :: Ash.Query.t()
   def default_query do
-    sort(Rule, priority: :desc, category: :asc)
+    Rule
+    |> sort(priority: :desc, category: :asc)
   end
 
   @doc "Returns a query sorted by priority descending (no filters)."
@@ -119,7 +120,8 @@ defmodule Maestro.Ops.Rule.Facade do
     rule = Rule.by_id!(id)
 
     if Quality.passes_quality?(rule) do
-      Rule.approve(rule)
+      {:ok, rule} = Rule.approve(rule)
+      request_curation(rule, :approved, "Approved — verify bundle, category, tags, and check for duplicates to supersede")
       :ok
     else
       {:error, "Rule fails quality checks — fix content before approving"}
@@ -129,19 +131,73 @@ defmodule Maestro.Ops.Rule.Facade do
   @doc "Retires a rule with a default reason."
   @spec retire_rule(String.t(), String.t()) :: :ok | {:ok, term()}
   def retire_rule(id, reason \\ "Retired from UI") do
-    Rule.retire(Rule.by_id!(id), %{retired_reason: reason})
+    rule = Rule.by_id!(id)
+    result = Rule.retire(rule, %{retired_reason: reason})
+    request_curation(rule, :retired, "Retired — find canonical rule and link via superseded_by")
+    result
   end
 
   @doc "Marks a rule as a linter rule."
   @spec mark_linter(String.t()) :: :ok | {:ok, term()}
   def mark_linter(id) do
-    Rule.mark_linter(Rule.by_id!(id))
+    rule = Rule.by_id!(id)
+    result = Rule.mark_linter(rule)
+    request_curation(rule, :linter, "Marked linter — design igniter/mix task to enforce this rule automatically")
+    result
   end
 
   @doc "Marks a rule as an anti-pattern."
   @spec mark_anti_pattern(String.t()) :: :ok | {:ok, term()}
   def mark_anti_pattern(id) do
-    Rule.mark_anti_pattern(Rule.by_id!(id))
+    rule = Rule.by_id!(id)
+    result = Rule.mark_anti_pattern(rule)
+    request_curation(rule, :anti_pattern, "Marked anti-pattern — find canonical rule, link via superseded_by, extract curation insight")
+    result
+  end
+
+  @doc """
+  Loads a rule by id with relationships and related rules for the detail page.
+
+  Returns `{rule, related}` where related is a map with:
+  - `:superseded_by` — the rule this one was superseded by (or nil)
+  - `:supersedes` — rules this one supersedes
+  - `:same_category` — other rules in the same category (limit 10)
+  - `:same_tags` — rules sharing tags (limit 10)
+  - `:source` — rule_source and library
+  """
+  @spec get_rule_with_related(String.t()) :: {term(), map()}
+  def get_rule_with_related(id) do
+    rule = Rule.by_id!(id, authorize?: false, load: [:superseded_by, :supersedes, :library, :rule_source])
+
+    same_category =
+      Rule
+      |> filter(category == ^rule.category and id != ^rule.id and status in [:approved, :proposed])
+      |> sort(priority: :desc)
+      |> Ash.read!(authorize?: false, page: [limit: 10])
+      |> Map.get(:results, [])
+
+    same_tags =
+      if rule.tags != [] do
+        all = Rule.read!(authorize?: false)
+        |> Enum.filter(fn r ->
+          r.id != rule.id and r.status in [:approved, :proposed] and
+          Enum.any?(r.tags || [], &(&1 in (rule.tags || [])))
+        end)
+        |> Enum.sort_by(fn r -> -length((r.tags || []) -- (r.tags || [] -- (rule.tags || []))) end)
+        |> Enum.take(10)
+        all
+      else
+        []
+      end
+
+    related = %{
+      superseded_by: rule.superseded_by,
+      supersedes: rule.supersedes,
+      same_category: same_category,
+      same_tags: same_tags
+    }
+
+    {rule, related}
   end
 
   @doc "Destroys a rule by id."
@@ -154,6 +210,73 @@ defmodule Maestro.Ops.Rule.Facade do
   @spec update_rule(String.t(), map()) :: {:ok, term()} | {:error, term()}
   def update_rule(id, params) do
     Rule.update(Rule.by_id!(id), params)
+  end
+
+  @doc """
+  Creates a discussion task linked to a rule.
+
+  The task captures the rule's current state (content, status, notes) so that
+  an agent can find and respond to it by querying discussion tasks.
+  """
+  @spec discuss_rule(String.t()) :: {:ok, term()} | {:error, term()}
+  def discuss_rule(id) do
+    rule = Rule.by_id!(id, authorize?: false)
+
+    Maestro.Ops.Task.create(%{
+      title: "Discuss: #{String.slice(rule.content, 0, 80)}",
+      description: rule.content,
+      notes: rule.notes,
+      task_type: :discussion,
+      status: :todo,
+      entity_type: "rule",
+      entity_id: rule.id
+    }, authorize?: false)
+  end
+
+  @doc "Returns open discussion tasks for rules."
+  @spec pending_discussions() :: [term()]
+  def pending_discussions do
+    pending_rule_tasks(:discussion)
+  end
+
+  @doc "Returns open curation tasks for rules."
+  @spec pending_curations() :: [term()]
+  def pending_curations do
+    pending_rule_tasks(:curation)
+  end
+
+  @doc "Returns all pending rule tasks (discussions + curations)."
+  @spec pending_rule_tasks() :: [term()]
+  def pending_rule_tasks do
+    Maestro.Ops.Task.read!(authorize?: false)
+    |> Enum.filter(&(&1.task_type in [:discussion, :curation] and &1.status in [:todo, :in_progress] and &1.entity_type == "rule"))
+    |> Enum.sort_by(& &1.inserted_at, {:desc, DateTime})
+  end
+
+  defp pending_rule_tasks(type) do
+    Maestro.Ops.Task.read!(authorize?: false)
+    |> Enum.filter(&(&1.task_type == type and &1.status in [:todo, :in_progress] and &1.entity_type == "rule"))
+    |> Enum.sort_by(& &1.inserted_at, {:desc, DateTime})
+  end
+
+  @doc """
+  Creates a curation task after a rule status change.
+
+  The task captures the rule, the new status, and what curation work is needed.
+  Agents pick these up to find related rules, link canonical patterns, and
+  extract curation insights.
+  """
+  @spec request_curation(term(), atom(), String.t()) :: {:ok, term()}
+  def request_curation(rule, new_status, instructions) do
+    Maestro.Ops.Task.create(%{
+      title: "Curate: #{String.slice(rule.content, 0, 60)}",
+      description: "Rule #{String.slice(rule.id, 0, 8)} changed to #{new_status}.\n\n**Content:** #{rule.content}\n\n**Notes:** #{rule.notes}",
+      notes: instructions,
+      task_type: :curation,
+      status: :todo,
+      entity_type: "rule",
+      entity_id: rule.id
+    }, authorize?: false)
   end
 
   @doc "Returns an AshPhoenix form for creating a new rule."
@@ -173,15 +296,24 @@ defmodule Maestro.Ops.Rule.Facade do
   @doc "Validates a form with params, returns updated form."
   @spec validate_form(term(), map()) :: Phoenix.HTML.Form.t()
   def validate_form(form_source, params) do
-    AshPhoenix.Form.validate(form_source, params) |> to_form()
+    AshPhoenix.Form.validate(form_source, normalize_params(params)) |> to_form()
   end
 
   @doc "Submits a form. Returns {:ok, rule} or {:error, form}."
   @spec submit_form(term(), map()) :: {:ok, term()} | {:error, term()}
   def submit_form(form_source, params) do
-    case AshPhoenix.Form.submit(form_source, params: params) do
+    case AshPhoenix.Form.submit(form_source, params: normalize_params(params)) do
       {:ok, rule} -> {:ok, rule}
       {:error, form} -> {:error, to_form(form)}
+    end
+  end
+
+  defp normalize_params(params) do
+    case Map.get(params, "tags") do
+      nil -> params
+      tags when is_list(tags) -> params
+      tags when is_binary(tags) ->
+        Map.put(params, "tags", tags |> String.split(",", trim: true) |> Enum.map(&String.trim/1))
     end
   end
 

@@ -30,6 +30,18 @@ Maestro.Ops.Task.create(%{
 If `project_eval` is not available, use `ToolSearch` to fetch it first.
 You MUST have a Task ID before responding. No exceptions.
 
+## Step 2b: Check pending curation and discussion tasks
+Call `project_eval` with:
+
+```elixir
+Maestro.Ops.Rule.Facade.pending_rule_tasks()
+|> Enum.map(fn t -> %{id: t.id, type: t.task_type, title: t.title, notes: t.notes} end)
+```
+
+If there are pending tasks, process them BEFORE starting new work.
+Curation tasks: find related rules, link canonical, mark done.
+Discussion tasks: read the linked rule + notes, respond, mark done.
+
 ## Step 3: First response format
 Your first message MUST use this exact format:
 

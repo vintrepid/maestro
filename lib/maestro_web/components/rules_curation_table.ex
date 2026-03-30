@@ -112,9 +112,9 @@ defmodule MaestroWeb.Components.RulesCurationTable do
           Retire
         </button>
       <% end %>
-      <button phx-click="edit" phx-value-id={@rule.id} class="btn btn-xs btn-ghost">
+      <a href={~p"/rules/#{@rule.id}"} class="btn btn-xs btn-ghost">
         <.icon name="hero-pencil" class="w-3 h-3" />
-      </button>
+      </a>
       <button
         phx-click="delete"
         phx-value-id={@rule.id}
@@ -154,4 +154,5 @@ defmodule MaestroWeb.Components.RulesCurationTable do
   defp priority_color(p) when p >= 80, do: "text-error font-semibold"
   defp priority_color(p) when p >= 60, do: "text-warning"
   defp priority_color(_), do: "text-base-content/50"
+
 end

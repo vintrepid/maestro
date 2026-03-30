@@ -31,9 +31,7 @@ defmodule MaestroWeb.RulesLive do
      |> assign(:active_category, nil)
      |> assign(:active_tag, nil)
      |> assign(:selected_ids, MapSet.new())
-     |> assign(:show_stats, false)
-     |> assign(:editing, nil)
-     |> assign(:form, nil)}
+     |> assign(:show_stats, false)}
   end
 
   @impl true
@@ -79,38 +77,13 @@ defmodule MaestroWeb.RulesLive do
     {:noreply, socket}
   end
 
-  def handle_event("new_rule", _params, socket) do
-    {:noreply, assign(socket, editing: :new, form: Rules.new_form())}
-  end
+  def handle_event("discuss", %{"id" => id}, socket) do
+    case Rules.discuss_rule(id) do
+      {:ok, task} ->
+        {:noreply, put_flash(socket, :info, "Discussion task ##{task.id} created")}
 
-  def handle_event("edit", %{"id" => id}, socket) do
-    {rule, form} = Rules.edit_form(id)
-    {:noreply, assign(socket, editing: rule, form: form)}
-  end
-
-  def handle_event("cancel_edit", _params, socket) do
-    {:noreply, assign(socket, editing: nil, form: nil)}
-  end
-
-  def handle_event("validate", %{"rule" => params}, socket) do
-    form = Rules.validate_form(socket.assigns.form.source, params)
-    {:noreply, assign(socket, :form, form)}
-  end
-
-  def handle_event("save", %{"rule" => params}, socket) do
-    case Rules.submit_form(socket.assigns.form.source, params) do
-      {:ok, _rule} ->
-        verb = if socket.assigns.editing == :new, do: "created", else: "updated"
-
-        {:noreply,
-         socket
-         |> assign(editing: nil, form: nil)
-         |> refresh_counts()
-         |> refresh_table()
-         |> put_flash(:info, "Rule #{verb}")}
-
-      {:error, form} ->
-        {:noreply, assign(socket, :form, form)}
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to create discussion task")}
     end
   end
 
@@ -214,16 +187,18 @@ defmodule MaestroWeb.RulesLive do
     <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="page-section">
         <div class="page-header">
-          <h1>Rules</h1>
-          <p class="description">
-            {Enum.sum(Enum.map(@status_totals, fn {_s, c} -> c end))} total
-            · {status_count(@status_totals, "approved")} approved
-            · {status_count(@status_totals, "proposed")} proposed
-          </p>
+          <div>
+            <h1>Rules</h1>
+            <p class="description">
+              {Enum.sum(Enum.map(@status_totals, fn {_s, c} -> c end))} total
+              · {status_count(@status_totals, "approved")} approved
+              · {status_count(@status_totals, "proposed")} proposed
+            </p>
+          </div>
           <div class="join">
-            <button phx-click="new_rule" class="btn btn-sm btn-success">
+            <a href="/rules/new" class="btn btn-sm btn-success">
               <.icon name="hero-plus" class="w-4 h-4" /> New Rule
-            </button>
+            </a>
             <button phx-click="export_bundles" class="btn btn-sm btn-primary btn-outline">
               <.icon name="hero-arrow-down-tray" class="w-4 h-4" /> Export
             </button>
@@ -255,80 +230,8 @@ defmodule MaestroWeb.RulesLive do
           bundle_options={@bundle_options}
         />
 
-        <.rule_edit_modal :if={@editing} form={@form} editing={@editing} category_options={@category_options} />
       </div>
     </Layouts.app>
-    """
-  end
-
-  # -- Edit modal --
-
-  attr :form, :any, required: true
-  attr :editing, :any, required: true
-  attr :category_options, :list, required: true
-
-  defp rule_edit_modal(assigns) do
-    ~H"""
-    <div class="modal modal-open" id="rule-edit-modal">
-      <div class="modal-box max-w-2xl">
-        <h3 class="font-bold text-lg">
-          {if @editing == :new, do: "New Rule", else: "Edit Rule"}
-        </h3>
-        <.form for={@form} phx-change="validate" phx-submit="save" id="rule-form">
-          <div class="form-control">
-            <label class="label"><span class="label-text">Content</span></label>
-            <textarea name="rule[content]" class="textarea textarea-bordered" rows="4" required>{@form[:content].value}</textarea>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div class="form-control">
-              <label class="label"><span class="label-text">Category</span></label>
-              <select name="rule[category]" class="select select-bordered" required>
-                <option value="">Select...</option>
-                <%= for {label, value} <- @category_options do %>
-                  <option value={value} selected={to_string(value) == to_string(@form[:category].value)}>{label}</option>
-                <% end %>
-              </select>
-            </div>
-
-            <div class="form-control">
-              <label class="label"><span class="label-text">Severity</span></label>
-              <select name="rule[severity]" class="select select-bordered">
-                <option value="must" selected={to_string(@form[:severity].value) == "must"}>MUST</option>
-                <option value="should" selected={to_string(@form[:severity].value) == "should"}>SHOULD</option>
-                <option value="prefer" selected={to_string(@form[:severity].value) == "prefer"}>PREFER</option>
-              </select>
-            </div>
-
-            <div class="form-control">
-              <label class="label"><span class="label-text">Source Project</span></label>
-              <input type="text" name="rule[source_project_slug]" value={@form[:source_project_slug].value} class="input input-bordered" placeholder="e.g. maestro" />
-            </div>
-
-            <div class="form-control">
-              <label class="label"><span class="label-text">Source Context</span></label>
-              <input type="text" name="rule[source_context]" value={@form[:source_context].value} class="input input-bordered" placeholder="Why this rule exists" />
-            </div>
-          </div>
-
-          <div class="form-control">
-            <label class="label"><span class="label-text">Tags (comma-separated)</span></label>
-            <input type="text" name="rule[tags]" value={Enum.join(@form[:tags].value || [], ", ")} class="input input-bordered" placeholder="liveview, architecture" />
-          </div>
-
-          <div class="form-control">
-            <label class="label"><span class="label-text">Notes</span></label>
-            <textarea name="rule[notes]" class="textarea textarea-bordered" rows="2">{@form[:notes].value}</textarea>
-          </div>
-
-          <div class="modal-action">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <button type="button" phx-click="cancel_edit" class="btn btn-ghost">Cancel</button>
-          </div>
-        </.form>
-      </div>
-      <div class="modal-backdrop" phx-click="cancel_edit"></div>
-    </div>
     """
   end
 

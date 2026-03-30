@@ -75,7 +75,7 @@ defmodule Maestro.Ops.Task do
     attribute :completed_at, :utc_datetime_usec
 
     attribute :task_type, :atom do
-      constraints one_of: [:plan, :feature, :bug, :refactor, :documentation, :other]
+      constraints one_of: [:plan, :feature, :bug, :refactor, :documentation, :discussion, :curation, :other]
       default :feature
     end
 
