@@ -1,4 +1,7 @@
 defmodule Maestro.Agents.Agent do
+  @moduledoc """
+  Agent resource.
+  """
   use Ash.Resource,
     otp_app: :maestro,
     domain: Maestro.Agents,
@@ -8,6 +11,15 @@ defmodule Maestro.Agents.Agent do
   postgres do
     table "agents"
     repo Maestro.Repo
+  end
+
+  code_interface do
+    define :create
+    define :read
+    define :update
+    define :destroy
+    define :by_name, args: [:name]
+    define :by_type, args: [:type]
   end
 
   actions do
@@ -72,14 +84,5 @@ defmodule Maestro.Agents.Agent do
   relationships do
     has_many :sessions, Maestro.Agents.Session
     has_many :requests, Maestro.Agents.Request
-  end
-
-  code_interface do
-    define :create
-    define :read
-    define :update
-    define :destroy
-    define :by_name, args: [:name]
-    define :by_type, args: [:type]
   end
 end

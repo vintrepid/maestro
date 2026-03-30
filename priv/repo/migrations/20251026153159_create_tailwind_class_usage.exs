@@ -12,10 +12,10 @@ defmodule Maestro.Repo.Migrations.CreateTailwindClassUsage do
       add :context, :text
       add :usage_count, :integer, default: 1
       add :analyzed_at, :utc_datetime
-      
+
       timestamps()
     end
-    
+
     create index(:tailwind_class_usage, [:class_name])
     create index(:tailwind_class_usage, [:category])
     create index(:tailwind_class_usage, [:file_path])

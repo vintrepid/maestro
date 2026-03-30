@@ -1,14 +1,14 @@
 defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
+  @moduledoc """
+  LiveView for the Tailwind Analysis page.
+  """
   use MaestroWeb, :live_view
   use LiveTable.LiveResource
 
-  import Ecto.Query
   alias Maestro.Analysis.TailwindClassUsage
-  alias Maestro.Repo
-
-  def repo, do: Maestro.Repo
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
     timestamps = TailwindClassUsage.available_timestamps()
     selected_timestamp = List.first(timestamps)
@@ -50,6 +50,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
     |> assign(:total_occurrences, total_occurrences)
   end
 
+  @spec list_class_usage() :: term()
   def list_class_usage do
     from(c in TailwindClassUsage,
       select: %{
@@ -64,6 +65,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
     )
   end
 
+  @spec fields() :: term()
   def fields do
     [
       class_name: %{
@@ -84,6 +86,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
     ]
   end
 
+  @spec filters() :: term()
   def filters do
     []
   end
@@ -136,6 +139,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
     """
   end
 
+  @spec table_options() :: term()
   def table_options do
     %{
       pin_header: true,
@@ -148,6 +152,7 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
@@ -427,12 +432,16 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("select_class", %{"class" => class_name}, socket) do
     socket = assign(socket, :selected_class, class_name)
     {:noreply, push_event(socket, "filter_by_class", %{class: class_name})}
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("select_timestamp", %{"timestamp" => timestamp_str}, socket) do
     {:ok, timestamp, _} = DateTime.from_iso8601(timestamp_str)
 
@@ -445,6 +454,8 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event(
         "select_run",
         %{"timestamp" => timestamp_str, "project" => project_name},
@@ -462,6 +473,8 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("select_project", %{"project" => project_name}, socket) do
     socket =
       socket
@@ -472,19 +485,19 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("toggle_run_form", _, socket) do
     {:noreply, assign(socket, :show_run_form, !socket.assigns.show_run_form)}
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("delete_run", %{"timestamp" => timestamp_str}, socket) do
     {:ok, timestamp, _} = DateTime.from_iso8601(timestamp_str)
 
-    {count, _} =
-      Repo.delete_all(
-        from c in TailwindClassUsage,
-          where: c.analyzed_at == ^timestamp
-      )
+    {count, _} = TailwindClassUsage.delete_by_timestamp(timestamp)
 
     timestamps = TailwindClassUsage.available_timestamps()
     selected_timestamp = List.first(timestamps) || socket.assigns.selected_timestamp
@@ -501,6 +514,8 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("run_analysis", %{"description" => description}, socket) do
     description = if description == "", do: nil, else: description
 

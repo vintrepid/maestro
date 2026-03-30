@@ -8,6 +8,7 @@ defmodule Maestro.Ops.AgentDashboard do
   alias Maestro.Repo
 
   @doc "Returns the most recent in-progress Task, or nil."
+  @spec current_task() :: term()
   def current_task do
     Repo.one(
       from t in "tasks",
@@ -27,6 +28,7 @@ defmodule Maestro.Ops.AgentDashboard do
   end
 
   @doc "Returns the most recent active session, or nil."
+  @spec active_session() :: term()
   def active_session do
     Repo.one(
       from s in "agent_sessions",
@@ -44,6 +46,7 @@ defmodule Maestro.Ops.AgentDashboard do
   end
 
   @doc "Returns the most recent session (active or completed)."
+  @spec latest_session() :: term()
   def latest_session do
     Repo.one(
       from s in "agent_sessions",
@@ -60,6 +63,7 @@ defmodule Maestro.Ops.AgentDashboard do
   end
 
   @doc "Returns recent requests for the given session, newest first."
+  @spec recent_requests(any(), any()) :: term()
   def recent_requests(session_id, limit \\ 10) do
     Repo.all(
       from r in "agent_requests",
@@ -78,7 +82,10 @@ defmodule Maestro.Ops.AgentDashboard do
   end
 
   @doc "Returns the agent name for a given agent_id."
+  @spec agent_name(any()) :: term()
   def agent_name(nil), do: "unknown"
+
+  @spec agent_name(any()) :: term()
   def agent_name(agent_id) do
     case Repo.one(from a in "agents", where: a.id == type(^agent_id, :binary_id), select: a.name) do
       nil -> "unknown"
@@ -86,6 +93,7 @@ defmodule Maestro.Ops.AgentDashboard do
     end
   end
 
+  @spec changed_files() :: term()
   def changed_files do
     case System.cmd("git", ["diff", "--name-only", "HEAD"], stderr_to_stdout: true) do
       {output, 0} ->
@@ -95,10 +103,12 @@ defmodule Maestro.Ops.AgentDashboard do
           %{path: path, type: file_type(path)}
         end)
 
-      _ -> []
+      _ ->
+        []
     end
   end
 
+  @spec untracked_files() :: term()
   def untracked_files do
     case System.cmd("git", ["ls-files", "--others", "--exclude-standard"], stderr_to_stdout: true) do
       {output, 0} ->
@@ -108,10 +118,12 @@ defmodule Maestro.Ops.AgentDashboard do
           %{path: path, type: file_type(path)}
         end)
 
-      _ -> []
+      _ ->
+        []
     end
   end
 
+  @spec all_files() :: term()
   def all_files do
     changed = changed_files()
     untracked = untracked_files()

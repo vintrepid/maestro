@@ -1,4 +1,7 @@
 defmodule Maestro.Resources.ResourceTag do
+  @moduledoc """
+  Resource Tag resource.
+  """
   use Ash.Resource,
     domain: Maestro.Resources,
     data_layer: AshPostgres.DataLayer
@@ -6,6 +9,16 @@ defmodule Maestro.Resources.ResourceTag do
   postgres do
     table "resource_tags"
     repo Maestro.Repo
+  end
+
+  code_interface do
+    define :create
+    define :read
+    define :destroy
+  end
+
+  actions do
+    defaults [:read, :create, :destroy]
   end
 
   attributes do
@@ -24,17 +37,7 @@ defmodule Maestro.Resources.ResourceTag do
     end
   end
 
-  actions do
-    defaults [:read, :create, :destroy]
-  end
-
   identities do
     identity :unique_resource_tag, [:resource_id, :tag_id]
-  end
-
-  code_interface do
-    define :create
-    define :read
-    define :destroy
   end
 end

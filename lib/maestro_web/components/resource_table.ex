@@ -1,14 +1,16 @@
 defmodule MaestroWeb.Components.ResourceTable do
+  @moduledoc """
+  Resource Table component.
+  """
   use MaestroWeb, :html
-  alias Maestro.Repo
 
-  attr :query_fn, :any, required: true
+  attr :resources, :list, required: true
   attr :id, :string, required: true
 
+  @spec resource_table(map()) :: term()
   def resource_table(assigns) do
-    query = assigns.query_fn.()
-    resources = Repo.all(query)
-    
+    resources = assigns.resources
+
     assigns = assign(assigns, :resources, resources)
 
     ~H"""
@@ -33,10 +35,18 @@ defmodule MaestroWeb.Components.ResourceTable do
           <%= for resource <- @resources do %>
             <tr>
               <td class="font-medium">{resource.title}</td>
-              <td><span class={"badge badge-sm #{type_class(resource.resource_type)}"}>{resource.resource_type}</span></td>
+              <td>
+                <span class={"badge badge-sm #{type_class(resource.resource_type)}"}>
+                  {resource.resource_type}
+                </span>
+              </td>
               <td>
                 <%= if resource.url do %>
-                  <a href={resource.url} target="_blank" class="link link-primary text-sm truncate max-w-xs block">
+                  <a
+                    href={resource.url}
+                    target="_blank"
+                    class="link link-primary text-sm truncate max-w-xs block"
+                  >
                     {resource.url}
                   </a>
                 <% else %>
@@ -47,7 +57,10 @@ defmodule MaestroWeb.Components.ResourceTable do
                 <div class="flex gap-1 flex-wrap">
                   <%= if Ecto.assoc_loaded?(resource.tags) and is_list(resource.tags) do %>
                     <%= for tag <- resource.tags do %>
-                      <span class="badge badge-sm" style={"background-color: #{tag.color || "#666"}; color: white;"}>
+                      <span
+                        class="badge badge-sm"
+                        style={"background-color: #{tag.color || "#666"}; color: white;"}
+                      >
                         {tag.name}
                       </span>
                     <% end %>

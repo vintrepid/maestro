@@ -1,8 +1,12 @@
 defmodule MaestroWeb.Components.GitWidget do
+  @moduledoc """
+  Git Widget component.
+  """
   use MaestroWeb, :html
 
   attr :class, :string, default: nil
 
+  @spec git_widget(map()) :: term()
   def git_widget(assigns) do
     assigns = assign(assigns, :current_branch, get_current_branch())
     assigns = assign(assigns, :commits_ahead, get_commits_ahead_of_master())
@@ -45,6 +49,7 @@ defmodule MaestroWeb.Components.GitWidget do
     """
   end
 
+  @spec get_current_branch() :: term()
   def get_current_branch do
     case System.cmd("git", ["branch", "--show-current"], stderr_to_stdout: true) do
       {branch, 0} -> String.trim(branch)
@@ -52,24 +57,31 @@ defmodule MaestroWeb.Components.GitWidget do
     end
   end
 
+  @spec get_commits_ahead_of_master() :: term()
   def get_commits_ahead_of_master do
     case System.cmd("git", ["rev-list", "--count", "master..HEAD"], stderr_to_stdout: true) do
       {count, 0} ->
-        count_int = String.trim(count) |> String.to_integer()
+        count_int = String.to_integer(String.trim(count))
         if count_int > 0, do: count_int, else: nil
-      _ -> nil
+
+      _ ->
+        nil
     end
   end
 
+  @spec get_commits_behind_master() :: term()
   def get_commits_behind_master do
     case System.cmd("git", ["rev-list", "--count", "HEAD..master"], stderr_to_stdout: true) do
       {count, 0} ->
-        count_int = String.trim(count) |> String.to_integer()
+        count_int = String.to_integer(String.trim(count))
         if count_int > 0, do: count_int, else: nil
-      _ -> nil
+
+      _ ->
+        nil
     end
   end
 
+  @spec get_other_branches_ahead() :: term()
   def get_other_branches_ahead do
     current_branch = get_current_branch()
 
@@ -82,19 +94,29 @@ defmodule MaestroWeb.Components.GitWidget do
         |> Enum.map(&String.replace_prefix(&1, "* ", ""))
         |> Enum.reject(&(&1 == current_branch))
         |> Enum.map(fn branch ->
-          ahead = case System.cmd("git", ["rev-list", "--count", "master..#{branch}"], stderr_to_stdout: true) do
-            {count, 0} ->
-              count_int = String.trim(count) |> String.to_integer()
-              if count_int > 0, do: count_int, else: nil
-            _ -> nil
-          end
+          ahead =
+            case System.cmd("git", ["rev-list", "--count", "master..#{branch}"],
+                   stderr_to_stdout: true
+                 ) do
+              {count, 0} ->
+                count_int = String.to_integer(String.trim(count))
+                if count_int > 0, do: count_int, else: nil
 
-          behind = case System.cmd("git", ["rev-list", "--count", "#{branch}..master"], stderr_to_stdout: true) do
-            {count, 0} ->
-              count_int = String.trim(count) |> String.to_integer()
-              if count_int > 0, do: count_int, else: nil
-            _ -> nil
-          end
+              _ ->
+                nil
+            end
+
+          behind =
+            case System.cmd("git", ["rev-list", "--count", "#{branch}..master"],
+                   stderr_to_stdout: true
+                 ) do
+              {count, 0} ->
+                count_int = String.to_integer(String.trim(count))
+                if count_int > 0, do: count_int, else: nil
+
+              _ ->
+                nil
+            end
 
           if ahead || behind do
             {branch, ahead, behind}
@@ -104,7 +126,9 @@ defmodule MaestroWeb.Components.GitWidget do
         end)
         |> Enum.reject(&is_nil/1)
         |> Enum.sort_by(fn {_branch, ahead, _behind} -> -(ahead || 0) end)
-      _ -> []
+
+      _ ->
+        []
     end
   end
 end

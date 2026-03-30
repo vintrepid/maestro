@@ -1,7 +1,11 @@
 defmodule MaestroWeb.AuthController do
+  @moduledoc """
+  Controller for Auth routes.
+  """
   use MaestroWeb, :controller
   use AshAuthentication.Phoenix.Controller
 
+  @spec success(Plug.Conn.t(), any(), any(), any()) :: term()
   def success(conn, activity, user, _token) do
     return_to = get_session(conn, :return_to) || ~p"/"
 
@@ -21,6 +25,7 @@ defmodule MaestroWeb.AuthController do
     |> redirect(to: return_to)
   end
 
+  @spec failure(Plug.Conn.t(), any(), any()) :: term()
   def failure(conn, activity, reason) do
     message =
       case {activity, reason} do
@@ -44,6 +49,7 @@ defmodule MaestroWeb.AuthController do
     |> redirect(to: ~p"/sign-in")
   end
 
+  @spec sign_out(Plug.Conn.t(), map()) :: term()
   def sign_out(conn, _params) do
     return_to = get_session(conn, :return_to) || ~p"/"
 

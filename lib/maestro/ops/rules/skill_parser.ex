@@ -5,12 +5,13 @@ defmodule Maestro.Ops.Rules.SkillParser do
   """
 
   @doc "Discover all skills on disk and return their parsed attributes."
+  @spec discover(any()) :: term()
   def discover(skills_dir \\ ".claude/skills") do
-    Path.wildcard(Path.join(skills_dir, "*/SKILL.md"))
-    |> Enum.map(&parse_skill_path/1)
+    Enum.map(Path.wildcard(Path.join(skills_dir, "*/SKILL.md")), &parse_skill_path/1)
   end
 
   @doc "Parse a single SKILL.md file path into attribute map."
+  @spec parse_skill_path(any()) :: term()
   def parse_skill_path(skill_path) do
     skill_dir = Path.dirname(skill_path)
     skill_name = Path.basename(skill_dir)
@@ -18,8 +19,7 @@ defmodule Maestro.Ops.Rules.SkillParser do
     {frontmatter, _body} = parse_frontmatter(content)
 
     references =
-      Path.wildcard(Path.join(skill_dir, "references/*.md"))
-      |> Enum.map(&Path.relative_to_cwd/1)
+      Enum.map(Path.wildcard(Path.join(skill_dir, "references/*.md")), &Path.relative_to_cwd/1)
 
     library_names = Enum.map(references, &Path.basename(&1, ".md"))
 
@@ -34,6 +34,7 @@ defmodule Maestro.Ops.Rules.SkillParser do
   end
 
   @doc "Parse YAML-ish frontmatter from a SKILL.md file."
+  @spec parse_frontmatter(any()) :: term()
   def parse_frontmatter(content) do
     case String.split(content, "---\n", parts: 3) do
       ["", yaml, body] -> {parse_yaml(yaml), body}
@@ -65,6 +66,7 @@ defmodule Maestro.Ops.Rules.SkillParser do
 
         _ ->
           key = String.trim_trailing(line, ":")
+
           if key != "" and not String.contains?(key, " "),
             do: Map.put(acc, key, %{}),
             else: acc

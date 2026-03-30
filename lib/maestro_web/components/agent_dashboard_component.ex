@@ -32,11 +32,13 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   # --- Lifecycle ---
 
   @impl true
+  @spec mount(Phoenix.LiveView.Socket.t()) :: term()
   def mount(socket) do
     {:ok, assign(socket, task_input: "", running: false, subscribed: false, expanded: true)}
   end
 
   @impl true
+  @spec update(map(), Phoenix.LiveView.Socket.t()) :: term()
   def update(_assigns, socket) do
     socket =
       if !socket.assigns.subscribed do
@@ -57,27 +59,34 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   # --- Events ---
 
   @impl true
-  def handle_event("start_session", %{"task_input" => description}, socket) when description != "" do
+  def handle_event("start_session", %{"task_input" => description}, socket)
+      when description != "" do
     alias Maestro.Agents.Logger
 
-    {:ok, agent, session} = Logger.start_session("claude-code", description,
-      type: :claude_code, model: "claude-opus-4-6"
-    )
+    {:ok, agent, session} =
+      Logger.start_session("claude-code", description,
+        type: :claude_code,
+        model: "claude-opus-4-6"
+      )
 
     Logger.log_request(agent, session, :user_prompt, description)
 
     {:noreply, assign(socket, task_input: "")}
   end
 
+  @spec handle_event(any(), map(), Phoenix.LiveView.Socket.t()) :: term()
   def handle_event("start_session", _params, socket) do
     {:noreply, socket}
   end
 
+  @spec handle_event(any(), map(), Phoenix.LiveView.Socket.t()) :: term()
   def handle_event("complete_session", _params, socket) do
     case AgentDashboard.active_session() do
-      nil -> {:noreply, socket}
+      nil ->
+        {:noreply, socket}
+
       session ->
-        db_session = Maestro.Repo.get!(Maestro.Agents.Session, session.id)
+        db_session = Ash.get!(Maestro.Agents.Session, session.id, authorize?: false)
         Maestro.Agents.Logger.end_session(db_session)
         {:noreply, socket}
     end
@@ -85,28 +94,36 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
 
   def handle_event("log_milestone", %{"milestone" => milestone}, socket) when milestone != "" do
     case AgentDashboard.active_session() do
-      nil -> {:noreply, socket}
+      nil ->
+        {:noreply, socket}
+
       session ->
-        agent = Maestro.Repo.get!(Maestro.Agents.Agent, session.agent_id)
-        db_session = Maestro.Repo.get!(Maestro.Agents.Session, session.id)
+        agent = Ash.get!(Maestro.Agents.Agent, session.agent_id, authorize?: false)
+        db_session = Ash.get!(Maestro.Agents.Session, session.id, authorize?: false)
         Maestro.Agents.Logger.log_request(agent, db_session, :agent_response, milestone)
         {:noreply, assign(socket, task_input: "")}
     end
   end
 
+  @spec handle_event(any(), map(), Phoenix.LiveView.Socket.t()) :: term()
   def handle_event("log_milestone", _params, socket) do
     {:noreply, socket}
   end
 
+  @spec handle_event(any(), map(), Phoenix.LiveView.Socket.t()) :: term()
   def handle_event("approve_task", _params, socket) do
     if socket.assigns.task do
       task = Maestro.Ops.Task.by_id!(socket.assigns.task.id)
-      Maestro.Ops.Task.update(task, %{notes: "Plan approved by user at #{DateTime.utc_now()}"}, authorize?: false)
+
+      Maestro.Ops.Task.update(task, %{notes: "Plan approved by user at #{DateTime.utc_now()}"},
+        authorize?: false
+      )
     end
 
     {:noreply, socket}
   end
 
+  @spec handle_event(any(), map(), Phoenix.LiveView.Socket.t()) :: term()
   def handle_event("complete_task", _params, socket) do
     if socket.assigns.task do
       task = Maestro.Ops.Task.by_id!(socket.assigns.task.id)
@@ -116,16 +133,23 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
     {:noreply, socket}
   end
 
+  @spec handle_event(any(), map(), Phoenix.LiveView.Socket.t()) :: term()
   def handle_event("update_input", params, socket) do
     value = params["task_input"] || params["milestone"] || ""
     {:noreply, assign(socket, task_input: value)}
   end
 
+  @spec handle_event(any(), map(), Phoenix.LiveView.Socket.t()) :: term()
   def handle_event("toggle_expanded", _params, socket) do
     new_expanded = !socket.assigns.expanded
-    {:noreply, push_event(assign(socket, expanded: new_expanded), "dashboard-state", %{expanded: new_expanded})}
+
+    {:noreply,
+     push_event(assign(socket, expanded: new_expanded), "dashboard-state", %{
+       expanded: new_expanded
+     })}
   end
 
+  @spec handle_event(any(), map(), Phoenix.LiveView.Socket.t()) :: term()
   def handle_event("restore_state", %{"expanded" => expanded}, socket) do
     {:noreply, assign(socket, expanded: expanded)}
   end
@@ -137,11 +161,13 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   # for the automatic forwarding.
 
   @impl true
+  @spec handle_async(any(), any(), Phoenix.LiveView.Socket.t()) :: term()
   def handle_async(:refresh, _result, socket) do
     {:noreply, load_data(socket)}
   end
 
   # Called by parent forwarding PubSub messages
+  @spec refresh(Phoenix.LiveView.Socket.t()) :: term()
   def refresh(socket) do
     load_data(assign(socket, running: false))
   end
@@ -149,6 +175,7 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   # --- Render ---
 
   @impl true
+  @spec render(map()) :: term()
   def render(assigns) do
     ~H"""
     <div class="agent-dashboard" id="agent-dashboard" phx-hook="AgentDashboard">
@@ -158,11 +185,15 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
           phx-click="toggle_expanded"
           phx-target={@myself}
         >
-          <span class={"transition-transform #{if @expanded, do: "rotate-90", else: ""}"}>&#9654;</span>
+          <span class={"transition-transform #{if @expanded, do: "rotate-90", else: ""}"}>
+            &#9654;
+          </span>
           <%= if @session do %>
             <span class="badge badge-primary badge-sm">{@agent_name}</span>
             <span class="opacity-70 truncate">{@session.task_description || @summary}</span>
-            <span class={"badge badge-sm #{session_status_badge(@session.status)}"}>{@session.status}</span>
+            <span class={"badge badge-sm #{session_status_badge(@session.status)}"}>
+              {@session.status}
+            </span>
           <% else %>
             <span class="badge badge-primary badge-sm">Agent</span>
             <span class="opacity-70 truncate">{@summary}</span>
@@ -187,7 +218,11 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
                   phx-change="update_input"
                   phx-target={@myself}
                 >{@task_input}</textarea>
-                <button type="submit" class="btn btn-sm btn-ghost self-end" disabled={@task_input == ""}>
+                <button
+                  type="submit"
+                  class="btn btn-sm btn-ghost self-end"
+                  disabled={@task_input == ""}
+                >
                   Log
                 </button>
               </form>
@@ -209,7 +244,11 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
                 phx-change="update_input"
                 phx-target={@myself}
               >{@task_input}</textarea>
-              <button type="submit" class="btn btn-sm btn-primary self-end" disabled={@task_input == ""}>
+              <button
+                type="submit"
+                class="btn btn-sm btn-primary self-end"
+                disabled={@task_input == ""}
+              >
                 Start
               </button>
             </form>
@@ -229,10 +268,18 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
                 <% end %>
                 <%= if @task.status == "in_progress" do %>
                   <div class="flex gap-2 mt-3">
-                    <button phx-click="approve_task" phx-target={@myself} class="btn btn-xs btn-success">
+                    <button
+                      phx-click="approve_task"
+                      phx-target={@myself}
+                      class="btn btn-xs btn-success"
+                    >
                       Approve Plan
                     </button>
-                    <button phx-click="complete_task" phx-target={@myself} class="btn btn-xs btn-ghost">
+                    <button
+                      phx-click="complete_task"
+                      phx-target={@myself}
+                      class="btn btn-xs btn-ghost"
+                    >
                       Complete
                     </button>
                   </div>
@@ -251,7 +298,11 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
                 <table class="table table-xs">
                   <tbody>
                     <%= for file <- @files do %>
-                      <tr class="hover cursor-pointer" phx-click="open_file" phx-value-path={file.path}>
+                      <tr
+                        class="hover cursor-pointer"
+                        phx-click="open_file"
+                        phx-value-path={file.path}
+                      >
                         <td>
                           <span class={"badge badge-xs #{file_type_badge(file.type)}"}>
                             {file.type}
@@ -287,7 +338,9 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
       session: nil,
       recent_requests: [],
       agent_name: "claude-code",
-      running: task != nil and to_string(task.status) == "in_progress" and AgentDashboard.active_session() != nil
+      running:
+        task != nil and to_string(task.status) == "in_progress" and
+          AgentDashboard.active_session() != nil
     )
   end
 

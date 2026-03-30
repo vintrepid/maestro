@@ -1,4 +1,7 @@
 defmodule Maestro.Resources.Resource do
+  @moduledoc """
+  Resource resource.
+  """
   use Ash.Resource,
     domain: Maestro.Resources,
     data_layer: AshPostgres.DataLayer
@@ -6,6 +9,48 @@ defmodule Maestro.Resources.Resource do
   postgres do
     table "resources"
     repo Maestro.Repo
+  end
+
+  code_interface do
+    define :create
+    define :read
+    define :update
+    define :destroy
+    define :by_id, get_by: [:id], action: :read
+  end
+
+  actions do
+    defaults [:read, :destroy]
+
+    create :create do
+      accept [
+        :title,
+        :description,
+        :resource_type,
+        :url,
+        :file_path,
+        :content,
+        :thumbnail_url,
+        :platform,
+        :metadata,
+        :owner_type,
+        :owner_id
+      ]
+    end
+
+    update :update do
+      accept [
+        :title,
+        :description,
+        :resource_type,
+        :url,
+        :file_path,
+        :content,
+        :thumbnail_url,
+        :platform,
+        :metadata
+      ]
+    end
   end
 
   attributes do
@@ -56,27 +101,5 @@ defmodule Maestro.Resources.Resource do
       source_attribute_on_join_resource :resource_id
       destination_attribute_on_join_resource :tag_id
     end
-  end
-
-  actions do
-    defaults [:read, :destroy]
-
-    create :create do
-      accept [:title, :description, :resource_type, :url, :file_path, :content, 
-              :thumbnail_url, :platform, :metadata, :owner_type, :owner_id]
-    end
-
-    update :update do
-      accept [:title, :description, :resource_type, :url, :file_path, :content,
-              :thumbnail_url, :platform, :metadata]
-    end
-  end
-
-  code_interface do
-    define :create
-    define :read
-    define :update
-    define :destroy
-    define :by_id, get_by: [:id], action: :read
   end
 end

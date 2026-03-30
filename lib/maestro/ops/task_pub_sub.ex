@@ -11,9 +11,11 @@ defmodule Maestro.Ops.TaskPubSub do
 
   @topic "tasks"
 
+  @spec topic() :: term()
   def topic, do: @topic
 
   @impl true
+  @spec notify(struct()) :: term()
   def notify(%Ash.Notifier.Notification{resource: Maestro.Ops.Task} = notification) do
     if Process.whereis(Maestro.PubSub) do
       Phoenix.PubSub.broadcast(

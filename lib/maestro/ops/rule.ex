@@ -1,4 +1,7 @@
 defmodule Maestro.Ops.Rule do
+  @moduledoc """
+  Rule resource.
+  """
   use Ash.Resource,
     otp_app: :maestro,
     domain: Maestro.Ops,
@@ -10,39 +13,99 @@ defmodule Maestro.Ops.Rule do
     repo Maestro.Repo
   end
 
+  code_interface do
+    define :create
+    define :read
+    define :update
+    define :propose
+    define :approve
+    define :retire
+    define :destroy
+    define :approved
+    define :proposed
+    define :mark_linter
+    define :mark_anti_pattern
+    define :reset_to_proposed
+    define :linter
+    define :by_content_hash, args: [:content_hash]
+    define :by_id, get_by: [:id], action: :read
+    define :by_bundle, args: [:bundle]
+    define :supersede
+  end
+
   actions do
     defaults [:read, :destroy]
 
     create :create do
       primary? true
+
       accept [
-        :content, :content_hash, :category, :severity, :source_project_slug,
-        :source_commit, :source_context, :applies_to, :tags,
-        :library_id, :rule_source_id
+        :content,
+        :content_hash,
+        :category,
+        :severity,
+        :source_project_slug,
+        :source_commit,
+        :source_context,
+        :applies_to,
+        :tags,
+        :library_id,
+        :rule_source_id
       ]
+
       change set_attribute(:status, :proposed)
       change Maestro.Ops.Rule.Changes.ComputeContentHash
     end
 
     create :propose do
       accept [
-        :content, :content_hash, :category, :severity, :source_project_slug,
-        :source_commit, :source_context, :applies_to, :tags,
-        :library_id, :rule_source_id
+        :content,
+        :content_hash,
+        :category,
+        :severity,
+        :source_project_slug,
+        :source_commit,
+        :source_context,
+        :applies_to,
+        :tags,
+        :library_id,
+        :rule_source_id
       ]
+
       change set_attribute(:status, :proposed)
       change Maestro.Ops.Rule.Changes.ComputeContentHash
     end
 
     update :update do
       primary? true
+
       accept [
-        :content, :category, :severity, :source_project_slug,
-        :source_commit, :source_context, :applies_to, :tags,
-        :library_id, :rule_source_id, :content_hash,
-        :fix_type, :fix_template, :fix_target, :fix_search,
-        :notes, :priority, :bundle
+        :content,
+        :category,
+        :severity,
+        :source_project_slug,
+        :source_commit,
+        :source_context,
+        :applies_to,
+        :tags,
+        :library_id,
+        :rule_source_id,
+        :content_hash,
+        :fix_type,
+        :fix_template,
+        :fix_target,
+        :fix_search,
+        :notes,
+        :priority,
+        :bundle,
+        :superseded_by_id
       ]
+    end
+
+    update :supersede do
+      accept [:superseded_by_id]
+      change set_attribute(:status, :retired)
+      change set_attribute(:retired_at, &DateTime.utc_now/0)
     end
 
     update :approve do
@@ -58,7 +121,15 @@ defmodule Maestro.Ops.Rule do
     end
 
     update :mark_linter do
-      accept [:lint_pattern, :lint_file_types, :lint_message, :lint_exclude_paths, :lint_only_paths]
+      accept [
+        :lint_config,
+        :lint_pattern,
+        :lint_file_types,
+        :lint_message,
+        :lint_exclude_paths,
+        :lint_only_paths
+      ]
+
       change set_attribute(:status, :linter)
     end
 
@@ -82,7 +153,7 @@ defmodule Maestro.Ops.Rule do
     end
 
     read :linter do
-      filter expr(status == :linter and not is_nil(lint_pattern))
+      filter expr(status == :linter and (not is_nil(lint_pattern) or not is_nil(lint_config)))
     end
 
     read :by_category do
@@ -97,10 +168,11 @@ defmodule Maestro.Ops.Rule do
 
     read :for_project do
       argument :project_type, :string, allow_nil?: false
+
       filter expr(
-        status == :approved and
-        (contains(applies_to, "all") or contains(applies_to, ^arg(:project_type)))
-      )
+               status == :approved and
+                 (contains(applies_to, "all") or contains(applies_to, ^arg(:project_type)))
+             )
     end
 
     read :by_bundle do
@@ -127,10 +199,21 @@ defmodule Maestro.Ops.Rule do
 
     attribute :category, :atom do
       constraints one_of: [
-        :architecture, :liveview, :ash, :heex, :css,
-        :elixir, :testing, :deployment, :pubsub, :forms,
-        :components, :routing, :security
-      ]
+                    :architecture,
+                    :liveview,
+                    :ash,
+                    :heex,
+                    :css,
+                    :elixir,
+                    :testing,
+                    :deployment,
+                    :pubsub,
+                    :forms,
+                    :components,
+                    :routing,
+                    :security
+                  ]
+
       allow_nil? false
       public? true
     end
@@ -193,6 +276,12 @@ defmodule Maestro.Ops.Rule do
       description "SHA256 of normalized content for deduplication"
     end
 
+    attribute :superseded_by_id, :uuid do
+      public? true
+      allow_nil? true
+      description "ID of the rule that supersedes/replaces this one"
+    end
+
     attribute :retired_reason, :string do
       public? true
     end
@@ -202,61 +291,40 @@ defmodule Maestro.Ops.Rule do
       description "Curator notes — freeform comments during review"
     end
 
-    attribute :lint_pattern, :string do
+    attribute :lint_config, Maestro.Ops.Rule.LintConfig do
       public? true
-      description "Regex pattern for linter checks (stored as string, compiled at runtime)"
+      description "Linter configuration (pattern, file types, paths)"
     end
 
-    attribute :lint_file_types, {:array, :string} do
-      default []
+    attribute :fix_config, Maestro.Ops.Rule.FixConfig do
       public? true
-      description "File types to check: ex, heex"
+      description "Auto-fix configuration (strategy, template, target)"
     end
 
-    attribute :lint_message, :string do
-      public? true
-      description "Message shown when the lint pattern matches"
-    end
-
-    attribute :lint_exclude_paths, {:array, :string} do
-      default []
-      public? true
-      description "Path substrings to exclude from this check"
-    end
-
-    attribute :lint_only_paths, {:array, :string} do
-      default []
-      public? true
-      description "If non-empty, only check files matching these path substrings"
-    end
+    # Deprecated: kept for migration compatibility, will be removed
+    attribute :lint_pattern, :string, public?: true
+    attribute :lint_file_types, {:array, :string}, default: [], public?: true
+    attribute :lint_message, :string, public?: true
+    attribute :lint_exclude_paths, {:array, :string}, default: [], public?: true
+    attribute :lint_only_paths, {:array, :string}, default: [], public?: true
 
     attribute :fix_type, :atom do
       constraints one_of: [
-        :add_callback,       # Add a function/callback if missing (e.g. handle_params)
-        :add_to_mount,       # Add code to mount function (e.g. PubSub subscribe)
-        :extract_css,        # Move inline Tailwind utilities to semantic CSS
-        :replace_pattern,    # Replace one code pattern with another
-        :remove_pattern,     # Remove matching code (e.g. embedded <script>)
-        :wrap_pattern        # Wrap existing code with additional code
-      ]
+                    :add_callback,
+                    :add_to_mount,
+                    :add_spec,
+                    :extract_css,
+                    :replace_pattern,
+                    :remove_pattern,
+                    :wrap_pattern
+                  ]
+
       public? true
-      description "Strategy for auto-fixing violations of this rule"
     end
 
-    attribute :fix_template, :string do
-      public? true
-      description "Fix content: the code to add, the replacement, or the CSS class name"
-    end
-
-    attribute :fix_target, :string do
-      public? true
-      description "Where to apply: callback name, mount, template, css, or a regex match target"
-    end
-
-    attribute :fix_search, :string do
-      public? true
-      description "Regex pattern to find what needs fixing (for replace/remove/wrap)"
-    end
+    attribute :fix_template, :string, public?: true
+    attribute :fix_target, :string, public?: true
+    attribute :fix_search, :string, public?: true
 
     attribute :approved_at, :utc_datetime_usec do
       public? true
@@ -280,24 +348,18 @@ defmodule Maestro.Ops.Rule do
       public? true
       allow_nil? true
     end
-  end
 
-  code_interface do
-    define :create
-    define :read
-    define :update
-    define :propose
-    define :approve
-    define :retire
-    define :destroy
-    define :approved
-    define :proposed
-    define :mark_linter
-    define :mark_anti_pattern
-    define :reset_to_proposed
-    define :linter
-    define :by_content_hash, args: [:content_hash]
-    define :by_id, get_by: [:id], action: :read
-    define :by_bundle, args: [:bundle]
+    belongs_to :superseded_by, Maestro.Ops.Rule do
+      public? true
+      allow_nil? true
+      define_attribute? false
+      destination_attribute :id
+      source_attribute :superseded_by_id
+    end
+
+    has_many :supersedes, Maestro.Ops.Rule do
+      public? true
+      destination_attribute :superseded_by_id
+    end
   end
 end

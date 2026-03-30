@@ -11,11 +11,12 @@ defmodule Maestro.Repo.Migrations.CreateFeatureFlagsTables do
     end
 
     create index(:fun_with_flags_toggles, [:flag_name])
+
     create unique_index(
-      :fun_with_flags_toggles,
-      [:flag_name, :gate_type, :target],
-      name: :fwf_flag_name_gate_target_idx
-    )
+             :fun_with_flags_toggles,
+             [:flag_name, :gate_type, :target],
+             name: :fwf_flag_name_gate_target_idx
+           )
   end
 
   def down do

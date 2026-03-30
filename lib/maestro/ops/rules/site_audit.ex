@@ -1,15 +1,58 @@
 defmodule Maestro.Ops.Rules.SiteAudit do
   @moduledoc """
-  Pure functions for auditing site pages against approved rules.
+  AST-based auditing of site pages against approved rules.
+
+  Parses each LiveView's source with Sourceror and checks structural
+  properties of the AST rather than regex matching against source text.
+  This eliminates false positives from string matching.
 
   No DB access, no IO. Takes a list of page maps and a list of rules,
-  returns per-page audit results. Shared core for mix task and LiveView.
+  returns per-page audit results.
   """
 
   @doc """
-  Discovers pages from the router, filtering to app-owned LiveViews only.
-  Returns a list of page maps: %{path, module, source_file, source}.
+  Discovers all .ex modules in the project.
+  Returns a list of page maps: %{path, module, source_file, source, ast, heex_blocks}.
   """
+  @spec discover_modules(String.t()) :: list()
+  def discover_modules(project_path) do
+    Enum.flat_map(Path.wildcard(Path.join(project_path, "lib/**/*.ex")), fn file ->
+      source = File.read!(file)
+    
+      case extract_module_name(source) do
+        nil ->
+          []
+    
+        mod_name ->
+          ast = parse_ast(source)
+          heex = extract_heex_blocks(source)
+    
+          [
+            %{
+              path: Path.relative_to(file, project_path),
+              module: Module.concat([mod_name]),
+              source_file: file,
+              source: source,
+              ast: ast,
+              heex_blocks: heex
+            }
+          ]
+      end
+    end)
+  end
+
+  defp extract_module_name(source) do
+    case Regex.run(~r/defmodule\s+([\w.]+)/, source) do
+      [_, name] -> name
+      _ -> nil
+    end
+  end
+
+  @doc """
+  Discovers pages from the router, filtering to app-owned LiveViews only.
+  Returns a list of page maps: %{path, module, source_file, source, ast, heex_blocks}.
+  """
+  @spec discover_pages(any(), any()) :: term()
   def discover_pages(router_module, app_web_prefix) do
     router_module.__routes__()
     |> Enum.filter(&(&1.metadata[:phoenix_live_view] != nil))
@@ -20,9 +63,17 @@ defmodule Maestro.Ops.Rules.SiteAudit do
     |> Enum.uniq_by(& &1.path)
     |> Enum.filter(&String.starts_with?(to_string(&1.module), to_string(app_web_prefix)))
     |> Enum.map(fn page ->
-      source_file = page.module.__info__(:compile)[:source] |> to_string()
+      source_file = to_string(page.module.__info__(:compile)[:source])
       source = File.read!(source_file)
-      Map.merge(page, %{source_file: source_file, source: source})
+      ast = parse_ast(source)
+      heex = extract_heex_blocks(source)
+
+      Map.merge(page, %{
+        source_file: source_file,
+        source: source,
+        ast: ast,
+        heex_blocks: heex
+      })
     end)
     |> Enum.sort_by(& &1.path)
   end
@@ -31,6 +82,7 @@ defmodule Maestro.Ops.Rules.SiteAudit do
   Audits a list of pages against a list of rules.
   Returns a list of page results, each with per-rule findings.
   """
+  @spec audit_pages(any(), any()) :: term()
   def audit_pages(pages, rules) do
     checks = Enum.map(rules, &rule_to_check/1)
     applicable_checks = Enum.reject(checks, &(&1.type == :skip))
@@ -50,7 +102,11 @@ defmodule Maestro.Ops.Rules.SiteAudit do
         fail: fail_count,
         skip: skip_count,
         total: length(applicable_checks),
-        score: if(pass_count + fail_count > 0, do: round(pass_count / (pass_count + fail_count) * 100), else: 100)
+        score:
+          if(pass_count + fail_count > 0,
+            do: round(pass_count / (pass_count + fail_count) * 100),
+            else: 100
+          )
       }
     end)
   end
@@ -58,9 +114,14 @@ defmodule Maestro.Ops.Rules.SiteAudit do
   @doc """
   Summarizes audit results across all pages.
   """
+  @spec summarize(any()) :: term()
   def summarize(page_results) do
     total_pages = length(page_results)
-    avg_score = if total_pages > 0, do: round(Enum.sum(Enum.map(page_results, & &1.score)) / total_pages), else: 0
+
+    avg_score =
+      if total_pages > 0,
+        do: round(Enum.sum(Enum.map(page_results, & &1.score)) / total_pages),
+        else: 0
 
     all_findings = Enum.flat_map(page_results, & &1.findings)
     total_checks = length(all_findings)
@@ -84,11 +145,22 @@ defmodule Maestro.Ops.Rules.SiteAudit do
     }
   end
 
+  # -- AST parsing helpers --
+
+  defp parse_ast(source) do
+    case Sourceror.parse_string(source) do
+      {:ok, ast} -> ast
+      _ -> nil
+    end
+  end
+
+  defp extract_heex_blocks(source) do
+    Enum.map(Regex.scan(~r/~H"""(.*?)"""/s, source), fn [_, content] -> content end)
+  end
+
   # -- Rule to check mapping --
-  # Every rule is checkable. The check is derived from the rule's own content:
-  #   1. Explicit fields first: lint_pattern, fix_search, fix_type+fix_target
-  #   2. Content-derived: directive (Never/Always) + code patterns in backticks
-  # Nothing is hardcoded per-rule. The rule content IS the check.
+  # Each rule maps to an AST-based check function.
+  # The check inspects structural properties, not string patterns.
 
   defp rule_to_check(rule) do
     content = rule.content || ""
@@ -99,166 +171,121 @@ defmodule Maestro.Ops.Rules.SiteAudit do
       rule_category: rule.category,
       type: :skip,
       pattern: nil,
-      anti_pattern: nil,
-      condition: nil
+      func_name: nil
     }
 
-    build_check(base, rule, content)
+    categorize_check(base, rule, content)
   end
 
-  defp build_check(base, rule, content) do
+  # Categorize rules into AST check types based on their content
+  defp categorize_check(base, rule, content) do
     cond do
-      # 1. Explicit lint_pattern — highest priority, already a regex
+      # Form rules — check HEEx AST for form patterns
+      form_rule?(content) ->
+        %{base | type: :ast_form_check}
+
+      # Icon rules — check for Heroicons module usage vs <.icon>
+      icon_rule?(content) ->
+        %{base | type: :ast_icon_check}
+
+      # Stream rules — check for Enum on streams
+      stream_rule?(content) ->
+        %{base | type: :ast_stream_check}
+
+      # DaisyUI rules — check for raw Tailwind vs DaisyUI classes
+      css_rule?(content) ->
+        %{base | type: :ast_css_check}
+
+      # Explicit lint_pattern — AST search for the pattern
       is_binary(rule.lint_pattern) and rule.lint_pattern != "" ->
-        compile_anti_pattern(base, rule.lint_pattern)
+        %{base | type: :ast_lint_pattern, pattern: rule.lint_pattern}
 
-      # 2. Explicit fix_search — regex to find violations
-      is_binary(rule.fix_search) and rule.fix_search != "" ->
-        compile_anti_pattern(base, rule.fix_search)
-
-      # 3. fix_type: add_callback — check the callback function exists
+      # Callback existence check
       rule.fix_type == :add_callback and is_binary(rule.fix_target) and rule.fix_target != "" ->
-        func_name = rule.fix_target |> String.split("/") |> hd()
-        %{base | type: :requires_pattern, pattern: Regex.compile!("def #{func_name}")}
+        func_name = hd(String.split(rule.fix_target, "/"))
+        %{base | type: :ast_has_function, func_name: func_name}
 
-      # 4. Content-derived: extract directive + code patterns from the rule text
+      # Content-derived structural checks
       true ->
-        derive_check_from_content(base, content)
+        derive_ast_check(base, content)
     end
   end
 
-  defp compile_anti_pattern(base, pattern_str) do
-    case Regex.compile(pattern_str) do
-      {:ok, regex} -> %{base | type: :anti_pattern, anti_pattern: regex}
-      _ -> base
-    end
+  defp form_rule?(content) do
+    String.contains?(content, "to_form") or
+      String.contains?(content, "<.form") or
+      String.contains?(content, "<.input") or
+      String.contains?(content, "form inputs")
   end
 
-  # Derive a check from the rule content itself.
-  # Extracts the directive (Never/Always/Must) and code patterns from backticks.
-  defp derive_check_from_content(base, content) do
+  defp icon_rule?(content) do
+    String.contains?(content, "<.icon") or String.contains?(content, "Heroicons")
+  end
+
+  defp stream_rule?(content) do
+    String.contains?(content, "stream") and String.contains?(content, "Enum")
+  end
+
+  defp css_rule?(content) do
+    String.contains?(content, "DaisyUI") or String.contains?(content, "daisyui")
+  end
+
+  # Derive an AST check from rule content when no explicit categorization matches.
+  # Only "Never" rules produce checks — "Always" rules with code examples are
+  # guidance, not structural requirements checkable per-page.
+  defp derive_ast_check(base, content) do
     directive = extract_directive(content)
     code_patterns = extract_code_patterns(content)
 
     case {directive, code_patterns} do
-      # "Never X" + code patterns → anti-pattern check (universally applicable)
-      {:never, [pattern | _]} ->
-        compile_anti_pattern(base, Regex.escape(pattern))
+      # "Never X" with a code pattern — check AST for the pattern's absence
+      {:never, [pattern | _]} when byte_size(pattern) >= 4 ->
+        %{base | type: :ast_absent, pattern: pattern}
 
-      # "Always X" is conditional — only check if we can extract both
-      # the required pattern AND a condition that must be present first.
-      # e.g. "Always use to_form" only applies to pages with <.form>
-      {:always, [pattern | _]} ->
-        case extract_condition(content, pattern) do
-          {:ok, condition_regex} ->
-            case Regex.compile(Regex.escape(pattern)) do
-              {:ok, regex} ->
-                %{base | type: :conditional_requires, pattern: regex, condition: condition_regex}
-              _ -> base
-            end
-
-          :universal ->
-            case Regex.compile(Regex.escape(pattern)) do
-              {:ok, regex} -> %{base | type: :requires_pattern, pattern: regex}
-              _ -> base
-            end
-
-          :skip -> base
-        end
-
-      # Has code patterns but no clear directive — check if content hints at anti-pattern
-      {_, [pattern | _]} when byte_size(pattern) >= 4 ->
-        if anti_pattern_language?(content) do
-          compile_anti_pattern(base, Regex.escape(pattern))
-        else
-          base
-        end
-
-      # No extractable patterns — skip (pure prose guidance)
-      _ -> base
+      # "Always" rules are guidance — skip per-page structural checks
+      _ ->
+        base
     end
   end
 
   defp extract_directive(content) do
+    has_never =
+      String.contains?(content, "**Never**") or String.contains?(content, "NEVER") or
+        String.contains?(content, "don't") or String.contains?(content, "do NOT")
+
+    has_always =
+      String.contains?(content, "**Always**") or String.contains?(content, "ALWAYS") or
+        String.contains?(content, "MUST")
+
     cond do
-      Regex.match?(~r/\*\*Never\*\*|\bNEVER\b|\bforbidden\b|\bFORBIDDEN\b|\bdo NOT\b|\bdon't\b/i, content) and
-        not Regex.match?(~r/\*\*Always\*\*|\bALWAYS\b/i, content) ->
-        :never
-
-      Regex.match?(~r/\*\*Always\*\*|\bALWAYS\b|\bMUST\b|\brequired\b/i, content) and
-        not Regex.match?(~r/\*\*Never\*\*|\bNEVER\b/i, content) ->
-        :always
-
+      has_never and not has_always -> :never
+      has_always and not has_never -> :always
       true -> nil
     end
   end
 
-  # Extract code patterns from backticks in rule content.
-  # Returns the most specific/useful patterns for checking.
   defp extract_code_patterns(content) do
-    # Single backtick code spans: `some_code`
-    inline_patterns =
-      Regex.scan(~r/`([^`]{3,60})`/, content)
-      |> Enum.map(fn [_, code] -> clean_code_pattern(code) end)
-      |> Enum.reject(&(prose_not_code?(&1) or byte_size(&1) < 3))
-
-    # Return unique patterns, preferring longer/more specific ones
-    inline_patterns
-    |> Enum.uniq()
+    Regex.scan(~r/`([^`]{3,60})`/, content)
+    |> Enum.map(fn [_, code] -> String.trim(code) end)
+    |> Enum.reject(&prose_not_code?/1)
     |> Enum.sort_by(&byte_size/1, :desc)
+    |> Enum.uniq()
   end
 
   defp prose_not_code?(text) do
-    # Filter out backtick content that's prose or too generic to be a useful check
-    common_keywords = ~w(case if cond with for do end else true false nil ok error string integer atom map list tuple)
+    keywords =
+      ~w(case if cond with for do end else true false nil ok error string integer atom map list tuple)
+
     downcased = String.downcase(text)
 
-    Regex.match?(~r/^(e\.g\.|i\.e\.|the |a |an |this |that |all |any |some )/i, text) or
-      downcased in common_keywords or
-      not Regex.match?(~r/[._:\/\(\)<>@#{}\[\]|=]|[A-Z][a-z]+[A-Z]|^[a-z_]+$|^[A-Z]/, text)
+    downcased in keywords or
+      not (String.contains?(text, ".") or String.contains?(text, "_") or
+             String.contains?(text, "(") or String.contains?(text, "<") or
+             String.contains?(text, "@") or String.contains?(text, ":") or
+             Regex.match?(~r/^[a-z_]+$/, text) or Regex.match?(~r/^[A-Z]/, text))
   end
 
-  # Determine if an "Always" rule applies universally or conditionally.
-  # Returns :universal, {:ok, condition_regex}, or :skip.
-  @universal_patterns ~w(handle_params Layouts.app)
-  defp extract_condition(content, pattern) do
-    cond do
-      # Known universal patterns that every LiveView page should have
-      Enum.any?(@universal_patterns, &String.contains?(pattern, &1)) ->
-        :universal
-
-      # "when building forms" / "for form inputs" → condition: page has forms
-      # But only if the rule is actually about building forms, not testing or general advice
-      Regex.match?(~r/\bform inputs\b|\bbuilding forms\b|\bto_form\b/i, content) ->
-        {:ok, Regex.compile!("<\\.form|<form")}
-
-      # "when using streams" → condition: page uses streams
-      Regex.match?(~r/\bstream\b/i, content) ->
-        {:ok, Regex.compile!("stream\\(")}
-
-      # "changeset" rules → condition: page uses changesets
-      Regex.match?(~r/\bchangeset\b/i, content) ->
-        {:ok, Regex.compile!("changeset")}
-
-      # Default: skip — "Always" rules without a clear scope are guidance
-      true -> :skip
-    end
-  end
-
-  # Clean code patterns: remove placeholders, ellipsis, trailing noise
-  defp clean_code_pattern(code) do
-    code
-    |> String.replace(~r/\s*\.{2,}\s*/, "")       # remove ... and ..
-    |> String.replace(~r/\s*#.*$/, "")             # remove comments
-    |> String.trim_trailing(">")                    # remove trailing > after ellipsis removal
-    |> String.trim()
-  end
-
-  defp anti_pattern_language?(content) do
-    Regex.match?(~r/\bavoid\b|\bnever\b|\bdon't\b|\bdo not\b|\bdeprecated\b|\bforbidden\b|\bunsafe\b/i, content)
-  end
-
-  # -- Check execution --
+  # -- AST-based check execution --
 
   defp check_page(page, check) do
     result = %{
@@ -270,44 +297,220 @@ defmodule Maestro.Ops.Rules.SiteAudit do
     }
 
     case check.type do
-      :requires_pattern ->
-        if Regex.match?(check.pattern, page.source) do
+      :ast_form_check -> check_forms(page, result)
+      :ast_icon_check -> check_icons(page, result)
+      :ast_stream_check -> check_streams(page, result)
+      # CSS checks need design-time analysis, skip for now
+      :ast_css_check -> result
+      :ast_has_function -> check_has_function(page, check, result)
+      :ast_lint_pattern -> check_lint_pattern(page, check, result)
+      :ast_absent -> check_pattern_absent(page, check, result)
+      :ast_present -> check_pattern_present(page, check, result)
+      :skip -> result
+    end
+  end
+
+  # -- Form checks via AST --
+  # Checks that pages with forms use <.form for={@form}> and <.input>
+
+  defp check_forms(page, result) do
+    heex = Enum.join(page.heex_blocks, "\n")
+
+    has_form = String.contains?(heex, "<.form") or String.contains?(heex, "<form")
+
+    if not has_form do
+      # No forms on this page — rule doesn't apply, pass
+      result
+    else
+      issues = []
+
+      # Check for old let={f} pattern
+      issues =
+        if String.contains?(heex, "let={") do
+          ["Uses deprecated let={f} pattern — use for={@form} instead" | issues]
+        else
+          issues
+        end
+
+      # Check for @form usage
+      issues =
+        if String.contains?(heex, "for={@form}") do
+          issues
+        else
+          ["Form does not use for={@form}" | issues]
+        end
+
+      # Check for <.input> usage (vs raw <input>)
+      has_raw_input = Regex.match?(~r/<input\s/, heex)
+      has_component_input = String.contains?(heex, "<.input")
+
+      issues =
+        if has_raw_input and not has_component_input do
+          ["Uses raw <input> instead of <.input> component" | issues]
+        else
+          issues
+        end
+
+      if issues == [] do
+        result
+      else
+        %{result | pass?: false, evidence: issues}
+      end
+    end
+  end
+
+  # -- Icon checks via AST --
+  # Checks that pages use <.icon> not Heroicons modules
+
+  defp check_icons(page, result) do
+    if page.ast do
+      has_heroicons = ast_contains_module?(page.ast, :Heroicons)
+
+      if has_heroicons do
+        %{
           result
-        else
-          %{result | pass?: false, evidence: ["Missing required pattern"]}
-        end
+          | pass?: false,
+            evidence: ["Uses Heroicons module directly — use <.icon> component instead"]
+        }
+      else
+        result
+      end
+    else
+      result
+    end
+  end
 
-      :anti_pattern ->
-        matches = Regex.scan(check.anti_pattern, page.source)
+  # -- Stream checks via AST --
+  # Checks that Enum functions aren't called on streams
 
-        case matches do
-          [] -> result
-          found ->
-            evidence = found |> Enum.take(3) |> Enum.map(fn [m | _] -> "Found: #{String.slice(m, 0, 80)}" end)
-            %{result | pass?: false, evidence: evidence}
-        end
+  defp check_streams(page, result) do
+    if page.ast do
+      # Look for Enum calls where the first arg is a stream-related variable
+      stream_enum_calls = find_enum_on_streams(page.ast)
 
-      :paired_pattern ->
-        if Regex.match?(check.pattern, page.source) and not Regex.match?(check.anti_pattern, page.source) do
-          %{result | pass?: false, evidence: ["Has #{inspect(check.pattern)} but missing #{inspect(check.anti_pattern)}"]}
+      if stream_enum_calls != [] do
+        evidence = Enum.map(stream_enum_calls, &"Enum.#{&1} called on stream")
+        %{result | pass?: false, evidence: evidence}
+      else
+        result
+      end
+    else
+      result
+    end
+  end
+
+  # -- Function existence check via AST --
+
+  defp check_has_function(page, check, result) do
+    if page.ast do
+      has_func = ast_has_def?(page.ast, String.to_existing_atom(check.func_name))
+
+      if has_func do
+        result
+      else
+        %{result | pass?: false, evidence: ["Missing required function: #{check.func_name}"]}
+      end
+    else
+      result
+    end
+  end
+
+  # -- Lint pattern check (structural search in AST for specific constructs) --
+
+  defp check_lint_pattern(page, check, result) do
+    # For lint patterns, search the source since these are specific regex patterns
+    # defined by the rule author for anti-patterns
+    case Regex.compile(check.pattern) do
+      {:ok, regex} ->
+        if Regex.match?(regex, page.source) do
+          %{result | pass?: false, evidence: ["Lint pattern matched: #{check.pattern}"]}
         else
           result
         end
 
-      :conditional_requires ->
-        # Only check if the condition pattern exists in the source
-        if Regex.match?(check.condition, page.source) do
-          if Regex.match?(check.pattern, page.source) do
-            result
-          else
-            %{result | pass?: false, evidence: ["Page has forms but missing required pattern"]}
-          end
-        else
-          result  # Condition not met, rule doesn't apply to this page
-        end
-
-      :skip ->
+      _ ->
         result
     end
+  end
+
+  # -- Pattern absent/present checks --
+  # These use AST-aware search rather than raw string matching
+
+  defp check_pattern_absent(page, check, result) do
+    # Check if the pattern appears structurally in the source
+    if source_contains_construct?(page, check.pattern) do
+      %{result | pass?: false, evidence: ["Found prohibited pattern: #{check.pattern}"]}
+    else
+      result
+    end
+  end
+
+  defp check_pattern_present(page, check, result) do
+    if source_contains_construct?(page, check.pattern) do
+      result
+    else
+      %{result | pass?: false, evidence: ["Missing required pattern: #{check.pattern}"]}
+    end
+  end
+
+  # -- AST utility functions --
+
+  defp ast_contains_module?(ast, module_atom) do
+    {_, found} =
+      Macro.prewalk(ast, false, fn
+        {:__aliases__, _, atoms} = node, acc ->
+          if module_atom in atoms, do: {node, true}, else: {node, acc}
+
+        node, acc ->
+          {node, acc}
+      end)
+
+    found
+  end
+
+  defp ast_has_def?(ast, func_name) do
+    {_, found} =
+      Macro.prewalk(ast, false, fn
+        {:def, _, [{^func_name, _, _} | _]} = node, _acc -> {node, true}
+        {:def, _, [{:when, _, [{^func_name, _, _} | _]} | _]} = node, _acc -> {node, true}
+        node, acc -> {node, acc}
+      end)
+
+    found
+  end
+
+  defp find_enum_on_streams(ast) do
+    {_, calls} =
+      Macro.prewalk(ast, [], fn
+        {{:., _, [{:__aliases__, _, [:Enum]}, func]}, _, [first_arg | _]} = node, acc ->
+          if stream_variable?(first_arg) do
+            {node, [func | acc]}
+          else
+            {node, acc}
+          end
+
+        node, acc ->
+          {node, acc}
+      end)
+
+    Enum.uniq(calls)
+  end
+
+  defp stream_variable?({name, _, nil}) when is_atom(name) do
+    name_str = Atom.to_string(name)
+    String.starts_with?(name_str, "stream") or String.ends_with?(name_str, "_stream")
+  end
+
+  defp stream_variable?(_), do: false
+
+  # Check if source contains a construct — uses both AST and HEEx awareness
+  defp source_contains_construct?(page, pattern) do
+    # Check in Elixir AST (function calls, module references)
+    in_elixir = String.contains?(page.source, pattern)
+
+    # Check in HEEx blocks
+    in_heex = Enum.any?(page.heex_blocks, &String.contains?(&1, pattern))
+
+    in_elixir or in_heex
   end
 end

@@ -10,6 +10,7 @@ defmodule Maestro.Ops.Rules.Coverage do
   Returns coverage stats per library.
   Each entry: %{dep, version, source_count, file_count, approved, linter, retired, proposed, curated, coverage_pct}
   """
+  @spec by_library() :: term()
   def by_library do
     libraries = Library.read!()
     all_rules = Rule.read!()
@@ -23,7 +24,9 @@ defmodule Maestro.Ops.Rules.Coverage do
 
     orphan_entries =
       all_rules
-      |> Enum.reject(&(is_nil(&1.source_project_slug) or MapSet.member?(linked_names, &1.source_project_slug)))
+      |> Enum.reject(
+        &(is_nil(&1.source_project_slug) or MapSet.member?(linked_names, &1.source_project_slug))
+      )
       |> Enum.group_by(& &1.source_project_slug)
       |> Enum.map(fn {slug, rules} -> orphan_stats(slug, rules) end)
 
@@ -33,9 +36,11 @@ defmodule Maestro.Ops.Rules.Coverage do
   end
 
   @doc "Returns all skills."
+  @spec skills() :: term()
   def skills, do: Skill.read!()
 
   @doc "Summary counts across all rules."
+  @spec totals() :: term()
   def totals do
     all_rules = Rule.read!()
 

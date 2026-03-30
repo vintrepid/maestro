@@ -8,6 +8,7 @@ defmodule MaestroWeb.Live.Helpers.FileOpener do
 
   alias LiveDebugger.App.Debugger.Utils.Editor
 
+  @spec open_file(term()) :: term()
   def open_file(path) when is_binary(path) do
     file_path =
       if Path.type(path) == :absolute,

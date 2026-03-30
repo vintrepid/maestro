@@ -10,6 +10,7 @@ defmodule Maestro.Accounts.User.Senders.SendMagicLinkEmail do
   alias Maestro.Mailer
 
   @impl true
+  @spec send(any(), any(), any()) :: term()
   def send(user_or_email, token, _) do
     # if you get a user, its for a user that already exists.
     # if you get an email, then the user does not yet exist.

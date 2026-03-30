@@ -27,6 +27,7 @@ defmodule Mix.Tasks.Maestro.Rules.Ingest do
   @deps_path "deps"
   @min_rule_length 30
 
+  @spec run([String.t()]) :: :ok
   def run(args) do
     Mix.Task.run("app.start")
 
@@ -48,7 +49,7 @@ defmodule Mix.Tasks.Maestro.Rules.Ingest do
     |> Enum.sort_by(fn {dep, _} -> dep end)
     |> Enum.each(fn {dep, files} ->
       version = get_dep_version(dep)
-      names = Enum.map(files, fn {_, path, _} -> Path.basename(path, ".md") end) |> Enum.join(", ")
+      names = Enum.join(Enum.map(files, fn {_, path, _} -> Path.basename(path, ".md") end), ", ")
       Mix.shell().info("  #{dep} v#{version || "?"} — #{length(files)} file(s): #{names}")
     end)
   end
@@ -58,14 +59,21 @@ defmodule Mix.Tasks.Maestro.Rules.Ingest do
     dep_filter = if opts[:deps], do: String.split(opts[:deps], ","), else: nil
 
     sources = find_all_rule_sources()
-    sources = if dep_filter, do: Enum.filter(sources, fn {dep, _, _} -> dep in dep_filter end), else: sources
 
-    Mix.shell().info("Scanning #{length(sources)} files from #{sources |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> length()} deps...")
+    sources =
+      if dep_filter,
+        do: Enum.filter(sources, fn {dep, _, _} -> dep in dep_filter end),
+        else: sources
+
+    Mix.shell().info(
+      "Scanning #{length(sources)} files from #{sources |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> length()} deps..."
+    )
 
     # Parse all rules from source files
-    candidates = Enum.flat_map(sources, fn {dep, file, category} ->
-      parse_rules_from_file(dep, file, category)
-    end)
+    candidates =
+      Enum.flat_map(sources, fn {dep, file, category} ->
+        parse_rules_from_file(dep, file, category)
+      end)
 
     Mix.shell().info("Found #{length(candidates)} rule candidates")
 
@@ -73,11 +81,14 @@ defmodule Mix.Tasks.Maestro.Rules.Ingest do
     existing = Maestro.Ops.Rule.read!()
     existing_contents = MapSet.new(existing, &normalize(&1.content))
 
-    new_rules = Enum.reject(candidates, fn attrs ->
-      MapSet.member?(existing_contents, normalize(attrs.content))
-    end)
+    new_rules =
+      Enum.reject(candidates, fn attrs ->
+        MapSet.member?(existing_contents, normalize(attrs.content))
+      end)
 
-    Mix.shell().info("#{length(new_rules)} new rules (#{length(candidates) - length(new_rules)} already exist)\n")
+    Mix.shell().info(
+      "#{length(new_rules)} new rules (#{length(candidates) - length(new_rules)} already exist)\n"
+    )
 
     # Summary by source
     new_rules
@@ -93,7 +104,9 @@ defmodule Mix.Tasks.Maestro.Rules.Ingest do
       ok =
         Enum.count(new_rules, fn attrs ->
           case Maestro.Ops.Rule.propose(attrs) do
-            {:ok, _} -> true
+            {:ok, _} ->
+              true
+
             {:error, err} ->
               Mix.shell().error("  Failed: #{inspect(err)}")
               false
@@ -116,17 +129,15 @@ defmodule Mix.Tasks.Maestro.Rules.Ingest do
     deps_dir = Path.expand(@deps_path)
 
     single_files =
-      Path.wildcard(Path.join(deps_dir, "*/usage-rules.md"))
-      |> Enum.map(fn path ->
+      Enum.map(Path.wildcard(Path.join(deps_dir, "*/usage-rules.md")), fn path ->
         dep = path |> Path.dirname() |> Path.basename()
         {dep, path, categorize(dep, nil)}
       end)
 
     sub_files =
-      Path.wildcard(Path.join(deps_dir, "*/usage-rules/*.md"))
-      |> Enum.map(fn path ->
+      Enum.map(Path.wildcard(Path.join(deps_dir, "*/usage-rules/*.md")), fn path ->
         dep = path |> Path.dirname() |> Path.dirname() |> Path.basename()
-        sub = path |> Path.basename(".md")
+        sub = Path.basename(path, ".md")
         {dep, path, categorize(dep, sub)}
       end)
 
@@ -157,7 +168,7 @@ defmodule Mix.Tasks.Maestro.Rules.Ingest do
         source_commit: if(version, do: "v#{version}", else: nil),
         source_context: "#{dep}:#{sub}",
         applies_to: applies_to(dep),
-        tags: [dep, sub] |> Enum.uniq()
+        tags: Enum.uniq([dep, sub])
       }
     end)
   end
@@ -177,8 +188,9 @@ defmodule Mix.Tasks.Maestro.Rules.Ingest do
             {chunks, line}
 
           # Continuation
-          current != nil and (line == "" or String.starts_with?(line, "  ") or
-            String.starts_with?(line, "\t") or String.starts_with?(line, "```")) ->
+          current != nil and
+              (line == "" or String.starts_with?(line, "  ") or
+                 String.starts_with?(line, "\t") or String.starts_with?(line, "```")) ->
             {chunks, current <> "\n" <> line}
 
           true ->
@@ -233,10 +245,14 @@ defmodule Mix.Tasks.Maestro.Rules.Ingest do
 
   defp get_dep_version(dep) do
     mix_exs = Path.join([@deps_path, dep, "mix.exs"])
+
     if File.exists?(mix_exs) do
       content = File.read!(mix_exs)
+
       case Regex.run(~r/@version\s+"([^"]+)"/, content) do
-        [_, v] -> v
+        [_, v] ->
+          v
+
         _ ->
           case Regex.run(~r/version:\s+"([^"]+)"/, content) do
             [_, v] -> v

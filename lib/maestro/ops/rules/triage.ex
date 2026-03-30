@@ -6,7 +6,11 @@ defmodule Maestro.Ops.Rules.Triage do
 
   alias Maestro.Ops.Rules.LintExtractor
 
-  @type decision :: %{status: :approved | :linter | :retired, reason: String.t() | nil, lint: map() | nil}
+  @type decision :: %{
+          status: :approved | :linter | :retired,
+          reason: String.t() | nil,
+          lint: map() | nil
+        }
 
   @doc """
   Classify a rule as :approved, :linter, or :retired based on its content.
@@ -27,8 +31,11 @@ defmodule Maestro.Ops.Rules.Triage do
       approve?(content, len, source) ->
         %{status: :approved}
 
-      len < 80 -> %{status: :retired, reason: "Too short to be actionable"}
-      true -> %{status: :approved}
+      len < 80 ->
+        %{status: :retired, reason: "Too short to be actionable"}
+
+      true ->
+        %{status: :approved}
     end
   end
 
@@ -45,7 +52,10 @@ defmodule Maestro.Ops.Rules.Triage do
       Regex.match?(~r/^- `"[\w_]+"` - \w+ \w+$/, content) ->
         "Theme/style option list item"
 
-      Regex.match?(~r/^- \*\*(Read|Create|Update|Destroy|count|avg|max|min|list|sum|first|exists)\*\*/, content) and len < 80 ->
+      Regex.match?(
+        ~r/^- \*\*(Read|Create|Update|Destroy|count|avg|max|min|list|sum|first|exists)\*\*/,
+        content
+      ) and len < 80 ->
         "Generic action type description"
 
       too_basic?(content) ->
@@ -123,7 +133,11 @@ defmodule Maestro.Ops.Rules.Triage do
 
   @structure_patterns [
     # "**dirname/** - Description" or "**file.md** - Description" or "**path/{var}** - ..."
-    Regex.compile!(@prefix <> ~S"\*\*[^*]+\*\*\s*-\s+(Historical|Contains|Shared|Business|Project|All |Start here|Into \d)", "i"),
+    Regex.compile!(
+      @prefix <>
+        ~S"\*\*[^*]+\*\*\s*-\s+(Historical|Contains|Shared|Business|Project|All |Start here|Into \d)",
+      "i"
+    ),
     # "X contains all Y" / "X contains task info"
     Regex.compile!(@prefix <> ~S"\S+ contains all \S+", "i"),
     # "Organized X/ - Into N clusters"

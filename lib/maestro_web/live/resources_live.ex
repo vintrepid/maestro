@@ -11,16 +11,20 @@ defmodule MaestroWeb.ResourcesLive do
   use Cinder.UrlSync
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
     {:ok, assign(socket, :page_title, "Resources")}
   end
 
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(params, uri, socket) do
     {:noreply, Cinder.UrlSync.handle_params(params, uri, socket)}
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
@@ -48,11 +52,17 @@ defmodule MaestroWeb.ResourcesLive do
             <span class="font-medium">{resource.title}</span>
           </:col>
           <:col :let={resource} field="resource_type" label="Type" sort filter={:select}>
-            <span class={"badge badge-sm #{type_class(resource.resource_type)}"}>{resource.resource_type}</span>
+            <span class={"badge badge-sm #{type_class(resource.resource_type)}"}>
+              {resource.resource_type}
+            </span>
           </:col>
           <:col :let={resource} field="url" sort>
             <%= if resource.url do %>
-              <a href={resource.url} target="_blank" class="link link-primary text-sm truncate max-w-xs block">
+              <a
+                href={resource.url}
+                target="_blank"
+                class="link link-primary text-sm truncate max-w-xs block"
+              >
                 {resource.url}
               </a>
             <% else %>

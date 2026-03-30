@@ -2,22 +2,24 @@ defmodule Maestro.Ops.Rules.Fixer do
   @moduledoc """
   Applies rule fixes to source files using Igniter for AST-based code modification.
 
-  Each fix_type maps to a different Igniter strategy. The Rule carries the fix
-  configuration — the fixer just executes it.
+  Handles two kinds of findings:
+  - **Maestro rule findings** — have a `rule_id` pointing to a Rule with a `fix_type`
+  - **Giulia convention findings** — have `rule_id: nil`, keyed by `rule_category` and evidence pattern
   """
 
   alias Igniter.Code.{Function, Common}
 
   @doc """
-  Applies a rule's fix to a module. Returns {:ok, igniter} or {:error, reason}.
+  Applies a Maestro rule's fix to a module. Returns {:ok, igniter} or {:error, reason}.
   """
+  @spec fix_it(Igniter.t(), map(), module()) :: {:ok, Igniter.t()} | {:error, String.t()}
   def fix_it(igniter, rule, module_name) do
     case rule.fix_type do
       :add_callback -> add_callback(igniter, module_name, rule.fix_target, rule.fix_template)
       :add_to_mount -> add_to_mount(igniter, module_name, rule.fix_template)
-      :extract_css -> {:ok, igniter}  # CSS extraction is text-level, handled separately
-      :replace_pattern -> {:ok, igniter}  # Complex, needs per-case handling
-      :remove_pattern -> {:ok, igniter}  # Complex, needs per-case handling
+      :extract_css -> {:ok, igniter}
+      :replace_pattern -> {:ok, igniter}
+      :remove_pattern -> {:ok, igniter}
       :wrap_pattern -> {:ok, igniter}
       nil -> {:error, "No fix_type set on rule"}
       _ -> {:error, "Unknown fix_type"}
@@ -25,43 +27,429 @@ defmodule Maestro.Ops.Rules.Fixer do
   end
 
   @doc """
-  Applies all fixable rule violations on a page. Returns {:ok, igniter}.
+  Applies all fixable violations on a page result. Handles both Maestro rules and
+  Giulia convention findings. Returns {:ok, igniter}.
   """
+  @spec fix_page(Igniter.t(), map(), map()) :: {:ok, Igniter.t()}
   def fix_page(igniter, page_result, rules_by_id) do
-    fixable_findings =
-      page_result.findings
-      |> Enum.reject(& &1.pass?)
-      |> Enum.filter(fn f ->
+    failed = Enum.reject(page_result.findings, & &1.pass?)
+
+    # 1. Fix Maestro rule findings
+    maestro_fixable =
+      Enum.filter(failed, fn f ->
         rule = rules_by_id[f.rule_id]
         rule && rule.fix_type in [:add_callback]
       end)
 
-    Enum.reduce(fixable_findings, {:ok, igniter}, fn finding, {:ok, ign} ->
-      rule = rules_by_id[finding.rule_id]
-      fix_it(ign, rule, page_result.module)
+    {:ok, igniter} =
+      Enum.reduce(maestro_fixable, {:ok, igniter}, fn finding, {:ok, ign} ->
+        rule = rules_by_id[finding.rule_id]
+        fix_it(ign, rule, page_result.module)
+      end)
+
+    # 2. Fix Giulia convention findings (no rule_id)
+    giulia_fixable =
+      Enum.filter(failed, fn f ->
+        is_nil(f.rule_id) and fixable_giulia_finding?(f)
+      end)
+
+    Enum.reduce(giulia_fixable, {:ok, igniter}, fn finding, {:ok, ign} ->
+      fix_giulia_finding(ign, finding, page_result)
     end)
   end
 
-  # -- Fix strategies --
+  # -- Giulia finding fixes --
 
-  # Add a callback function to a module if it doesn't exist.
+  @giulia_fixable_patterns ["missing_spec", "missing_moduledoc", "single_value_pipe", "runtime_atom_creation"]
+
+  defp fixable_giulia_finding?(finding) do
+    evidence = List.first(finding.evidence || []) || ""
+    Enum.any?(@giulia_fixable_patterns, &String.contains?(evidence, &1))
+  end
+
+  @spec fix_giulia_finding(Igniter.t(), map(), map()) :: {:ok, Igniter.t()}
+  defp fix_giulia_finding(igniter, finding, page_result) do
+    evidence = List.first(finding.evidence || []) || ""
+
+    cond do
+      String.contains?(evidence, "missing_spec") ->
+        add_spec_from_finding(igniter, finding, page_result)
+
+      String.contains?(evidence, "missing_moduledoc") ->
+        add_moduledoc_from_finding(igniter, finding, page_result)
+
+      String.contains?(evidence, "single_value_pipe") ->
+        fix_single_pipe(igniter, finding, page_result)
+
+      String.contains?(evidence, "runtime_atom_creation") ->
+        fix_runtime_atom(igniter, finding, page_result)
+
+      true ->
+        {:ok, igniter}
+    end
+  end
+
+  # Parse "Module.func/arity has no @spec" and generate a stub spec
+  defp add_spec_from_finding(igniter, finding, page_result) do
+    case parse_spec_finding(finding.rule_content) do
+      {:ok, func_name, arity} ->
+        add_spec(igniter, page_result.module, func_name, arity)
+
+      :error ->
+        {:ok, igniter}
+    end
+  end
+
+  defp parse_spec_finding(content) when is_binary(content) do
+    case Regex.run(~r/\.(\w+[!?]?)\/(\d+) has no @spec/, content) do
+      [_, name, arity] ->
+        {:ok, String.to_existing_atom(name), String.to_integer(arity)}
+
+      _ ->
+        :error
+    end
+  end
+
+  defp parse_spec_finding(_), do: :error
+
+  # Insert @spec stub before the function def using Sourceror
+  defp add_spec(igniter, module_name, func_name, arity) do
+    source_file = find_source_file(igniter, module_name)
+
+    if source_file do
+      source = File.read!(source_file)
+
+      if String.contains?(source, "@spec #{func_name}(") do
+        # Already has a spec
+        {:ok, igniter}
+      else
+        params = Enum.join(List.duplicate("term()", arity), ", ")
+        spec_line = "  @spec #{func_name}(#{params}) :: term()"
+
+        # Find the def line and insert spec above it
+        updated =
+          source
+          |> String.split("\n")
+          |> insert_spec_before_def(func_name, arity, spec_line)
+          |> Enum.join("\n")
+
+        if updated != source do
+          File.write!(source_file, updated)
+        end
+
+        {:ok, igniter}
+      end
+    else
+      {:ok, igniter}
+    end
+  end
+
+  defp insert_spec_before_def(lines, func_name, arity, spec_line) do
+    # Match both `def func(` and `def func do` (zero-arity without parens)
+    func_name_escaped = Regex.escape(to_string(func_name))
+    func_with_parens = ~r/^\s*def[p]?\s+#{func_name_escaped}\s*\(/
+    func_no_parens = ~r/^\s*def[p]?\s+#{func_name_escaped}\s*[,\n]|\s*def[p]?\s+#{func_name_escaped}\s+do\b/
+
+    {result, _inserted} =
+      Enum.reduce(lines, {[], false}, fn line, {acc, already_inserted_here} ->
+        matches =
+          not already_inserted_here and
+            not prev_line_is_spec?(acc) and
+            (match_with_arity?(line, func_with_parens, arity) or
+               (arity == 0 and Regex.match?(func_no_parens, line)))
+
+        if matches do
+          {[line, spec_line | acc], true}
+        else
+          {[line | acc], false}
+        end
+      end)
+
+    Enum.reverse(result)
+  end
+
+  defp match_with_arity?(line, pattern, arity) do
+    if Regex.match?(pattern, line) do
+      case Regex.run(~r/\(([^)]*)\)/, line) do
+        [_, ""] -> arity == 0
+        [_, params] -> length(String.split(params, ",")) == arity
+        _ -> true
+      end
+    else
+      false
+    end
+  end
+
+  defp prev_line_is_spec?(acc) do
+    case acc do
+      [prev | _] -> String.contains?(prev, "@spec ")
+      _ -> false
+    end
+  end
+
+  # -- Moduledoc fix --
+
+  # Patterns for modules that get @moduledoc false
+  @internal_patterns [
+    ~r/\.Changes\./,
+    ~r/\.Senders\./,
+    ~r/\.Cldr$/,
+    ~r/\.Mailer$/,
+    ~r/\.Repo$/,
+    ~r/\.Endpoint$/,
+    ~r/\.Router$/,
+    ~r/\.Telemetry$/,
+    ~r/\.Application$/,
+    ~r/\.Secrets$/,
+    ~r/\.AuthOverrides$/,
+    ~r/\.ErrorJSON$/,
+    ~r/\.ErrorHTML$/,
+    ~r/HTML$/,
+    ~r/\.PageController$/
+  ]
+
+  defp add_moduledoc_from_finding(igniter, _finding, page_result) do
+    source_file = find_source_file(igniter, page_result.module)
+
+    if source_file do
+      source = File.read!(source_file)
+
+      if source =~ ~r/@moduledoc/ do
+        {:ok, igniter}
+      else
+        module_name = String.replace_prefix(to_string(page_result.module), "Elixir.", "")
+        doc = generate_moduledoc(module_name, source)
+
+        doc_code =
+          if doc == "false",
+            do: "  @moduledoc false",
+            else: "  @moduledoc \"\"\"\n  #{doc}\n  \"\"\""
+
+        case Igniter.Project.Module.find_and_update_module(
+               igniter,
+               page_result.module,
+               fn zipper ->
+                 {:ok, Common.add_code(zipper, doc_code, placement: :before)}
+               end
+             ) do
+          {:ok, new_ign} -> {:ok, new_ign}
+          _ -> {:ok, igniter}
+        end
+      end
+    else
+      {:ok, igniter}
+    end
+  end
+
+  defp generate_moduledoc(module_name, source) do
+    cond do
+      Enum.any?(@internal_patterns, &Regex.match?(&1, module_name)) ->
+        "false"
+
+      String.starts_with?(module_name, "Mix.Tasks.") ->
+        task_name =
+          module_name
+          |> String.replace("Mix.Tasks.", "")
+          |> Macro.underscore()
+          |> String.replace("/", ".")
+
+        shortdoc =
+          case Regex.run(~r/@shortdoc\s+"([^"]+)"/, source) do
+            [_, doc] -> doc
+            _ -> nil
+          end
+
+        if shortdoc,
+          do: "Mix task `mix #{task_name}` — #{shortdoc}",
+          else: "Mix task `mix #{task_name}`."
+
+      String.contains?(module_name, ".Live.") or String.ends_with?(module_name, "Live") ->
+        page = module_name |> String.split(".") |> List.last() |> String.replace("Live", "")
+        "LiveView for the #{humanize(page)} page."
+
+      String.contains?(module_name, ".Components.") ->
+        component = module_name |> String.split(".") |> List.last()
+        "#{humanize(component)} component."
+
+      String.contains?(module_name, "Controller") ->
+        controller =
+          module_name |> String.split(".") |> List.last() |> String.replace("Controller", "")
+        "Controller for #{humanize(controller)} routes."
+
+      source =~ "use Ash.Domain" ->
+        domain = module_name |> String.split(".") |> List.last()
+        "#{humanize(domain)} domain — Ash resource registry."
+
+      source =~ "use Ash.Resource" ->
+        resource = module_name |> String.split(".") |> List.last()
+        "#{humanize(resource)} resource."
+
+      source =~ "use GenServer" ->
+        name = module_name |> String.split(".") |> List.last()
+        "#{humanize(name)} GenServer."
+
+      true ->
+        name = module_name |> String.split(".") |> List.last()
+        "#{humanize(name)}."
+    end
+  end
+
+  defp humanize(name) do
+    name
+    |> Macro.underscore()
+    |> String.replace("_", " ")
+    |> String.split(" ")
+    |> Enum.map(&String.capitalize/1)
+    |> Enum.join(" ")
+  end
+
+  # -- Single-value pipe fix: `x |> func()` → `func(x)` --
+
+  defp fix_single_pipe(igniter, finding, page_result) do
+    source_file = find_source_file(igniter, page_result.module)
+
+    if source_file do
+      source = File.read!(source_file)
+      patches = collect_single_pipe_patches(source)
+
+      if patches != [] do
+        new_source = Sourceror.patch_string(source, patches)
+        File.write!(source_file, new_source)
+      end
+
+      {:ok, igniter}
+    else
+      {:ok, igniter}
+    end
+  end
+
+  defp collect_single_pipe_patches(source) do
+    case Sourceror.parse_string(source) do
+      {:ok, ast} ->
+        pipe_children = collect_pipe_left_children(ast)
+
+        {_, patches} =
+          Macro.prewalk(ast, [], fn
+            {:|>, _meta, [left, {func, call_meta, args}]} = node, patches ->
+              is_left_of_parent_pipe = MapSet.member?(pipe_children, :erlang.phash2(node))
+              left_is_pipe = match?({:|>, _, _}, left)
+
+              if not left_is_pipe and not is_left_of_parent_pipe do
+                range = Sourceror.get_range(node)
+
+                if range do
+                  new_code = Sourceror.to_string({func, call_meta, [left | args || []]})
+                  {node, [%{range: range, change: new_code} | patches]}
+                else
+                  {node, patches}
+                end
+              else
+                {node, patches}
+              end
+
+            node, patches ->
+              {node, patches}
+          end)
+
+        patches
+
+      _ ->
+        []
+    end
+  end
+
+  defp collect_pipe_left_children(ast) do
+    {_, children} =
+      Macro.prewalk(ast, MapSet.new(), fn
+        {:|>, _meta, [left, _right]} = node, acc ->
+          {node, MapSet.put(acc, :erlang.phash2(left))}
+
+        node, acc ->
+          {node, acc}
+      end)
+
+    children
+  end
+
+  # -- Atom safety fix: `String.to_atom(x)` → `String.to_existing_atom(x)` --
+
+  defp fix_runtime_atom(igniter, _finding, page_result) do
+    source_file = find_source_file(igniter, page_result.module)
+
+    if source_file do
+      source = File.read!(source_file)
+      patches = collect_atom_patches(source)
+
+      if patches != [] do
+        new_source = Sourceror.patch_string(source, patches)
+        File.write!(source_file, new_source)
+      end
+
+      {:ok, igniter}
+    else
+      {:ok, igniter}
+    end
+  end
+
+  defp collect_atom_patches(source) do
+    case Sourceror.parse_string(source) do
+      {:ok, ast} ->
+        {_, patches} =
+          Macro.prewalk(ast, [], fn
+            {{:., dot_meta, [{:__aliases__, alias_meta, [:String]}, :to_atom]}, call_meta, args} =
+                node,
+            patches ->
+              range = Sourceror.get_range(node)
+
+              if range do
+                new_node =
+                  {{:., dot_meta, [{:__aliases__, alias_meta, [:String]}, :to_existing_atom]},
+                   call_meta, args}
+
+                {node, [%{range: range, change: Sourceror.to_string(new_node)} | patches]}
+              else
+                {node, patches}
+              end
+
+            node, patches ->
+              {node, patches}
+          end)
+
+        patches
+
+      _ ->
+        []
+    end
+  end
+
+  defp find_source_file(_igniter, module_name) do
+    # Convert module to expected file path
+    module_str =
+      module_name
+      |> to_string()
+      |> String.replace_prefix("Elixir.", "")
+
+    path =
+      module_str
+      |> Macro.underscore()
+      |> then(&Path.join(["lib", &1 <> ".ex"]))
+
+    if File.exists?(path), do: path, else: nil
+  end
+
+  # -- Maestro rule fix strategies --
+
   defp add_callback(igniter, module_name, target, template) do
     {func_name, arity} = parse_func_ref(target)
 
     Igniter.Project.Module.find_and_update_module(igniter, module_name, fn zipper ->
       case Function.move_to_def(zipper, func_name, arity) do
-        {:ok, _} ->
-          # Already exists
-          {:ok, zipper}
-
-        :error ->
-          # Add the callback at the end of the module body
-          {:ok, Common.add_code(zipper, template, placement: :after)}
+        {:ok, _} -> {:ok, zipper}
+        :error -> {:ok, Common.add_code(zipper, template, placement: :after)}
       end
     end)
   end
 
-  # Add code to the mount function body.
   defp add_to_mount(igniter, module_name, template) do
     Igniter.Project.Module.find_and_update_module(igniter, module_name, fn zipper ->
       case Function.move_to_def(zipper, :mount, 3) do
@@ -69,12 +457,12 @@ defmodule Maestro.Ops.Rules.Fixer do
           case Common.move_to_do_block(zipper) do
             {:ok, zipper} ->
               {:ok, Common.add_code(zipper, template, placement: :before)}
+
             _ ->
               {:ok, zipper}
           end
 
         :error ->
-          # No mount function, skip
           {:ok, zipper}
       end
     end)
@@ -84,8 +472,8 @@ defmodule Maestro.Ops.Rules.Fixer do
 
   defp parse_func_ref(target) when is_binary(target) do
     case String.split(target, "/") do
-      [name, arity] -> {String.to_atom(name), String.to_integer(arity)}
-      [name] -> {String.to_atom(name), :any}
+      [name, arity] -> {String.to_existing_atom(name), String.to_integer(arity)}
+      [name] -> {String.to_existing_atom(name), :any}
     end
   end
 

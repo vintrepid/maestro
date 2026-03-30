@@ -1,7 +1,11 @@
 defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
+  @moduledoc """
+  LiveView for the Component Replacement page.
+  """
   use MaestroWeb, :live_view
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
     examples = [
       %{
@@ -96,6 +100,8 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("select_example", %{"index" => index}, socket) do
     {:noreply,
      socket
@@ -105,6 +111,8 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("select_pattern", %{"index" => index}, socket) do
     {:noreply,
      socket
@@ -114,6 +122,8 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("update_custom_html", %{"html" => html}, socket) do
     {:noreply,
      socket
@@ -123,6 +133,8 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("update_custom_pattern", %{"pattern" => pattern}, socket) do
     {:noreply,
      socket
@@ -132,6 +144,8 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("update_custom_replacement", %{"replacement" => replacement}, socket) do
     {:noreply,
      socket
@@ -260,7 +274,7 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   defp transform_section_card(doc) do
     Floki.traverse_and_update(doc, fn
       {"div", attrs, children} = node ->
-        class = Floki.attribute([node], "class") |> List.first()
+        class = List.first(Floki.attribute([node], "class"))
 
         if class && String.contains?(class, "card bg-base-100 shadow-xl") do
           # Extract extra classes (anything beyond the base pattern)
@@ -274,7 +288,7 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
             case children do
               [{"div", inner_attrs, inner_children}] ->
                 inner_class =
-                  Floki.attribute([{"div", inner_attrs, inner_children}], "class") |> List.first()
+                  List.first(Floki.attribute([{"div", inner_attrs, inner_children}], "class"))
 
                 if inner_class == "card-body" do
                   inner_children
@@ -302,12 +316,12 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   defp transform_stats_grid(doc) do
     Floki.traverse_and_update(doc, fn
       {"div", attrs, children} = node ->
-        class = Floki.attribute([node], "class") |> List.first()
+        class = List.first(Floki.attribute([node], "class"))
 
         if class && String.contains?(class, "stats stats-vertical lg:stats-horizontal") do
           # Extract extra classes
           base_pattern = ~r/stats\s+stats-vertical\s+lg:stats-horizontal\s+shadow\s*/
-          extra_classes = String.replace(class, base_pattern, "") |> String.trim()
+          extra_classes = String.trim(String.replace(class, base_pattern, ""))
 
           # Build component call
           component_attrs = if extra_classes != "", do: [{"class", extra_classes}], else: []
@@ -322,6 +336,7 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
@@ -483,6 +498,8 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   end
 
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(params, _uri, socket) do
     {:noreply, apply_params(socket, socket.assigns.live_action, params)}
   end

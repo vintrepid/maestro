@@ -1,11 +1,14 @@
 defmodule Maestro.Resources.WebScraper do
+  @moduledoc """
+  Web Scraper.
+  """
   alias Maestro.Resources.Resource
 
+  @spec scrape_and_create(any(), any(), any(), any()) :: term()
   def scrape_and_create(url, owner_type, owner_id, opts \\ []) do
     with {:ok, response} <- fetch_page(url),
          {:ok, content} <- extract_content(response),
          {:ok, thumbnail} <- generate_thumbnail(url, opts) do
-      
       Resource.create(%{
         title: content.title || url,
         description: content.description,
@@ -26,10 +29,10 @@ defmodule Maestro.Resources.WebScraper do
     case Req.get(url, follow_redirects: true, max_redirects: 3) do
       {:ok, %{status: 200, body: body}} ->
         {:ok, body}
-      
+
       {:ok, %{status: status}} ->
         {:error, "HTTP #{status}"}
-      
+
       {:error, reason} ->
         {:error, "Request failed: #{inspect(reason)}"}
     end
@@ -42,14 +45,15 @@ defmodule Maestro.Resources.WebScraper do
         description = extract_meta_description(document)
         body = extract_main_content(document)
         metadata = extract_metadata(document)
-        
-        {:ok, %{
-          title: title,
-          description: description,
-          body: body,
-          metadata: metadata
-        }}
-      
+
+        {:ok,
+         %{
+           title: title,
+           description: description,
+           body: body,
+           metadata: metadata
+         }}
+
       {:error, reason} ->
         {:error, "Failed to parse HTML: #{inspect(reason)}"}
     end
@@ -57,34 +61,36 @@ defmodule Maestro.Resources.WebScraper do
 
   defp extract_title(document) do
     case Floki.find(document, "title") do
-      [title | _] -> Floki.text(title) |> String.trim()
+      [title | _] -> String.trim(Floki.text(title))
       [] -> nil
     end
   end
 
   defp extract_meta_description(document) do
     case Floki.find(document, "meta[name='description']") do
-      [meta | _] -> 
-        Floki.attribute(meta, "content") |> List.first()
+      [meta | _] ->
+        List.first(Floki.attribute(meta, "content"))
+
       [] ->
         case Floki.find(document, "meta[property='og:description']") do
-          [meta | _] -> Floki.attribute(meta, "content") |> List.first()
+          [meta | _] -> List.first(Floki.attribute(meta, "content"))
           [] -> nil
         end
     end
   end
 
   defp extract_main_content(document) do
-    main_content = 
+    main_content =
       Floki.find(document, "main") ++
-      Floki.find(document, "article") ++
-      Floki.find(document, "[role='main']")
-    
+        Floki.find(document, "article") ++
+        Floki.find(document, "[role='main']")
+
     case main_content do
-      [content | _] -> 
-        Floki.text(content) 
-        |> String.trim() 
+      [content | _] ->
+        Floki.text(content)
+        |> String.trim()
         |> String.slice(0, 5000)
+
       [] ->
         Floki.find(document, "body")
         |> Floki.text()
@@ -105,35 +111,35 @@ defmodule Maestro.Resources.WebScraper do
 
   defp extract_og_image(document) do
     case Floki.find(document, "meta[property='og:image']") do
-      [meta | _] -> Floki.attribute(meta, "content") |> List.first()
+      [meta | _] -> List.first(Floki.attribute(meta, "content"))
       [] -> nil
     end
   end
 
   defp extract_og_url(document) do
     case Floki.find(document, "meta[property='og:url']") do
-      [meta | _] -> Floki.attribute(meta, "content") |> List.first()
+      [meta | _] -> List.first(Floki.attribute(meta, "content"))
       [] -> nil
     end
   end
 
   defp extract_canonical(document) do
     case Floki.find(document, "link[rel='canonical']") do
-      [link | _] -> Floki.attribute(link, "href") |> List.first()
+      [link | _] -> List.first(Floki.attribute(link, "href"))
       [] -> nil
     end
   end
 
   defp extract_author(document) do
     case Floki.find(document, "meta[name='author']") do
-      [meta | _] -> Floki.attribute(meta, "content") |> List.first()
+      [meta | _] -> List.first(Floki.attribute(meta, "content"))
       [] -> nil
     end
   end
 
   defp extract_published_time(document) do
     case Floki.find(document, "meta[property='article:published_time']") do
-      [meta | _] -> Floki.attribute(meta, "content") |> List.first()
+      [meta | _] -> List.first(Floki.attribute(meta, "content"))
       [] -> nil
     end
   end

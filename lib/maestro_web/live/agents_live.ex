@@ -1,23 +1,29 @@
 defmodule MaestroWeb.AgentsLive do
+  @moduledoc """
+  LiveView for the Agents page.
+
+  Thin rendering shell — all domain logic lives in `Maestro.Agents.Facade`.
+  """
   use MaestroWeb, :live_view
 
-  alias Maestro.Agents.PubSub, as: AgentPubSub
-
-  import Ecto.Query
+  import MaestroWeb.Live.Helpers.FileOpener
+  alias Maestro.Agents.Facade, as: Agents
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
-    if connected?(socket), do: AgentPubSub.subscribe()
+    if connected?(socket), do: Agents.subscribe()
 
-    agents = list_agents()
-    sessions = list_recent_sessions()
-    requests = list_recent_requests()
+    agents = Agents.list_agents()
+    sessions = Agents.list_recent_sessions()
+    requests = Agents.list_recent_requests()
 
     socket =
       socket
       |> assign(:page_title, "Agent Dashboard")
       |> assign(:agents, agents)
       |> assign(:selected_session_id, nil)
+      |> assign(:session_capacity, Agents.read_session_capacity())
       |> stream(:sessions, sessions)
       |> stream(:requests, requests)
 
@@ -25,12 +31,14 @@ defmodule MaestroWeb.AgentsLive do
   end
 
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(params, _uri, socket) do
     {:noreply, apply_params(socket, socket.assigns.live_action, params)}
   end
 
   defp apply_params(socket, _action, %{"session" => session_id}) do
-    requests = list_requests_for_session(session_id)
+    requests = Agents.list_requests_for_session(session_id)
 
     socket
     |> assign(:selected_session_id, session_id)
@@ -42,8 +50,7 @@ defmodule MaestroWeb.AgentsLive do
   @impl true
   def handle_info({:agent_request, request}, socket) do
     socket =
-      socket
-      |> stream_insert(:requests, to_request_row(request), at: 0)
+      stream_insert(socket, :requests, Agents.to_request_row(request), at: 0)
 
     {:noreply, socket}
   end
@@ -51,8 +58,7 @@ defmodule MaestroWeb.AgentsLive do
   @impl true
   def handle_info({:agent_response, request}, socket) do
     socket =
-      socket
-      |> stream_insert(:requests, to_request_row(request))
+      stream_insert(socket, :requests, Agents.to_request_row(request))
 
     {:noreply, socket}
   end
@@ -60,8 +66,7 @@ defmodule MaestroWeb.AgentsLive do
   @impl true
   def handle_info({:session_started, session}, socket) do
     socket =
-      socket
-      |> stream_insert(:sessions, to_session_row(session), at: 0)
+      stream_insert(socket, :sessions, Agents.to_session_row(session), at: 0)
 
     {:noreply, socket}
   end
@@ -69,13 +74,19 @@ defmodule MaestroWeb.AgentsLive do
   @impl true
   def handle_info({:session_ended, session}, socket) do
     socket =
-      socket
-      |> stream_insert(:sessions, to_session_row(session))
+      stream_insert(socket, :sessions, Agents.to_session_row(session))
 
     {:noreply, socket}
   end
 
   @impl true
+  def handle_event("open_file", %{"path" => path}, socket) do
+    open_file(path)
+    {:noreply, socket}
+  end
+
+  @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={assigns[:current_user]}>
@@ -84,6 +95,12 @@ defmodule MaestroWeb.AgentsLive do
         <div class="flex items-center justify-between">
           <h1 class="text-2xl font-bold">Agent Dashboard</h1>
           <div class="flex gap-2">
+            <%= if @session_capacity do %>
+              <span class="badge badge-lg badge-info" title="Maestro session capacity">
+                <.icon name="hero-cpu-chip" class="w-4 h-4 mr-1" />
+                {@session_capacity}
+              </span>
+            <% end %>
             <div class="badge badge-primary badge-lg">{length(@agents)} agents</div>
           </div>
         </div>
@@ -108,12 +125,19 @@ defmodule MaestroWeb.AgentsLive do
           <% end %>
           <%= if @agents == [] do %>
             <div class="col-span-3 text-center py-8 opacity-50">
-              No agents registered yet. Run a task with <code class="font-mono">mix maestro.agent.run</code> to get started.
+              No agents registered yet. Run a task with
+              <code class="font-mono">mix maestro.agent.run</code>
+              to get started.
             </div>
           <% end %>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <%!-- Agent Startup Sequence --%>
+          <div>
+            <MaestroWeb.Components.GuidelinesViewer.guidelines_viewer />
+          </div>
+
           <%!-- Sessions Panel --%>
           <div class="card bg-base-200 shadow-sm">
             <div class="card-body p-4">
@@ -129,7 +153,9 @@ defmodule MaestroWeb.AgentsLive do
                   phx-click={JS.patch(~p"/agents?session=#{session.id}")}
                 >
                   <div class="flex items-center justify-between">
-                    <span class={["badge badge-xs", session_status_badge(session.status)]}>{session.status}</span>
+                    <span class={["badge badge-xs", session_status_badge(session.status)]}>
+                      {session.status}
+                    </span>
                     <span class="text-xs opacity-50">{format_time(session.inserted_at)}</span>
                   </div>
                   <p class="text-sm mt-1 truncate">{session.task_description || "No description"}</p>
@@ -140,6 +166,7 @@ defmodule MaestroWeb.AgentsLive do
 
           <%!-- Requests/Activity Feed --%>
           <div class="card bg-base-200 shadow-sm lg:col-span-2">
+
             <div class="card-body p-4">
               <div class="flex items-center justify-between">
                 <h2 class="card-title text-lg">
@@ -169,11 +196,15 @@ defmodule MaestroWeb.AgentsLive do
                     <% end %>
                   </div>
                   <div class="text-sm">
-                    <p class="whitespace-pre-wrap break-words max-h-32 overflow-hidden">{truncate(req.content, 500)}</p>
+                    <p class="whitespace-pre-wrap break-words max-h-32 overflow-hidden">
+                      {truncate(req.content, 500)}
+                    </p>
                   </div>
                   <%= if req.response do %>
                     <div class="mt-1 pl-3 border-l-2 border-success/30">
-                      <p class="text-sm opacity-70 whitespace-pre-wrap break-words max-h-32 overflow-hidden">{truncate(req.response, 500)}</p>
+                      <p class="text-sm opacity-70 whitespace-pre-wrap break-words max-h-32 overflow-hidden">
+                        {truncate(req.response, 500)}
+                      </p>
                     </div>
                   <% end %>
                 </div>
@@ -186,99 +217,7 @@ defmodule MaestroWeb.AgentsLive do
     """
   end
 
-  # --- Data fetching ---
-
-  defp list_agents do
-    Maestro.Repo.all(from a in "agents",
-      select: %{
-        id: type(a.id, :string),
-        name: a.name,
-        type: a.type,
-        model: a.model,
-        description: a.description
-      },
-      order_by: [asc: a.name]
-    )
-    |> Enum.map(fn a -> %{a | type: String.to_existing_atom(a.type)} end)
-  end
-
-  defp list_recent_sessions do
-    Maestro.Repo.all(from s in "agent_sessions",
-      select: %{
-        id: type(s.id, :string),
-        task_description: s.task_description,
-        status: s.status,
-        inserted_at: s.inserted_at,
-        ended_at: s.ended_at
-      },
-      order_by: [desc: s.inserted_at],
-      limit: 50
-    )
-    |> Enum.map(fn s -> %{s | status: String.to_existing_atom(s.status)} end)
-  end
-
-  defp list_recent_requests do
-    Maestro.Repo.all(from r in "agent_requests",
-      select: %{
-        id: type(r.id, :string),
-        kind: r.kind,
-        content: r.content,
-        response: r.response,
-        duration_ms: r.duration_ms,
-        inserted_at: r.inserted_at,
-        responded_at: r.responded_at,
-        metadata: r.metadata
-      },
-      order_by: [desc: r.inserted_at],
-      limit: 50
-    )
-    |> Enum.map(fn r -> %{r | kind: String.to_existing_atom(r.kind)} end)
-  end
-
-  defp list_requests_for_session(session_id) do
-    Maestro.Repo.all(from r in "agent_requests",
-      where: r.session_id == ^session_id,
-      select: %{
-        id: type(r.id, :string),
-        kind: r.kind,
-        content: r.content,
-        response: r.response,
-        duration_ms: r.duration_ms,
-        inserted_at: r.inserted_at,
-        responded_at: r.responded_at,
-        metadata: r.metadata
-      },
-      order_by: [desc: r.inserted_at]
-    )
-    |> Enum.map(fn r -> %{r | kind: String.to_existing_atom(r.kind)} end)
-  end
-
-  # --- Row converters for PubSub messages ---
-
-  defp to_request_row(request) do
-    %{
-      id: to_string(request.id),
-      kind: request.kind,
-      content: request.content,
-      response: request.response,
-      duration_ms: request.duration_ms,
-      inserted_at: request.inserted_at,
-      responded_at: request.responded_at,
-      metadata: request.metadata || %{}
-    }
-  end
-
-  defp to_session_row(session) do
-    %{
-      id: to_string(session.id),
-      task_description: session.task_description,
-      status: session.status,
-      inserted_at: session.inserted_at,
-      ended_at: session.ended_at
-    }
-  end
-
-  # --- Helpers ---
+  # --- View helpers (badge colors, formatting, truncation) ---
 
   defp agent_type_badge(:claude_code), do: "badge-primary"
   defp agent_type_badge(:cursor), do: "badge-secondary"

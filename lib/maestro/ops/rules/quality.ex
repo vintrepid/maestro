@@ -12,6 +12,7 @@ defmodule Maestro.Ops.Rules.Quality do
   Each rule must have at minimum: `:id`, `:content`, `:category`, `:severity`.
   Returns a list of result maps with `:pass?`, `:issues`, and the original rule fields.
   """
+  @spec audit_rules(term()) :: term()
   def audit_rules(rules) when is_list(rules) do
     Enum.map(rules, &audit_one/1)
   end
@@ -19,6 +20,7 @@ defmodule Maestro.Ops.Rules.Quality do
   @doc """
   Returns true if a single rule passes all quality checks.
   """
+  @spec passes_quality?(term()) :: term()
   def passes_quality?(rule) do
     audit_one(rule).pass?
   end
@@ -26,6 +28,7 @@ defmodule Maestro.Ops.Rules.Quality do
   @doc """
   Returns summary stats from a list of audit results.
   """
+  @spec summarize(term()) :: term()
   def summarize(results) when is_list(results) do
     total = length(results)
     pass = Enum.count(results, & &1.pass?)
@@ -60,6 +63,7 @@ defmodule Maestro.Ops.Rules.Quality do
   Returns {:ok, fixed_content} if fixable, :skip if not fixable (needs human).
   Pure function — takes content string and rule map, returns string.
   """
+  @spec fix_content(any(), any()) :: term()
   def fix_content(content, rule) do
     issues = run_checks(content, rule) |> Enum.map(& &1.check) |> MapSet.new()
 
@@ -74,7 +78,7 @@ defmodule Maestro.Ops.Rules.Quality do
 
       # Re-check — accept if improved, even if not perfect
       remaining = run_checks(fixed, rule)
-      remaining_checks = Enum.map(remaining, & &1.check) |> MapSet.new()
+      remaining_checks = MapSet.new(Enum.map(remaining, & &1.check))
 
       cond do
         remaining == [] ->
@@ -140,7 +144,7 @@ defmodule Maestro.Ops.Rules.Quality do
     cond do
       # "Always X instead of Y" → Y is the bad path
       match = Regex.run(~r/instead of\s+(.+)/i, content) ->
-        bad = Enum.at(match, 1) |> String.trim_trailing(".")
+        bad = String.trim_trailing(Enum.at(match, 1), ".")
         "because #{bad} leads to incorrect behavior"
 
       true ->
@@ -181,21 +185,28 @@ defmodule Maestro.Ops.Rules.Quality do
   end
 
   defp run_checks(content, rule) do
-    [
-      &check_too_short/2,
-      &check_too_long/2,
-      &check_vague/2,
-      &check_no_example/2,
-      &check_no_verb/2,
-      &check_duplicated_emphasis/2,
-      &check_missing_context/2
-    ]
-    |> Enum.flat_map(fn check -> check.(content, rule) end)
+    Enum.flat_map(
+      [
+        &check_too_short/2,
+        &check_too_long/2,
+        &check_vague/2,
+        &check_no_example/2,
+        &check_no_verb/2,
+        &check_duplicated_emphasis/2,
+        &check_missing_context/2
+      ],
+      fn check -> check.(content, rule) end
+    )
   end
 
   defp check_too_short(content, _rule) do
     if String.length(content) < 20 do
-      [%{check: :too_short, message: "Too short (#{String.length(content)} chars) — not enough detail to act on"}]
+      [
+        %{
+          check: :too_short,
+          message: "Too short (#{String.length(content)} chars) — not enough detail to act on"
+        }
+      ]
     else
       []
     end
@@ -203,7 +214,12 @@ defmodule Maestro.Ops.Rules.Quality do
 
   defp check_too_long(content, _rule) do
     if String.length(content) > 1500 do
-      [%{check: :too_long, message: "Too long (#{String.length(content)} chars) — agents may skip or skim"}]
+      [
+        %{
+          check: :too_long,
+          message: "Too long (#{String.length(content)} chars) — agents may skip or skim"
+        }
+      ]
     else
       []
     end
@@ -218,7 +234,8 @@ defmodule Maestro.Ops.Rules.Quality do
       {~r/\bwhen necessary\b/i, "\"when necessary\" — define the trigger condition."},
       {~r/\bconsider\b/i, "\"consider\" — should they do it or not? Be directive."},
       {~r/\btry to\b/i, "\"try to\" — agents don't try, they do or don't. Be direct."},
-      {~r/\bshould be aware\b/i, "\"should be aware\" — awareness isn't actionable. State what to do."}
+      {~r/\bshould be aware\b/i,
+       "\"should be aware\" — awareness isn't actionable. State what to do."}
     ]
 
     vague_patterns
@@ -236,7 +253,12 @@ defmodule Maestro.Ops.Rules.Quality do
     if long_enough and not has_code_block and not has_inline_code and not has_example_marker do
       # Only flag for categories where examples are most valuable
       if rule.category in [:elixir, :heex, :liveview, :ash, :css] do
-        [%{check: :no_example, message: "No code example — agents follow examples more reliably than prose"}]
+        [
+          %{
+            check: :no_example,
+            message: "No code example — agents follow examples more reliably than prose"
+          }
+        ]
       else
         []
       end
@@ -252,12 +274,18 @@ defmodule Maestro.Ops.Rules.Quality do
       |> List.first()
       |> String.downcase()
 
-    action_words = ~w(use always never avoid prefer do don't must should create add remove write read call invoke set return import alias)
+    action_words =
+      ~w(use always never avoid prefer do don't must should create add remove write read call invoke set return import alias)
 
     has_action = Enum.any?(action_words, &String.contains?(first_sentence, &1))
 
     if not has_action do
-      [%{check: :no_directive, message: "Doesn't start with an action — agents need to know what to DO"}]
+      [
+        %{
+          check: :no_directive,
+          message: "Doesn't start with an action — agents need to know what to DO"
+        }
+      ]
     else
       []
     end
@@ -267,7 +295,12 @@ defmodule Maestro.Ops.Rules.Quality do
     bold_count = content |> String.split("**") |> length() |> then(&div(&1 - 1, 2))
 
     if bold_count > 5 do
-      [%{check: :over_emphasis, message: "#{bold_count} bold sections — when everything is emphasized, nothing is"}]
+      [
+        %{
+          check: :over_emphasis,
+          message: "#{bold_count} bold sections — when everything is emphasized, nothing is"
+        }
+      ]
     else
       []
     end
@@ -277,7 +310,13 @@ defmodule Maestro.Ops.Rules.Quality do
     if rule.severity == :must and not String.contains?(content, "because") and
          not String.contains?(content, "otherwise") and not String.contains?(content, "will") and
          String.length(content) < 200 do
-      [%{check: :missing_why, message: "Must-level rule with no explanation of consequences — agents deprioritize rules they don't understand"}]
+      [
+        %{
+          check: :missing_why,
+          message:
+            "Must-level rule with no explanation of consequences — agents deprioritize rules they don't understand"
+        }
+      ]
     else
       []
     end

@@ -1,18 +1,19 @@
 defmodule Mix.Tasks.Project.AddGuidelines do
   @moduledoc """
   Adds or updates GUIDELINES.md file in the project root.
-  
+
   If GUIDELINES.md already exists, it will be preserved.
   This ensures projects have the agent initialization protocol.
-  
+
   ## Usage
-  
+
       mix project.add_guidelines
-  
+
   """
   use Igniter.Mix.Task
 
   @impl Igniter.Mix.Task
+  @spec info(any(), any()) :: term()
   def info(_argv, _composing_task) do
     %Igniter.Mix.Task.Info{
       group: :igniter,
@@ -22,11 +23,14 @@ defmodule Mix.Tasks.Project.AddGuidelines do
   end
 
   @impl Igniter.Mix.Task
+  @spec igniter(any(), any()) :: term()
   def igniter(igniter, _argv) do
     guidelines_path = "GUIDELINES.md"
 
-    igniter
-    |> maybe_create_guidelines_file(guidelines_path)
+    maybe_create_guidelines_file(
+      igniter,
+      guidelines_path
+    )
   end
 
   defp maybe_create_guidelines_file(igniter, path) do
@@ -35,7 +39,7 @@ defmodule Mix.Tasks.Project.AddGuidelines do
       igniter
     else
       IO.puts("✓ Creating GUIDELINES.md with initialization protocol")
-      
+
       content = """
       # Agent Guidelines - Project Initialization
 

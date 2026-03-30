@@ -1,19 +1,23 @@
 defmodule MaestroWeb.Components.TaskTable do
+  @moduledoc """
+  Task Table component.
+  """
   use MaestroWeb, :html
-  alias Maestro.Repo
   alias Phoenix.LiveView.JS
 
-  attr :query_fn, :any, required: true
+  attr :data_fn, :any, required: true
   attr :id, :string, required: true
 
+  @spec task_table(map()) :: term()
   def task_table(assigns) do
-    query = assigns.query_fn.()
-    tasks = Repo.all(query)
-    |> Maestro.Ops.load!([:display_name])
-    
-    tasks_with_names = Enum.map(tasks, fn task ->
-      Map.put(task, :entity_display_name, get_entity_name(task.entity_type, task.entity_id))
-    end)
+    tasks =
+      Ash.load!(assigns.data_fn.(), [:display_name], authorize?: false)
+
+    tasks_with_names =
+      Enum.map(tasks, fn task ->
+        Map.put(task, :entity_display_name, get_entity_name(task.entity_type, task.entity_id))
+      end)
+
     assigns = assign(assigns, :tasks, tasks_with_names)
 
     ~H"""
@@ -37,12 +41,16 @@ defmodule MaestroWeb.Components.TaskTable do
           <%= for task <- @tasks do %>
             <tr>
               <td class="py-1">
-                <button 
+                <button
                   type="button"
                   phx-click={toggle_description("desc-#{task.id}")}
                   class="btn btn-ghost btn-xs p-0"
                 >
-                  <.icon name="hero-chevron-right" class="w-3 h-3 transition-transform" id={"chevron-#{task.id}"} />
+                  <.icon
+                    name="hero-chevron-right"
+                    class="w-3 h-3 transition-transform"
+                    id={"chevron-#{task.id}"}
+                  />
                 </button>
               </td>
               <td class="py-1">
@@ -51,7 +59,9 @@ defmodule MaestroWeb.Components.TaskTable do
                 </.link>
               </td>
               <td class="py-1"><span class="badge badge-xs">{task.task_type}</span></td>
-              <td class="py-1"><span class={"badge badge-xs #{status_class(task.status)}"}>{task.status}</span></td>
+              <td class="py-1">
+                <span class={"badge badge-xs #{status_class(task.status)}"}>{task.status}</span>
+              </td>
               <td class="py-1">
                 <button
                   phx-click="delete_task"
@@ -83,10 +93,13 @@ defmodule MaestroWeb.Components.TaskTable do
   attr :tasks, :list, required: true
   attr :id, :string, required: true
 
+  @spec task_table_static(map()) :: term()
   def task_table_static(assigns) do
-    tasks_with_names = Enum.map(assigns.tasks, fn task ->
-      Map.put(task, :entity_display_name, get_entity_name(task.entity_type, task.entity_id))
-    end)
+    tasks_with_names =
+      Enum.map(assigns.tasks, fn task ->
+        Map.put(task, :entity_display_name, get_entity_name(task.entity_type, task.entity_id))
+      end)
+
     assigns = assign(assigns, :tasks, tasks_with_names)
 
     ~H"""
@@ -114,7 +127,9 @@ defmodule MaestroWeb.Components.TaskTable do
                 </.link>
               </td>
               <td class="py-1"><span class="badge badge-xs">{task.task_type}</span></td>
-              <td class="py-1"><span class={"badge badge-xs #{status_class(task.status)}"}>{task.status}</span></td>
+              <td class="py-1">
+                <span class={"badge badge-xs #{status_class(task.status)}"}>{task.status}</span>
+              </td>
               <td class="py-1">
                 <button
                   phx-click="delete_task"
@@ -138,25 +153,26 @@ defmodule MaestroWeb.Components.TaskTable do
   defp status_class(:done), do: "badge-info"
   defp status_class(:blocked), do: "badge-error"
   defp status_class(_), do: "badge-ghost"
-  
+
   defp toggle_description(row_id) do
-    JS.toggle(to: "##{row_id}")
-    |> JS.toggle_class("rotate-90", to: "#chevron-" <> String.replace(row_id, "desc-", ""))
+    JS.toggle_class(JS.toggle(to: "##{row_id}"), "rotate-90",
+      to: "#chevron-" <> String.replace(row_id, "desc-", "")
+    )
   end
-  
+
   defp get_entity_name("Project", entity_id) when not is_nil(entity_id) do
-    case Repo.get(Maestro.Ops.Project, entity_id) do
-      nil -> nil
-      project -> project.name
+    case Maestro.Ops.Project.by_id(entity_id, authorize?: false) do
+      {:ok, project} -> project.name
+      _ -> nil
     end
   end
-  
+
   defp get_entity_name("Task", entity_id) when not is_nil(entity_id) do
     case Maestro.Ops.Task.by_id(entity_id) do
       {:ok, task} -> task |> Maestro.Ops.load!([:display_name]) |> Map.get(:display_name)
       _ -> nil
     end
   end
-  
+
   defp get_entity_name(_, _), do: nil
 end

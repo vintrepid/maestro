@@ -32,11 +32,13 @@ defmodule Maestro.MixProject do
         package_skills: [:ash, ~r/^ash_/, :phoenix, :igniter, :usage_rules],
         build: [
           "ash-framework": [
-            description: "Use this skill when working with Ash Framework or any of its extensions. Always consult this when making domain changes, features or fixes.",
+            description:
+              "Use this skill when working with Ash Framework or any of its extensions. Always consult this when making domain changes, features or fixes.",
             usage_rules: [:ash, ~r/^ash_/]
           ],
           "phoenix-liveview": [
-            description: "Use this skill when working with Phoenix LiveView, templates, components, or the web layer.",
+            description:
+              "Use this skill when working with Phoenix LiveView, templates, components, or the web layer.",
             usage_rules: [:phoenix]
           ],
           "elixir-core": [
@@ -73,12 +75,11 @@ defmodule Maestro.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:maestro_tool, path: "../forks/maestro_tool", only: [:dev]},
+      {:maestro_tool, path: "../forks/maestro_tool"},
       {:css_linter, path: "../forks/css_linter"},
       {:fun_with_flags, "~> 1.11"},
       {:fun_with_flags_ui, "~> 1.0"},
       {:cinder, path: "../forks/cinder", override: true},
-      {:live_table, github: "vintrepid/live_table", branch: "master"},
       {:ex_money_sql, "~> 1.0"},
       {:ex_cldr, "~> 2.0"},
       {:picosat_elixir, "~> 0.2"},

@@ -8,9 +8,9 @@ defmodule MaestroWeb.ConceptsLive do
   """
 
   use MaestroWeb, :live_view
-  import Ecto.Query
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
     rules = load_rules()
     mermaid = build_mermaid(rules)
@@ -24,11 +24,14 @@ defmodule MaestroWeb.ConceptsLive do
   end
 
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(_params, _uri, socket) do
     {:noreply, socket}
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
@@ -60,7 +63,9 @@ defmodule MaestroWeb.ConceptsLive do
               </h3>
               <ul class="text-xs space-y-1 mt-2">
                 <li :for={rule <- rules} class="flex items-start gap-2">
-                  <span class={"badge badge-xs #{severity_class(rule.severity)} mt-0.5"}>{rule.severity}</span>
+                  <span class={"badge badge-xs #{severity_class(rule.severity)} mt-0.5"}>
+                    {rule.severity}
+                  </span>
                   <span class="truncate opacity-80">{truncate(rule.content, 60)}</span>
                 </li>
               </ul>
@@ -73,19 +78,18 @@ defmodule MaestroWeb.ConceptsLive do
   end
 
   defp load_rules do
-    Maestro.Repo.all(
-      from r in "rules",
-        where: r.status == "approved",
-        order_by: [asc: r.category, desc: r.severity],
-        select: %{
-          id: r.id,
-          category: r.category,
-          bundle: r.bundle,
-          severity: r.severity,
-          tags: r.tags,
-          content: r.content
-        }
-    )
+    Maestro.Ops.Rule.approved!(authorize?: false)
+    |> Enum.sort_by(fn r -> {r.category, -(r.severity || 0)} end)
+    |> Enum.map(fn r ->
+      %{
+        id: r.id,
+        category: r.category,
+        bundle: r.bundle,
+        severity: r.severity,
+        tags: r.tags,
+        content: r.content
+      }
+    end)
   end
 
   defp build_stats(rules) do
@@ -93,7 +97,7 @@ defmodule MaestroWeb.ConceptsLive do
       total: length(rules),
       categories: rules |> Enum.map(& &1.category) |> Enum.uniq() |> length(),
       bundles: rules |> Enum.map(& &1.bundle) |> Enum.uniq() |> length(),
-      tags: rules |> Enum.flat_map(& (&1.tags || [])) |> Enum.uniq() |> length()
+      tags: rules |> Enum.flat_map(&(&1.tags || [])) |> Enum.uniq() |> length()
     }
   end
 
@@ -145,14 +149,16 @@ defmodule MaestroWeb.ConceptsLive do
     # Group rules by tags, find tags that span multiple categories
     rules
     |> Enum.flat_map(fn rule ->
-      (rule.tags || [])
-      |> Enum.map(fn tag -> {tag, "#{rule.bundle || "unbundled"}_#{rule.category}"} end)
+      Enum.map(rule.tags || [], fn tag ->
+        {tag, "#{rule.bundle || "unbundled"}_#{rule.category}"}
+      end)
     end)
     |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     |> Enum.filter(fn {_tag, categories} -> length(Enum.uniq(categories)) > 1 end)
     |> Enum.map_join("\n", fn {tag, categories} ->
       cats = Enum.uniq(categories)
       [first | rest] = cats
+
       Enum.map_join(rest, "\n", fn cat ->
         "    #{safe_id(first)} -.-|#{tag}| #{safe_id(cat)}"
       end)

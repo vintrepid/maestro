@@ -1,4 +1,7 @@
 defmodule Maestro.Accounts.Token do
+  @moduledoc """
+  Token resource.
+  """
   use Ash.Resource,
     otp_app: :maestro,
     domain: Maestro.Accounts,

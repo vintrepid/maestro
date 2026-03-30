@@ -23,6 +23,7 @@ defmodule Mix.Tasks.Maestro.Lint do
   use Mix.Task
   @shortdoc "Check source files for deprecated patterns and anti-patterns"
 
+  @spec run([String.t()]) :: :ok
   def run(args) do
     Mix.Task.run("app.start")
 
@@ -71,12 +72,11 @@ defmodule Mix.Tasks.Maestro.Lint do
   end
 
   defp load_checks do
-    Maestro.Ops.Rule.linter!()
-    |> Enum.map(fn rule ->
+    Enum.map(Maestro.Ops.Rule.linter!(), fn rule ->
       %{
         id: rule_id(rule),
         pattern: Regex.compile!(rule.lint_pattern),
-        file_types: Enum.map(rule.lint_file_types, &String.to_atom/1),
+        file_types: Enum.map(rule.lint_file_types, &String.to_existing_atom/1),
         message: rule.lint_message,
         exclude_paths: rule.lint_exclude_paths || [],
         only_paths: rule.lint_only_paths || [],

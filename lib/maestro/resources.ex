@@ -1,4 +1,7 @@
 defmodule Maestro.Resources do
+  @moduledoc """
+  Resources domain — Ash resource registry.
+  """
   use Ash.Domain
 
   resources do

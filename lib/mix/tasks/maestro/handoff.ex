@@ -17,6 +17,7 @@ defmodule Mix.Tasks.Maestro.Handoff do
   alias Maestro.Ops.Rule
   alias Maestro.Ops.Rules.{Quality, Coverage, SiteAudit}
 
+  @spec run([String.t()]) :: :ok
   def run(args) do
     Mix.Task.run("app.start")
 
@@ -38,7 +39,7 @@ defmodule Mix.Tasks.Maestro.Handoff do
   defp build_handoff(summary, status) do
     %{
       status: status,
-      session_date: Date.utc_today() |> to_string(),
+      session_date: to_string(Date.utc_today()),
       summary: summary,
       state: gather_state(),
       pending: gather_pending()
@@ -64,7 +65,7 @@ defmodule Mix.Tasks.Maestro.Handoff do
   defp gather_audit do
     try do
       pages = SiteAudit.discover_pages(MaestroWeb.Router, MaestroWeb)
-      all_rules = Rule.read!() |> Enum.filter(&(&1.status in [:approved, :proposed]))
+      all_rules = Enum.filter(Rule.read!(), &(&1.status in [:approved, :proposed]))
       results = SiteAudit.audit_pages(pages, all_rules)
       summary = SiteAudit.summarize(results)
 
@@ -91,7 +92,12 @@ defmodule Mix.Tasks.Maestro.Handoff do
     proposed = Enum.filter(all_rules, &(&1.status == :proposed))
 
     pending = []
-    pending = if length(proposed) > 0, do: pending ++ ["#{length(proposed)} proposed rules need curation at /rules"], else: pending
+
+    pending =
+      if length(proposed) > 0,
+        do: pending ++ ["#{length(proposed)} proposed rules need curation at /rules"],
+        else: pending
+
     if pending == [], do: ["Pipeline is clean"], else: pending
   end
 end

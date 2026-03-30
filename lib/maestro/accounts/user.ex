@@ -1,4 +1,7 @@
 defmodule Maestro.Accounts.User do
+  @moduledoc """
+  User resource.
+  """
   use Ash.Resource,
     otp_app: :maestro,
     domain: Maestro.Accounts,

@@ -1,4 +1,7 @@
 defmodule Maestro.Ops.ProjectMonitor do
+  @moduledoc """
+  Project Monitor GenServer.
+  """
   use GenServer
   require Logger
 
@@ -6,10 +9,12 @@ defmodule Maestro.Ops.ProjectMonitor do
 
   @check_interval :timer.seconds(10)
 
+  @spec start_link(keyword()) :: term()
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
   end
 
+  @spec get_status(any()) :: term()
   def get_status(project_id) do
     GenServer.call(__MODULE__, {:get_status, project_id})
   end

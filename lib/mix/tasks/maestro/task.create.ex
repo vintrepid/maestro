@@ -26,6 +26,7 @@ defmodule Mix.Tasks.Maestro.Task.Create do
   @shortdoc "Create a new Maestro task"
 
   @impl true
+  @spec run([String.t()]) :: :ok
   def run(args) do
     # Start app without web server — we only need DB access
     Application.put_env(:maestro, MaestroWeb.Endpoint, server: false)
@@ -49,8 +50,8 @@ defmodule Mix.Tasks.Maestro.Task.Create do
       System.halt(1)
     end
 
-    task_type = String.to_atom(opts[:type] || "other")
-    status = String.to_atom(opts[:status] || "in_progress")
+    task_type = String.to_existing_atom(opts[:type] || "other")
+    status = String.to_existing_atom(opts[:status] || "in_progress")
 
     case Maestro.Ops.Task.create(
            %{

@@ -1,0 +1,157 @@
+defmodule Maestro.Ops.Audit.Facade do
+  @moduledoc """
+  Facade API for the Audit domain.
+
+  All audit operations — querying, running, fixing, subscribing — go through here.
+  LiveViews and mix tasks alias this module as `Audit`. This separation exists because
+  Ash resources can't use `Ash.Query` on themselves during compilation (cyclic struct expansion).
+  """
+
+  require Ash.Query
+
+  alias Maestro.Ops.{Audit, AuditResult, AuditRunner, Rule}
+  alias Maestro.Ops.Rules.Fixer
+
+  @aggregates [:total_results, :total_fail, :total_pass_checks, :avg_score, :total_pass_modules]
+
+  @spec subscribe() :: term()
+  def subscribe do
+    Phoenix.PubSub.subscribe(Maestro.PubSub, Maestro.Ops.AuditPubSub.topic())
+  end
+
+  @spec latest_completed() :: term()
+  def latest_completed do
+    Audit
+    |> Ash.Query.filter(status == :completed)
+    |> Ash.Query.sort(inserted_at: :desc)
+    |> Ash.Query.limit(1)
+    |> Ash.read!(load: @aggregates)
+    |> List.first()
+  end
+
+  @spec results_query(term()) :: term()
+  def results_query(nil) do
+    Ash.Query.filter(AuditResult, false)
+  end
+
+  @spec results_query(term()) :: term()
+  def results_query(%{id: audit_id}) do
+    AuditResult
+    |> Ash.Query.filter(audit_id == ^audit_id)
+    |> Ash.Query.sort(score: :asc)
+  end
+
+  @spec category_summary(term()) :: term()
+  def category_summary(nil), do: []
+
+  @spec category_summary(term()) :: term()
+  def category_summary(%{id: audit_id}) do
+    AuditResult
+    |> Ash.Query.filter(audit_id == ^audit_id)
+    |> Ash.read!()
+    |> Enum.flat_map(fn r ->
+      Enum.map(r.findings, fn f ->
+        {f["rule_category"] || "unknown", r.module_name}
+      end)
+    end)
+    |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+    |> Enum.map(fn {category, modules} ->
+      {category, %{count: length(modules), modules: Enum.uniq(modules)}}
+    end)
+    |> Enum.sort_by(fn {_, %{count: c}} -> -c end)
+  end
+
+  @spec find_result(term()) :: term()
+  def find_result(id) do
+    results = AuditResult.read!()
+    Enum.find(results, &(to_string(&1.id) == to_string(id)))
+  end
+
+  @spec result_exists?(term(), term()) :: term()
+  def result_exists?(%{id: audit_id}, module_name) do
+    AuditResult
+    |> Ash.Query.filter(audit_id == ^audit_id and module_name == ^module_name)
+    |> Ash.read!()
+    |> Enum.any?()
+  end
+
+  @spec run_audit(term()) :: term()
+  def run_audit(opts), do: AuditRunner.run(opts)
+
+  @spec deep_audit_available?() :: term()
+  def deep_audit_available?, do: AuditRunner.deep_audit_available?()
+
+  @spec fetch_module_dag(term()) :: term()
+  def fetch_module_dag(module_name), do: AuditRunner.fetch_module_dag(module_name)
+
+  @spec fix_all(term()) :: term()
+  def fix_all(audit) do
+    results =
+      AuditResult
+      |> Ash.Query.filter(audit_id == ^audit.id)
+      |> Ash.read!()
+
+    all_rules = Enum.filter(Rule.read!(), &(&1.status in [:approved, :linter]))
+    rules_by_id = Map.new(all_rules, &{&1.id, &1})
+
+    # Snapshot file mtimes before fixing (Giulia fixes write files directly)
+    all_files =
+      results
+      |> Enum.map(& &1.source_file)
+      |> Enum.reject(&is_nil/1)
+      |> Enum.filter(&File.exists?/1)
+
+    mtimes_before = Map.new(all_files, fn f -> {f, file_mtime(f)} end)
+
+    igniter = Igniter.new()
+
+    {updated_igniter, _} =
+      Enum.reduce(results, {igniter, 0}, fn ar, {ign, count} ->
+        pr = %{
+          path: ar.path,
+          module: Module.concat([ar.module_name]),
+          source_file: ar.source_file,
+          findings: Enum.map(ar.findings, &atomize_finding/1)
+        }
+
+        case Fixer.fix_page(ign, pr, rules_by_id) do
+          {:ok, new_ign} -> {new_ign, count + 1}
+          _ -> {ign, count}
+        end
+      end)
+
+    # Write Igniter-tracked changes (Maestro rule fixes)
+    sources = updated_igniter.rewrite.sources
+    igniter_changed = Enum.filter(sources, fn {_path, source} -> Rewrite.Source.updated?(source) end)
+
+    for {path, source} <- igniter_changed do
+      content = Rewrite.Source.get(source, :content)
+      File.write!(path, content)
+    end
+
+    # Count all files that changed (Igniter + direct writes from Giulia fixes)
+    direct_changed =
+      Enum.count(all_files, fn f ->
+        file_mtime(f) != mtimes_before[f]
+      end)
+
+    {:ok, length(igniter_changed) + direct_changed}
+  end
+
+  defp file_mtime(path) do
+    case File.stat(path) do
+      {:ok, %{mtime: mtime}} -> mtime
+      _ -> nil
+    end
+  end
+
+  defp atomize_finding(f) when is_map(f) do
+    %{
+      rule_id: f["rule_id"],
+      rule_content: f["rule_content"],
+      rule_category: f["rule_category"],
+      pass?: f["pass?"],
+      evidence: f["evidence"] || []
+    }
+  end
+end

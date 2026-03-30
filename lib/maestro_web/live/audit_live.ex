@@ -1,91 +1,128 @@
 defmodule MaestroWeb.AuditLive do
-  use MaestroWeb, :live_view
+  @moduledoc """
+  Code Audit page — thin shell over Maestro.Ops.Audit.
 
-  alias Maestro.Ops.Rule
-  alias Maestro.Ops.Rules.{SiteAudit, Fixer}
+  All domain logic (running audits, fixing, querying results) lives in the Audit
+  resource. This LiveView translates user intent into Audit function calls.
+  """
+
+  use MaestroWeb, :live_view
+  use Cinder.UrlSync
+
+  alias Maestro.Ops.Audit.Facade, as: Audit
 
   @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket), do: Audit.subscribe()
+
+    latest = Audit.latest_completed()
+    giulia_up = connected?(socket) and Audit.deep_audit_available?()
+
     {:ok,
      socket
-     |> assign(:page_title, "Site Audit")
-     |> assign(:page_results, [])
-     |> assign(:summary, nil)
-     |> assign(:selected_page, nil)
-     |> assign(:running, false)}
+     |> assign(:page_title, "Code Audit")
+     |> assign(:audit, latest)
+     |> assign(:query, Audit.results_query(latest))
+     |> assign(:by_category, Audit.category_summary(latest))
+     |> assign(:view_mode, "modules")
+     |> assign(:selected_result, nil)
+     |> assign(:module_dag, nil)
+     |> assign(:running, false)
+     |> assign(:filter_approved, true)
+     |> assign(:filter_proposed, false)
+     |> assign(:filter_linter, true)
+     |> assign(:filter_giulia, giulia_up)
+     |> assign(:giulia_available, giulia_up)}
+  end
+
+  @impl true
+  def handle_params(params, uri, socket) do
+    socket = Cinder.UrlSync.handle_params(params, uri, socket)
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("run_audit", _params, socket) do
-    if connected?(socket),
-      do: Phoenix.PubSub.subscribe(Maestro.PubSub, "resource:updates")
-
     send(self(), :do_audit)
     {:noreply, assign(socket, :running, true)}
   end
 
-  @impl true
-  def handle_info(:do_audit, socket) do
-    # Audit against all curated rules (approved + proposed), not just approved.
-    # The skip mechanism filters out non-page-checkable rules.
-    pages = SiteAudit.discover_pages(MaestroWeb.Router, MaestroWeb)
-    all_rules = Rule.read!() |> Enum.filter(&(&1.status in [:approved, :proposed, :linter]))
-    page_results = SiteAudit.audit_pages(pages, all_rules)
-    summary = SiteAudit.summarize(page_results)
+  def handle_event("toggle_filter", %{"filter" => filter}, socket) do
+    key = String.to_existing_atom("filter_#{filter}")
+    {:noreply, assign(socket, key, not Map.get(socket.assigns, key))}
+  end
 
-    sorted = Enum.sort_by(page_results, & &1.score)
-    checked = summary.total_checks
-    skipped = if(sorted != [], do: hd(sorted).skip, else: 0)
-    timestamp = Calendar.strftime(DateTime.utc_now(), "%H:%M:%S")
+  def handle_event("toggle_view", %{"mode" => mode}, socket) do
+    {:noreply, assign(socket, :view_mode, mode)}
+  end
+
+  def handle_event("recheck_giulia", _params, socket) do
+    {:noreply, assign(socket, :giulia_available, Audit.deep_audit_available?())}
+  end
+
+  def handle_event("select_page", %{"id" => id}, socket) do
+    result = Audit.find_result(id)
+    dag = if result, do: Audit.fetch_module_dag(result.module_name), else: nil
 
     {:noreply,
      socket
-     |> assign(:page_results, sorted)
-     |> assign(:summary, summary)
-     |> assign(:running, false)
-     |> put_flash(:info, "Audit completed at #{timestamp} — #{checked} checks run, #{skipped} rules skipped per page (#{length(all_rules)} total rules)")}
-  end
-
-  def handle_event("select_page", %{"path" => path}, socket) do
-    selected = Enum.find(socket.assigns.page_results, &(&1.path == path))
-    {:noreply, assign(socket, :selected_page, selected)}
+     |> assign(:selected_result, result)
+     |> assign(:module_dag, dag)}
   end
 
   def handle_event("close_detail", _params, socket) do
-    {:noreply, assign(socket, :selected_page, nil)}
+    {:noreply,
+     socket
+     |> assign(:selected_result, nil)
+     |> assign(:module_dag, nil)}
   end
 
   def handle_event("fix_all", _params, socket) do
-    all_rules = Rule.read!() |> Enum.filter(&(&1.status in [:approved, :proposed, :linter]))
-    rules_by_id = Map.new(all_rules, &{&1.id, &1})
+    case socket.assigns.audit do
+      nil ->
+        {:noreply, socket}
 
-    igniter = Igniter.new()
+      audit ->
+        {:ok, fixed_count} = Audit.fix_all(audit)
 
-    {updated_igniter, _fixed_count} =
-      Enum.reduce(socket.assigns.page_results, {igniter, 0}, fn pr, {ign, count} ->
-        fixable =
-          Enum.count(pr.findings, fn f ->
-            (not f.pass? and rules_by_id[f.rule_id]) && rules_by_id[f.rule_id].fix_type != nil
-          end)
-
-        case Fixer.fix_page(ign, pr, rules_by_id) do
-          {:ok, new_ign} -> {new_ign, count + fixable}
-          _ -> {ign, count}
-        end
-      end)
-
-    # Write changes to disk
-    sources = updated_igniter.rewrite.sources
-    changed = Enum.filter(sources, fn {_path, source} -> Rewrite.Source.updated?(source) end)
-
-    for {path, source} <- changed do
-      content = Rewrite.Source.get(source, :content)
-      File.write!(path, content)
+        {:noreply,
+         put_flash(socket, :info, "Fixed #{fixed_count} file(s). Re-run audit to see results.")}
     end
+  end
+
+  @impl true
+  def handle_info(:do_audit, socket) do
+    Audit.run_audit(
+      approved: socket.assigns.filter_approved,
+      proposed: socket.assigns.filter_proposed,
+      linter: socket.assigns.filter_linter,
+      deep: socket.assigns.filter_giulia
+    )
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:audit_changed, _action, _data}, socket) do
+    latest = Audit.latest_completed()
+
+    socket =
+      if socket.assigns.selected_result do
+        if latest && Audit.result_exists?(latest, socket.assigns.selected_result.module_name) do
+          socket
+        else
+          socket |> assign(:selected_result, nil) |> assign(:module_dag, nil)
+        end
+      else
+        socket
+      end
 
     {:noreply,
      socket
-     |> put_flash(:info, "Fixed #{length(changed)} file(s). Re-run audit to see results.")}
+     |> assign(:audit, latest)
+     |> assign(:query, Audit.results_query(latest))
+     |> assign(:by_category, Audit.category_summary(latest))
+     |> assign(:running, false)
+     |> refresh_table()}
   end
 
   @impl true
@@ -94,14 +131,21 @@ defmodule MaestroWeb.AuditLive do
     <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="page-section">
         <div class="page-header">
-          <h1>Site Audit</h1>
+          <h1>Code Audit</h1>
           <p class="description">
-            Audit every page against approved rules. Click a page to see per-rule findings.
+            All modules × all rules (Maestro + Giulia AST analysis).
           </p>
         </div>
 
+        <%= if @giulia_available do %>
+          <.live_component
+            module={MaestroWeb.Components.GiuliaSkillsCatalog}
+            id="giulia-skills-catalog"
+          />
+        <% end %>
+
         <div class="audit-controls">
-          <button id="run-audit-btn" phx-click="run_audit" class="btn btn-primary" disabled={@running}>
+          <button phx-click="run_audit" class="btn btn-primary btn-sm" disabled={@running}>
             <%= if @running do %>
               <span class="loading loading-spinner loading-sm"></span> Running...
             <% else %>
@@ -109,111 +153,185 @@ defmodule MaestroWeb.AuditLive do
             <% end %>
           </button>
 
-          <%= if @summary && @summary.total_fail > 0 do %>
-            <button id="fix-all-btn" phx-click="fix_all" class="btn btn-warning">
+          <div class="flex items-center gap-3">
+            <label class="label cursor-pointer gap-1">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-xs checkbox-success"
+                checked={@filter_approved}
+                phx-click="toggle_filter"
+                phx-value-filter="approved"
+              />
+              <span class="label-text text-xs">Approved</span>
+            </label>
+            <label class="label cursor-pointer gap-1">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-xs"
+                checked={@filter_proposed}
+                phx-click="toggle_filter"
+                phx-value-filter="proposed"
+              />
+              <span class="label-text text-xs">Proposed</span>
+            </label>
+            <label class="label cursor-pointer gap-1">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-xs checkbox-warning"
+                checked={@filter_linter}
+                phx-click="toggle_filter"
+                phx-value-filter="linter"
+              />
+              <span class="label-text text-xs">Linter</span>
+            </label>
+            <label class="label cursor-pointer gap-1">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-xs checkbox-info"
+                checked={@filter_giulia}
+                disabled={not @giulia_available}
+                phx-click="toggle_filter"
+                phx-value-filter="giulia"
+              />
+              <span class={"label-text text-xs #{if not @giulia_available, do: "opacity-40"}"}>
+                Giulia
+              </span>
+            </label>
+          </div>
+
+          <%= if @audit && @audit.total_fail > 0 do %>
+            <button phx-click="fix_all" class="btn btn-warning btn-sm">
               <.icon name="hero-wrench-screwdriver" class="w-4 h-4" /> Fix All
             </button>
           <% end %>
         </div>
 
-        <%= if @summary do %>
+        <%= if @audit && @audit.status == :completed do %>
           <div class="audit-summary">
             <div class="stats shadow">
               <div class="stat">
-                <div class="stat-title">Pages</div>
-                <div class="stat-value">{@summary.total_pages}</div>
+                <div class="stat-title">Modules</div>
+                <div class="stat-value">{@audit.total_modules}</div>
               </div>
               <div class="stat">
                 <div class="stat-title">Avg Score</div>
-                <div class="stat-value">{@summary.avg_score}%</div>
+                <div class="stat-value">{round(@audit.avg_score || 0)}%</div>
               </div>
               <div class="stat">
-                <div class="stat-title">Checks Pass</div>
-                <div class="stat-value text-success">{@summary.total_pass}</div>
+                <div class="stat-title">Pass</div>
+                <div class="stat-value text-success">{@audit.total_pass_modules}</div>
               </div>
               <div class="stat">
-                <div class="stat-title">Checks Fail</div>
-                <div class="stat-value text-error">{@summary.total_fail}</div>
+                <div class="stat-title">Fail</div>
+                <div class="stat-value text-error">{@audit.total_results}</div>
               </div>
             </div>
-
-            <%= if @summary.failing_by_category != [] do %>
-              <div class="audit-breakdown">
-                <h3>Failures by Category</h3>
-                <div class="audit-check-list">
-                  <%= for fc <- @summary.failing_by_category do %>
-                    <span class="badge badge-error badge-outline gap-1">
-                      {fc.category}
-                      <span class="badge badge-error badge-xs">{fc.count}</span>
-                    </span>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
           </div>
         <% end %>
 
-        <%= if @page_results != [] do %>
-          <div class="audit-results">
-            <table class="table" id="audit-table">
+        <%= if @audit do %>
+          <div class="tabs tabs-boxed mb-4">
+            <a
+              class={["tab", @view_mode == "modules" && "tab-active"]}
+              phx-click="toggle_view"
+              phx-value-mode="modules"
+            >
+              By Module
+            </a>
+            <a
+              class={["tab", @view_mode == "categories" && "tab-active"]}
+              phx-click="toggle_view"
+              phx-value-mode="categories"
+            >
+              By Issue Type
+            </a>
+          </div>
+
+          <%= if @view_mode == "modules" do %>
+            <Cinder.collection
+              id="audit-results-table"
+              query={@query}
+              url_state={@url_state}
+              page_size={50}
+              theme="daisy_ui"
+            >
+              <:col :let={result} field="score" label="Score" sort>
+                <div
+                  class={["radial-progress", score_color(result.score)]}
+                  style={"--value:#{result.score}; --size:2.5rem; --thickness:3px;"}
+                  role="progressbar"
+                >
+                  <span class="audit-score-text">{result.score}</span>
+                </div>
+              </:col>
+              <:col :let={result} field="path" label="Path" sort>
+                <span
+                  class="audit-page-path cursor-pointer hover:underline"
+                  phx-click="select_page"
+                  phx-value-id={result.id}
+                >
+                  {result.path}
+                </span>
+              </:col>
+              <:col :let={result} field="module_name" label="Module" sort>
+                <span class="audit-module-name">{short_module(result.module_name)}</span>
+              </:col>
+              <:col :let={result} field="pass" label="Pass" sort>
+                <span class="text-success">{result.pass}</span>
+              </:col>
+              <:col :let={result} field="fail" label="Fail" sort>
+                <%= if result.fail > 0 do %>
+                  <span class="text-error font-semibold">{result.fail}</span>
+                <% else %>
+                  <span class="text-success">{result.fail}</span>
+                <% end %>
+              </:col>
+              <:col :let={result} field="skip" label="Skip" sort>
+                <span class="text-base-content/40">{result.skip}</span>
+              </:col>
+            </Cinder.collection>
+          <% else %>
+            <table class="table table-sm table-zebra">
               <thead>
                 <tr>
-                  <th>Score</th>
-                  <th>Page</th>
-                  <th>Module</th>
-                  <th>Pass</th>
-                  <th>Fail</th>
-                  <th>Skip</th>
+                  <th>Issue Type</th>
+                  <th>Count</th>
+                  <th>Modules</th>
                 </tr>
               </thead>
               <tbody>
-                <%= for pr <- @page_results do %>
-                  <tr
-                    class={["audit-page-row", score_row_class(pr.score)]}
-                    phx-click="select_page"
-                    phx-value-path={pr.path}
-                  >
+                <%= for {category, %{count: count, modules: modules}} <- @by_category do %>
+                  <tr>
+                    <td><span class="badge badge-outline">{category}</span></td>
+                    <td><span class="text-error font-semibold">{count}</span></td>
                     <td>
-                      <div
-                        class={["radial-progress", score_color(pr.score)]}
-                        style={"--value:#{pr.score}; --size:2.5rem; --thickness:3px;"}
-                        role="progressbar"
-                      >
-                        <span class="audit-score-text">{pr.score}</span>
+                      <div class="flex flex-wrap gap-1">
+                        <%= for mod <- modules do %>
+                          <span class="badge badge-ghost badge-xs">{short_module(mod)}</span>
+                        <% end %>
                       </div>
                     </td>
-                    <td class="audit-page-path">{pr.path}</td>
-                    <td class="audit-module-name">{short_module(pr.module)}</td>
-                    <td><span class="text-success">{pr.pass}</span></td>
-                    <td>
-                      <%= if pr.fail > 0 do %>
-                        <span class="text-error font-semibold">{pr.fail}</span>
-                      <% else %>
-                        <span class="text-success">{pr.fail}</span>
-                      <% end %>
-                    </td>
-                    <td class="text-base-content/40">{pr.skip}</td>
                   </tr>
                 <% end %>
               </tbody>
             </table>
-          </div>
+          <% end %>
         <% else %>
           <div class="audit-empty">
-            <p class="empty-state">Click "Run Audit" to audit all pages against approved rules.</p>
+            <p class="empty-state">Click "Run Audit" to analyze the project.</p>
           </div>
         <% end %>
 
-        <%!-- Page detail panel --%>
-        <%= if @selected_page do %>
+        <%!-- Detail panel --%>
+        <%= if @selected_result do %>
           <div class="audit-detail-panel" id="audit-detail">
             <div class="audit-detail-header">
-              <h2>{@selected_page.path}</h2>
+              <h2>{@selected_result.path}</h2>
               <button phx-click="close_detail" class="btn btn-ghost btn-sm">
                 <.icon name="hero-x-mark" class="w-4 h-4" />
               </button>
             </div>
-            <p class="audit-detail-module">{inspect(@selected_page.module)}</p>
+            <p class="audit-detail-module">{@selected_result.module_name}</p>
 
             <table class="table table-sm">
               <thead>
@@ -225,21 +343,21 @@ defmodule MaestroWeb.AuditLive do
                 </tr>
               </thead>
               <tbody>
-                <%= for f <- Enum.sort_by(@selected_page.findings, & &1.pass?) do %>
-                  <tr class={if(not f.pass?, do: "audit-row-fail", else: "")}>
+                <%= for f <- Enum.sort_by(@selected_result.findings, & &1["pass?"]) do %>
+                  <tr class={if(not f["pass?"], do: "audit-row-fail", else: "")}>
                     <td>
-                      <%= if f.pass? do %>
+                      <%= if f["pass?"] do %>
                         <span class="badge badge-success badge-xs">Pass</span>
                       <% else %>
                         <span class="badge badge-error badge-xs">Fail</span>
                       <% end %>
                     </td>
-                    <td><span class="badge badge-outline badge-xs">{f.rule_category}</span></td>
-                    <td class="audit-rule-content">{f.rule_content}</td>
+                    <td><span class="badge badge-outline badge-xs">{f["rule_category"]}</span></td>
+                    <td class="audit-rule-content">{f["rule_content"]}</td>
                     <td>
-                      <%= if f.evidence != [] do %>
+                      <%= if f["evidence"] && f["evidence"] != [] do %>
                         <ul class="audit-issue-list">
-                          <%= for ev <- f.evidence do %>
+                          <%= for ev <- f["evidence"] do %>
                             <li class="audit-issue">{ev}</li>
                           <% end %>
                         </ul>
@@ -249,6 +367,15 @@ defmodule MaestroWeb.AuditLive do
                 <% end %>
               </tbody>
             </table>
+
+            <%= if @module_dag do %>
+              <div class="mt-4">
+                <h3 class="text-sm font-semibold mb-2">Dependency Graph</h3>
+                <div id="audit-dag" phx-hook="Mermaid" data-mermaid={@module_dag}>
+                  <pre class="mermaid">{@module_dag}</pre>
+                </div>
+              </div>
+            <% end %>
           </div>
         <% end %>
       </div>
@@ -256,24 +383,21 @@ defmodule MaestroWeb.AuditLive do
     """
   end
 
-  defp short_module(module) do
-    module
-    |> to_string()
+  # -- View helpers (presentation only, no domain logic) --
+
+  defp refresh_table(socket) do
+    Cinder.Refresh.refresh_table(socket, "audit-results-table")
+  end
+
+  defp short_module(module_name) do
+    module_name
     |> String.replace("Elixir.MaestroWeb.", "")
+    |> String.replace("Elixir.Maestro.", "")
+    |> String.replace("Elixir.Mix.Tasks.", "mix ")
+    |> String.replace("Elixir.", "")
   end
 
   defp score_color(score) when score >= 80, do: "text-success"
   defp score_color(score) when score >= 50, do: "text-warning"
   defp score_color(_), do: "text-error"
-
-  defp score_row_class(score) when score >= 80, do: ""
-  defp score_row_class(score) when score >= 50, do: "audit-row-warn"
-  defp score_row_class(_), do: "audit-row-fail"
-  @impl true
-  def handle_params(params, _uri, socket) do
-    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
-  end
-
-  defp apply_params(socket, _action, _params),
-    do: socket
 end

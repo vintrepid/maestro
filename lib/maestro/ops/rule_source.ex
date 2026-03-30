@@ -1,4 +1,7 @@
 defmodule Maestro.Ops.RuleSource do
+  @moduledoc """
+  Rule Source resource.
+  """
   use Ash.Resource,
     otp_app: :maestro,
     domain: Maestro.Ops,
@@ -14,12 +17,28 @@ defmodule Maestro.Ops.RuleSource do
     end
   end
 
+  code_interface do
+    define :create
+    define :read
+    define :update
+    define :destroy
+  end
+
   actions do
     defaults [:read, :destroy]
 
     create :create do
       primary? true
-      accept [:file_path, :sub_rule_name, :content_hash, :rule_count, :last_synced_at, :library_id]
+
+      accept [
+        :file_path,
+        :sub_rule_name,
+        :content_hash,
+        :rule_count,
+        :last_synced_at,
+        :library_id
+      ]
+
       upsert? true
       upsert_identity :unique_path
       upsert_fields [:content_hash, :rule_count, :last_synced_at]
@@ -35,10 +54,6 @@ defmodule Maestro.Ops.RuleSource do
     policy always() do
       authorize_if always()
     end
-  end
-
-  identities do
-    identity :unique_path, [:library_id, :file_path]
   end
 
   attributes do
@@ -83,10 +98,7 @@ defmodule Maestro.Ops.RuleSource do
     has_many :rules, Maestro.Ops.Rule
   end
 
-  code_interface do
-    define :create
-    define :read
-    define :update
-    define :destroy
+  identities do
+    identity :unique_path, [:library_id, :file_path]
   end
 end

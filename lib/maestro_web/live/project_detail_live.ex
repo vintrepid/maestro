@@ -12,14 +12,9 @@ defmodule MaestroWeb.ProjectDetailLive do
          socket |> put_flash(:error, "Project not found") |> push_navigate(to: ~p"/projects")}
 
       project ->
-        maestro_capacity = read_session_capacity()
-        project_capacity = read_project_session_capacity(project)
-
         {:ok,
          socket
          |> assign(:project, project)
-         |> assign(:session_capacity, maestro_capacity)
-         |> assign(:project_capacity, project_capacity)
          |> assign(:page_title, project.name)}
     end
   end
@@ -28,47 +23,6 @@ defmodule MaestroWeb.ProjectDetailLive do
   def handle_event("open_file", %{"path" => path}, socket) do
     open_file(path)
     {:noreply, socket}
-  end
-
-  def handle_event("reorder_startup", %{"items" => items, "project" => project}, socket) do
-    paths = Enum.map(items, & &1["path"])
-
-    startup_file = Path.join([File.cwd!(), "agents", "startup", "#{String.upcase(project)}.md"])
-
-    if File.exists?(startup_file) do
-      write_custom_startup_order(startup_file, paths, project)
-      {:noreply, socket |> put_flash(:info, "Startup order saved!")}
-    else
-      {:noreply, socket |> put_flash(:error, "Startup file not found")}
-    end
-  end
-
-  defp write_custom_startup_order(file_path, paths, project) do
-    content = File.read!(file_path)
-
-    custom_order_section = """
-    ## Custom Startup Order
-
-    This project uses a custom startup sequence:
-
-    """
-
-    custom_order_section =
-      custom_order_section <>
-        Enum.map_join(paths, "\n", fn path ->
-          "#{Enum.find_index(paths, &(&1 == path)) + 1}. `#{path}`"
-        end)
-
-    custom_order_section = custom_order_section <> "\n\n---\n\n"
-
-    updated_content =
-      if String.contains?(content, "## Custom Startup Order") do
-        Regex.replace(~r/## Custom Startup Order.*?---\n\n/s, content, custom_order_section)
-      else
-        custom_order_section <> content
-      end
-
-    File.write!(file_path, updated_content)
   end
 
   def handle_event("open_in_vscodium", _params, socket) do
@@ -95,17 +49,6 @@ defmodule MaestroWeb.ProjectDetailLive do
               ]}>
                 {@project.status}
               </span>
-              <%= if @project_capacity && @project.status == :running do %>
-                <span class="badge badge-lg badge-warning" title="Project AI session capacity">
-                  <.icon name="hero-cpu-chip" class="w-4 h-4 mr-1" />
-                  {@project_capacity}
-                </span>
-              <% end %>
-              <%= if @session_capacity do %>
-                <span class="badge badge-lg badge-info" title="Maestro session capacity">
-                  {@session_capacity}
-                </span>
-              <% end %>
             </div>
           </div>
 
@@ -127,17 +70,13 @@ defmodule MaestroWeb.ProjectDetailLive do
             </div>
             <MaestroWeb.Components.TaskTable.task_table
               id="project-tasks-table"
-              query_fn={fn -> project_tasks_query(@project.id) end}
+              data_fn={fn -> project_tasks_query(@project.id) end}
             />
           </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="lg:col-span-1">
-            <MaestroWeb.Components.GuidelinesViewer.guidelines_viewer project={@project.slug} />
-          </div>
-
-          <div class="lg:col-span-2">
+          <div class="lg:col-span-3">
             <div class="card bg-base-100 shadow-xl mb-6">
               <div class="card-body">
                 <h2 class="card-title">Project Info</h2>
@@ -237,13 +176,8 @@ defmodule MaestroWeb.ProjectDetailLive do
     project_path = Path.expand("~/dev/#{assigns.project.slug}")
 
     ~H"""
-    <div id={"git-status-#{@project.id}"} data-project-path={project_path}>
-      <button
-        class="btn btn-sm btn-ghost gap-2"
-        phx-click={JS.exec("onclick", to: "#git-load-btn-#{@project.id}")}
-        id={"git-load-btn-#{@project.id}"}
-        onclick={"window.loadProjectGitInfo('#{@project.id}', '#{project_path}')"}
-      >
+    <div id={"git-status-#{@project.id}"} data-project-path={project_path} data-project-id={@project.id} phx-hook="ProjectGitInfoHook">
+      <button class="btn btn-sm btn-ghost gap-2">
         <.icon name="hero-code-bracket" class="w-4 h-4" />
         <span id={"git-branch-#{@project.id}"}>Click to load...</span>
       </button>
@@ -261,81 +195,23 @@ defmodule MaestroWeb.ProjectDetailLive do
         </div>
       </div>
     </div>
-
-    <script>
-      window.loadProjectGitInfo = function(projectId, projectPath) {
-        const url = `/api/git/info?project_path=${encodeURIComponent(projectPath)}`;
-        
-        fetch(url)
-          .then(r => r.json())
-          .then(data => {
-            document.getElementById(`git-branch-${projectId}`).textContent = data.current_branch;
-            document.getElementById(`git-current-${projectId}`).textContent = data.current_branch;
-            
-            let badgesHTML = '';
-            if (data.commits_ahead) {
-              badgesHTML += `<span class="badge badge-warning">+${data.commits_ahead} ahead</span>`;
-            }
-            if (data.commits_behind) {
-              badgesHTML += `<span class="badge badge-error">-${data.commits_behind} behind</span>`;
-            }
-            document.getElementById(`git-badges-${projectId}`).innerHTML = badgesHTML;
-            
-            if (data.other_branches && data.other_branches.length > 0) {
-              const branchesHTML = '<div class="text-sm text-base-content/60 mb-2">Other Branches</div>' +
-                data.other_branches.slice(0, 5).map(b => `
-                  <div class="flex items-center justify-between py-1">
-                    <span class="font-mono text-sm">${b.branch}</span>
-                    <div class="flex gap-1">
-                      ${b.ahead ? `<span class="badge badge-xs badge-warning">+${b.ahead}</span>` : ''}
-                      ${b.behind ? `<span class="badge badge-xs badge-error">-${b.behind}</span>` : ''}
-                    </div>
-                  </div>
-                `).join('');
-              
-              document.getElementById(`git-branches-${projectId}`).innerHTML = branchesHTML;
-            }
-            
-            document.getElementById(`git-info-${projectId}`).style.display = 'block';
-          })
-          .catch(err => console.error('Failed to load git info:', err));
-      };
-    </script>
     """
   end
 
   defp project_tasks_query(project_id) do
-    from t in Maestro.Ops.Task,
-      where: t.entity_type == "Project" and t.entity_id == ^to_string(project_id),
-      order_by: [desc: t.inserted_at]
+    require Ash.Query
+
+    project_id_str = to_string(project_id)
+
+    Maestro.Ops.Task
+    |> Ash.Query.filter(entity_type == "project" and entity_id == ^project_id_str)
+    |> Ash.Query.sort(inserted_at: :desc)
+    |> Ash.read!(authorize?: false)
   end
 
   defp status_badge_class(status) when status in [:running, "running"], do: "badge-success"
   defp status_badge_class(status) when status in [:stopped, "stopped"], do: "badge-error"
   defp status_badge_class(_), do: "badge-ghost"
-
-  defp read_session_capacity do
-    capacity_file = Path.join([File.cwd!(), "SESS_CAP.md"])
-
-    if File.exists?(capacity_file) do
-      File.read!(capacity_file)
-      |> String.trim()
-    else
-      nil
-    end
-  end
-
-  defp read_project_session_capacity(project) do
-    project_path = Path.expand("~/dev/#{project.slug}")
-    capacity_file = Path.join([project_path, "SESS_CAP.md"])
-
-    if File.exists?(capacity_file) do
-      File.read!(capacity_file)
-      |> String.trim()
-    else
-      nil
-    end
-  end
 
   @impl true
   def handle_params(params, _uri, socket) do

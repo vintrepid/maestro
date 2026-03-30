@@ -30,12 +30,6 @@
     "severity": "must"
   },
   {
-    "category": "components",
-    "content": "**Always** use Cinder (`<Cinder.collection>`) for data tables instead of LiveTable. Cinder is Ash-native, supports DaisyUI theming, URL state sync, and declarative column slots. LiveTable is deprecated — it uses raw Ecto queries and fake streaming (Repo.all then split).",
-    "id": "5c493223-1458-456c-bb26-01b7e053ad46",
-    "severity": "must"
-  },
-  {
     "category": "architecture",
     "content": "**Always** fix the tool first, then run the tool. Never do one-off manual work. If something needs to happen repeatedly (curation, refactoring, deployment), build or fix the mix task/tool that does it, then execute the task.",
     "id": "9d490520-b820-4faf-bb3c-f81a2d277b0d",
@@ -43,8 +37,38 @@
   },
   {
     "category": "components",
+    "content": "**Always** use Cinder (`<Cinder.collection>`) for data tables instead of LiveTable. Cinder is Ash-native, supports DaisyUI theming, URL state sync, and declarative column slots. LiveTable is deprecated — it uses raw Ecto queries and fake streaming (Repo.all then split).",
+    "id": "5c493223-1458-456c-bb26-01b7e053ad46",
+    "severity": "must"
+  },
+  {
+    "category": "ash",
+    "content": "**Always** use Ash resource actions (`Resource.read!()`, `Resource.update()`, `Resource.by_id!()`) to query and mutate data — never raw SQL, `Repo.all`, `Ecto.Query`, or `browser_eval` for data operations. Ash resources are the API. SQL and browser are escape hatches for debugging only.",
+    "id": "f0d92d27-920a-4fef-a97a-f7843055deb0",
+    "severity": "must"
+  },
+  {
+    "category": "architecture",
+    "content": "**Never** duplicate logic that already lives in a resource. If you find yourself re-implementing what a resource already knows (its fields, validations, relationships, actions), you're coding in the wrong place. Ask: which resource is responsible for this? Put the logic there. Responsibility-driven design — every piece of knowledge has exactly one home.",
+    "id": "f980cf2c-c48a-4d92-ae55-22142ad6a59f",
+    "severity": "must"
+  },
+  {
+    "category": "components",
     "content": "**Always** use the `daisy_ui` theme when using Cinder collections. Pass `theme=\"daisy_ui\"` to `<Cinder.collection>`. This ensures tables use DaisyUI semantic classes (table, table-zebra, btn, badge) consistent with the rest of the app.",
     "id": "22f4de51-170e-46a4-b122-5569972e6430",
+    "severity": "should"
+  },
+  {
+    "category": "architecture",
+    "content": "Never say \"You're right\" or similar validating phrases. When corrected, acknowledge the correction by restating the correct approach and immediately applying it. Don't waste the user's time with empty agreement — show you understood by doing.",
+    "id": "bef802f5-505f-45cb-97f4-6da4a95fb528",
+    "severity": "should"
+  },
+  {
+    "category": "elixir",
+    "content": "Never use regex or text manipulation to modify Elixir source code. Always use Igniter and Sourceror for AST-based code transformations. Regex-based code edits are fragile, miss edge cases, and break on formatting changes. AST manipulation is correct by construction.",
+    "id": "af3be748-11a1-40ad-acc0-8a891076c808",
     "severity": "should"
   }
 ]

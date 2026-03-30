@@ -1,4 +1,7 @@
 defmodule Maestro.Ops.Project do
+  @moduledoc """
+  Project resource.
+  """
   use Ash.Resource,
     otp_app: :maestro,
     domain: Maestro.Ops,
@@ -8,6 +11,15 @@ defmodule Maestro.Ops.Project do
   postgres do
     table "projects"
     repo Maestro.Repo
+  end
+
+  code_interface do
+    define :create
+    define :read
+    define :active
+    define :update
+    define :destroy
+    define :by_id, get_by: [:id], action: :read
   end
 
   actions do
@@ -24,7 +36,17 @@ defmodule Maestro.Ops.Project do
 
     update :update do
       primary? true
-      accept [:name, :slug, :description, :web_port, :debugger_port, :github_url, :prod_url, :status]
+
+      accept [
+        :name,
+        :slug,
+        :description,
+        :web_port,
+        :debugger_port,
+        :github_url,
+        :prod_url,
+        :status
+      ]
     end
   end
 
@@ -80,15 +102,5 @@ defmodule Maestro.Ops.Project do
 
   identities do
     identity :unique_slug, [:slug]
-    identity :unique_web_port, [:web_port]
-  end
-
-  code_interface do
-    define :create
-    define :read
-    define :active
-    define :update
-    define :destroy
-    define :by_id, get_by: [:id], action: :read
   end
 end

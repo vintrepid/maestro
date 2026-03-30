@@ -1,4 +1,7 @@
 defmodule Maestro.Agents.Session do
+  @moduledoc """
+  Session resource.
+  """
   use Ash.Resource,
     otp_app: :maestro,
     domain: Maestro.Agents,
@@ -8,6 +11,17 @@ defmodule Maestro.Agents.Session do
   postgres do
     table "agent_sessions"
     repo Maestro.Repo
+  end
+
+  code_interface do
+    define :create
+    define :read
+    define :update
+    define :destroy
+    define :finish
+    define :fail
+    define :active
+    define :by_agent, args: [:agent_id]
   end
 
   actions do
@@ -88,16 +102,5 @@ defmodule Maestro.Agents.Session do
     end
 
     has_many :requests, Maestro.Agents.Request
-  end
-
-  code_interface do
-    define :create
-    define :read
-    define :update
-    define :destroy
-    define :finish
-    define :fail
-    define :active
-    define :by_agent, args: [:agent_id]
   end
 end

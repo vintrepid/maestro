@@ -17,6 +17,7 @@ defmodule MaestroWeb.LiveViewHelpers do
   defmacro __before_compile__(_env) do
     quote do
       # File opener for the agent dashboard's changed files list
+      @spec handle_event(any(), map(), Phoenix.LiveView.Socket.t()) :: term()
       def handle_event("open_file", %{"path" => path}, socket) do
         MaestroWeb.Live.Helpers.FileOpener.open_file(path)
         {:noreply, socket}

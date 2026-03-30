@@ -11,35 +11,40 @@ defmodule Maestro.Ops.Rules.Prioritizer do
   Assigns priority and bundle to all approved rules that haven't been manually set.
   Returns {updated_count, skipped_count}.
   """
+  @spec auto_assign_all() :: term()
   def auto_assign_all do
-    rules = Repo.all(
-      from r in "rules",
-        where: r.status == "approved",
-        select: %{
-          id: type(r.id, :string),
-          content: r.content,
-          category: r.category,
-          severity: r.severity,
-          priority: r.priority,
-          bundle: r.bundle
-        }
-    )
+    rules =
+      Repo.all(
+        from r in "rules",
+          where: r.status == "approved",
+          select: %{
+            id: type(r.id, :string),
+            content: r.content,
+            category: r.category,
+            severity: r.severity,
+            priority: r.priority,
+            bundle: r.bundle
+          }
+      )
 
-    results = Enum.map(rules, fn rule ->
-      new_priority = compute_priority(rule)
-      new_bundle = compute_bundle(rule)
+    results =
+      Enum.map(rules, fn rule ->
+        new_priority = compute_priority(rule)
+        new_bundle = compute_bundle(rule)
 
-      if new_priority != rule.priority || new_bundle != (rule.bundle || "universal") do
-        {:ok, uuid} = Ecto.UUID.dump(rule.id)
-        Repo.query!(
-          "UPDATE rules SET priority = $1, bundle = $2, updated_at = NOW() WHERE id = $3",
-          [new_priority, to_string(new_bundle), uuid]
-        )
-        :updated
-      else
-        :skipped
-      end
-    end)
+        if new_priority != rule.priority || new_bundle != (rule.bundle || "universal") do
+          {:ok, uuid} = Ecto.UUID.dump(rule.id)
+
+          Repo.query!(
+            "UPDATE rules SET priority = $1, bundle = $2, updated_at = NOW() WHERE id = $3",
+            [new_priority, to_string(new_bundle), uuid]
+          )
+
+          :updated
+        else
+          :skipped
+        end
+      end)
 
     updated = Enum.count(results, &(&1 == :updated))
     skipped = Enum.count(results, &(&1 == :skipped))
@@ -49,6 +54,7 @@ defmodule Maestro.Ops.Rules.Prioritizer do
   @doc """
   Computes a priority score (1-100) for a rule based on signals.
   """
+  @spec compute_priority(any()) :: term()
   def compute_priority(rule) do
     base = severity_base(rule.severity)
     content = String.downcase(rule.content || "")
@@ -79,6 +85,7 @@ defmodule Maestro.Ops.Rules.Prioritizer do
   @doc """
   Determines which bundle a rule belongs to based on category and content.
   """
+  @spec compute_bundle(any()) :: term()
   def compute_bundle(rule) do
     content = String.downcase(rule.content || "")
     category = rule.category
@@ -86,7 +93,7 @@ defmodule Maestro.Ops.Rules.Prioritizer do
     cond do
       # Maestro-specific
       String.contains?(content, "maestro") and
-        not String.contains?(content, "maestroweb") ->
+          not String.contains?(content, "maestroweb") ->
         "maestro"
 
       String.contains?(content, "current_task.json") ->

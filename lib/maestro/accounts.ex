@@ -1,4 +1,7 @@
 defmodule Maestro.Accounts do
+  @moduledoc """
+  Accounts domain — Ash resource registry.
+  """
   use Ash.Domain, otp_app: :maestro, extensions: [AshAdmin.Domain]
 
   admin do

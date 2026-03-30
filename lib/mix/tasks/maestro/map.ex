@@ -23,6 +23,7 @@ defmodule Mix.Tasks.Maestro.Map do
   use Mix.Task
 
   @impl true
+  @spec run([String.t()]) :: :ok
   def run(args) do
     {opts, _, _} = OptionParser.parse(args, strict: [dir: :string])
     dir = opts[:dir] || "lib"
@@ -75,7 +76,7 @@ defmodule Mix.Tasks.Maestro.Map do
 
   defp extract_moduledoc_summary(source) do
     case Regex.run(~r/@moduledoc\s+"""\n\s*(.+?)(?:\n|\.\s)/, source) do
-      [_, first_sentence] -> String.trim(first_sentence) |> String.slice(0, 120)
+      [_, first_sentence] -> String.slice(String.trim(first_sentence), 0, 120)
       _ -> nil
     end
   end

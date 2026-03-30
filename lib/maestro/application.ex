@@ -42,6 +42,7 @@ defmodule Maestro.Application do
   end
 
   @impl true
+  @spec config_change(any(), any(), any()) :: :ok
   def config_change(changed, _new, removed) do
     MaestroWeb.Endpoint.config_change(changed, removed)
     :ok

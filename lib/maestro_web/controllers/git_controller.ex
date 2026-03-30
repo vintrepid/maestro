@@ -1,11 +1,16 @@
 defmodule MaestroWeb.GitController do
+  @moduledoc """
+  Controller for Git routes.
+  """
   use MaestroWeb, :controller
 
+  @spec info(Plug.Conn.t(), map()) :: term()
   def info(conn, %{"project_path" => project_path}) do
     git_info = get_git_info(project_path)
     json(conn, git_info)
   end
 
+  @spec info(Plug.Conn.t(), map()) :: term()
   def info(conn, _params) do
     git_info = get_git_info(File.cwd!())
     json(conn, git_info)
@@ -33,20 +38,30 @@ defmodule MaestroWeb.GitController do
   end
 
   defp get_commits_ahead_of_master(project_path) do
-    case System.cmd("git", ["rev-list", "--count", "master..HEAD"], stderr_to_stdout: true, cd: project_path) do
+    case System.cmd("git", ["rev-list", "--count", "master..HEAD"],
+           stderr_to_stdout: true,
+           cd: project_path
+         ) do
       {count, 0} ->
-        count_int = String.trim(count) |> String.to_integer()
+        count_int = String.to_integer(String.trim(count))
         if count_int > 0, do: count_int, else: nil
-      _ -> nil
+
+      _ ->
+        nil
     end
   end
 
   defp get_commits_behind_master(project_path) do
-    case System.cmd("git", ["rev-list", "--count", "HEAD..master"], stderr_to_stdout: true, cd: project_path) do
+    case System.cmd("git", ["rev-list", "--count", "HEAD..master"],
+           stderr_to_stdout: true,
+           cd: project_path
+         ) do
       {count, 0} ->
-        count_int = String.trim(count) |> String.to_integer()
+        count_int = String.to_integer(String.trim(count))
         if count_int > 0, do: count_int, else: nil
-      _ -> nil
+
+      _ ->
+        nil
     end
   end
 
@@ -60,19 +75,31 @@ defmodule MaestroWeb.GitController do
         |> Enum.map(&String.replace_prefix(&1, "* ", ""))
         |> Enum.reject(&(&1 == current_branch))
         |> Enum.map(fn branch ->
-          ahead = case System.cmd("git", ["rev-list", "--count", "master..#{branch}"], stderr_to_stdout: true, cd: project_path) do
-            {count, 0} ->
-              count_int = String.trim(count) |> String.to_integer()
-              if count_int > 0, do: count_int, else: nil
-            _ -> nil
-          end
+          ahead =
+            case System.cmd("git", ["rev-list", "--count", "master..#{branch}"],
+                   stderr_to_stdout: true,
+                   cd: project_path
+                 ) do
+              {count, 0} ->
+                count_int = String.to_integer(String.trim(count))
+                if count_int > 0, do: count_int, else: nil
 
-          behind = case System.cmd("git", ["rev-list", "--count", "#{branch}..master"], stderr_to_stdout: true, cd: project_path) do
-            {count, 0} ->
-              count_int = String.trim(count) |> String.to_integer()
-              if count_int > 0, do: count_int, else: nil
-            _ -> nil
-          end
+              _ ->
+                nil
+            end
+
+          behind =
+            case System.cmd("git", ["rev-list", "--count", "#{branch}..master"],
+                   stderr_to_stdout: true,
+                   cd: project_path
+                 ) do
+              {count, 0} ->
+                count_int = String.to_integer(String.trim(count))
+                if count_int > 0, do: count_int, else: nil
+
+              _ ->
+                nil
+            end
 
           if ahead || behind do
             %{branch: branch, ahead: ahead, behind: behind}
@@ -82,7 +109,9 @@ defmodule MaestroWeb.GitController do
         end)
         |> Enum.reject(&is_nil/1)
         |> Enum.sort_by(fn %{ahead: ahead} -> -(ahead || 0) end)
-      _ -> []
+
+      _ ->
+        []
     end
   end
 end

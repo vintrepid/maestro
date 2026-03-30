@@ -1,22 +1,21 @@
 {
+  "pending": [
+    "71 proposed rules need curation at /rules"
+  ],
   "status": "in_progress",
   "state": {
-    "total_rules": 1783,
-    "approved_rules": 18,
-    "proposed_rules": 177,
-    "bundles": { "universal": 8, "ui": 9, "model": 1 },
-    "rules_json_size": "8 rules, 2KB (compact agent bundle)",
-    "startup_chain": "MAP.md (108 modules) → rules.json (8 rules) → current_task.json",
-    "cinder_fork": "Streams enabled — ../forks/cinder commit 2293cbe",
-    "hook": "UserPromptSubmit hook at ~/.claude/projects/-Users-vince-dev-maestro/hooks/ — auto-creates tasks via mix maestro.task.create"
+    "approved_rules": 45,
+    "proposed_rules": 71,
+    "quality_pass_rate": "87%",
+    "site_audit": {
+      "avg_score": "97%",
+      "failures": [
+        "architecture: 6",
+        "liveview: 3"
+      ],
+      "pages": 21
+    }
   },
-  "pending": [
-    "Task #104 IN PROGRESS: Build mix maestro.rules.apply (Rule → Skill → Executable pipeline)",
-    "Startup architecture: Replace 3 file reads with single project_eval call (see memory: project_startup_architecture.md)",
-    "ResourceTable component is dead code — delete it",
-    "ConceptsController is dead code — routes removed, LiveView replaced it",
-    "Test the UserPromptSubmit hook — created but never fired"
-  ],
-  "session_date": "2026-03-28",
-  "summary": "Cinder streams (all renderers), dashboard collapse persistence + spinner fix + PubSub crash fix, concepts rebuilt as rules concept map, tag cloud filters from query, task.create mix task, FWF PubSub fix, UserPromptSubmit hook created"
+  "session_date": "2026-03-30",
+  "summary": "Major refactoring session: facade pattern for all LiveViews (audit/rules/agents), Giulia integration at port 4020, audit fixer pipeline for specs/moduledocs/pipes/atoms, rule dedup with god rules (88 duplicates consolidated into 25), superseded_by relationship, HeexCalls module for dead code filtering. Rules page layout needs CSS fix (page-header, filter-chips). 71 proposed rules remain for curation."
 }

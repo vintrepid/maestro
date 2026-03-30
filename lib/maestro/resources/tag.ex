@@ -1,4 +1,7 @@
 defmodule Maestro.Resources.Tag do
+  @moduledoc """
+  Tag resource.
+  """
   use Ash.Resource,
     domain: Maestro.Resources,
     data_layer: AshPostgres.DataLayer
@@ -6,6 +9,27 @@ defmodule Maestro.Resources.Tag do
   postgres do
     table "tags"
     repo Maestro.Repo
+  end
+
+  code_interface do
+    define :create
+    define :read
+    define :update
+    define :destroy
+    define :by_id, get_by: [:id], action: :read
+    define :by_slug, get_by: [:slug], action: :read
+  end
+
+  actions do
+    defaults [:read, :destroy]
+
+    create :create do
+      accept [:name, :slug, :description, :color, :owner_type, :owner_id]
+    end
+
+    update :update do
+      accept [:name, :slug, :description, :color]
+    end
   end
 
   attributes do
@@ -56,28 +80,7 @@ defmodule Maestro.Resources.Tag do
     end
   end
 
-  actions do
-    defaults [:read, :destroy]
-
-    create :create do
-      accept [:name, :slug, :description, :color, :owner_type, :owner_id]
-    end
-
-    update :update do
-      accept [:name, :slug, :description, :color]
-    end
-  end
-
   identities do
     identity :unique_slug_per_owner, [:slug, :owner_type, :owner_id]
-  end
-
-  code_interface do
-    define :create
-    define :read
-    define :update
-    define :destroy
-    define :by_id, get_by: [:id], action: :read
-    define :by_slug, get_by: [:slug], action: :read
   end
 end

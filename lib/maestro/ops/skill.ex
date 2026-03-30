@@ -1,4 +1,7 @@
 defmodule Maestro.Ops.Skill do
+  @moduledoc """
+  Skill resource.
+  """
   use Ash.Resource,
     otp_app: :maestro,
     domain: Maestro.Ops,
@@ -10,20 +13,54 @@ defmodule Maestro.Ops.Skill do
     repo Maestro.Repo
   end
 
+  code_interface do
+    define :create
+    define :read
+    define :update
+    define :destroy
+    define :by_name, get_by: [:name], action: :read
+  end
+
   actions do
     defaults [:read, :destroy]
 
     create :create do
       primary? true
-      accept [:name, :description, :skill_path, :managed_by, :library_names, :reference_files, :last_synced_at]
+
+      accept [
+        :name,
+        :description,
+        :skill_path,
+        :managed_by,
+        :library_names,
+        :reference_files,
+        :last_synced_at
+      ]
+
       upsert? true
       upsert_identity :unique_name
-      upsert_fields [:description, :skill_path, :managed_by, :library_names, :reference_files, :last_synced_at]
+
+      upsert_fields [
+        :description,
+        :skill_path,
+        :managed_by,
+        :library_names,
+        :reference_files,
+        :last_synced_at
+      ]
     end
 
     update :update do
       primary? true
-      accept [:description, :skill_path, :managed_by, :library_names, :reference_files, :last_synced_at]
+
+      accept [
+        :description,
+        :skill_path,
+        :managed_by,
+        :library_names,
+        :reference_files,
+        :last_synced_at
+      ]
     end
   end
 
@@ -31,10 +68,6 @@ defmodule Maestro.Ops.Skill do
     policy always() do
       authorize_if always()
     end
-  end
-
-  identities do
-    identity :unique_name, [:name]
   end
 
   attributes do
@@ -81,11 +114,7 @@ defmodule Maestro.Ops.Skill do
     update_timestamp :updated_at
   end
 
-  code_interface do
-    define :create
-    define :read
-    define :update
-    define :destroy
-    define :by_name, get_by: [:name], action: :read
+  identities do
+    identity :unique_name, [:name]
   end
 end

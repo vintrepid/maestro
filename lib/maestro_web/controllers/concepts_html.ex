@@ -1,4 +1,5 @@
 defmodule MaestroWeb.ConceptsHTML do
+  @moduledoc false
   use MaestroWeb, :html
   import MaestroWeb.Live.Helpers.FileOpener
 

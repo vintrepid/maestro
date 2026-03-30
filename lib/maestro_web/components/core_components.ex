@@ -47,6 +47,7 @@ defmodule MaestroWeb.CoreComponents do
 
   slot :inner_block, doc: "the optional inner block that renders the flash message"
 
+  @spec flash(map()) :: term()
   def flash(assigns) do
     assigns = assign_new(assigns, :id, fn -> "flash-#{assigns.kind}" end)
 
@@ -93,6 +94,7 @@ defmodule MaestroWeb.CoreComponents do
   attr :variant, :string, values: ~w(primary)
   slot :inner_block, required: true
 
+  @spec button(map()) :: term()
   def button(%{rest: rest} = assigns) do
     variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
 
@@ -167,6 +169,7 @@ defmodule MaestroWeb.CoreComponents do
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
                 multiple pattern placeholder readonly required rows size step)
 
+  @spec input(map()) :: term()
   def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
 
@@ -178,6 +181,7 @@ defmodule MaestroWeb.CoreComponents do
     |> input()
   end
 
+  @spec input(map()) :: term()
   def input(%{type: "checkbox"} = assigns) do
     assigns =
       assign_new(assigns, :checked, fn ->
@@ -205,6 +209,7 @@ defmodule MaestroWeb.CoreComponents do
     """
   end
 
+  @spec input(map()) :: term()
   def input(%{type: "select"} = assigns) do
     ~H"""
     <div class="fieldset mb-2">
@@ -226,6 +231,7 @@ defmodule MaestroWeb.CoreComponents do
     """
   end
 
+  @spec input(map()) :: term()
   def input(%{type: "textarea"} = assigns) do
     ~H"""
     <div class="fieldset mb-2">
@@ -247,6 +253,7 @@ defmodule MaestroWeb.CoreComponents do
   end
 
   # All other inputs text, datetime-local, url, password, etc. are handled here...
+  @spec input(map()) :: term()
   def input(assigns) do
     ~H"""
     <div class="fieldset mb-2">
@@ -286,6 +293,7 @@ defmodule MaestroWeb.CoreComponents do
   slot :subtitle
   slot :actions
 
+  @spec header(map()) :: term()
   def header(assigns) do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4"]}>
@@ -327,6 +335,7 @@ defmodule MaestroWeb.CoreComponents do
 
   slot :action, doc: "the slot for showing user actions in the last table column"
 
+  @spec table(map()) :: term()
   def table(assigns) do
     assigns =
       with %{rows: %Phoenix.LiveView.LiveStream{}} <- assigns do
@@ -379,6 +388,7 @@ defmodule MaestroWeb.CoreComponents do
     attr :title, :string, required: true
   end
 
+  @spec list(map()) :: term()
   def list(assigns) do
     ~H"""
     <ul class="list">
@@ -413,6 +423,7 @@ defmodule MaestroWeb.CoreComponents do
   attr :name, :string, required: true
   attr :class, :string, default: "size-4"
 
+  @spec icon(map()) :: term()
   def icon(%{name: "hero-" <> _} = assigns) do
     ~H"""
     <span class={[@name, @class]} />
@@ -421,6 +432,7 @@ defmodule MaestroWeb.CoreComponents do
 
   ## JS Commands
 
+  @spec show(any(), any()) :: term()
   def show(js \\ %JS{}, selector) do
     JS.show(js,
       to: selector,
@@ -432,6 +444,7 @@ defmodule MaestroWeb.CoreComponents do
     )
   end
 
+  @spec hide(any(), any()) :: term()
   def hide(js \\ %JS{}, selector) do
     JS.hide(js,
       to: selector,
@@ -445,6 +458,7 @@ defmodule MaestroWeb.CoreComponents do
   @doc """
   Translates an error message using gettext.
   """
+  @spec translate_error(any()) :: term()
   def translate_error({msg, opts}) do
     # When using gettext, we typically pass the strings we want
     # to translate as a static argument:
@@ -475,7 +489,8 @@ defmodule MaestroWeb.CoreComponents do
   """
   attr :class, :string, default: nil
   slot :inner_block, required: true
-  
+
+  @spec card(map()) :: term()
   def card(assigns) do
     ~H"""
     <div class={["card bg-base-100 shadow-xl", @class]}>
@@ -493,7 +508,8 @@ defmodule MaestroWeb.CoreComponents do
   attr :value, :string, required: true
   attr :description, :string, default: nil
   attr :color, :string, default: nil
-  
+
+  @spec stat_card(map()) :: term()
   def stat_card(assigns) do
     ~H"""
     <div class="stat">
@@ -509,7 +525,8 @@ defmodule MaestroWeb.CoreComponents do
   """
   attr :class, :string, default: nil
   slot :inner_block, required: true
-  
+
+  @spec code(map()) :: term()
   def code(assigns) do
     ~H"""
     <code class={["font-mono text-xs bg-base-200 px-2 py-1 rounded", @class]}>
@@ -517,7 +534,6 @@ defmodule MaestroWeb.CoreComponents do
     </code>
     """
   end
-
 
   @doc """
   Renders a simple HTML table with DaisyUI styling defaults.
@@ -542,6 +558,7 @@ defmodule MaestroWeb.CoreComponents do
   attr :rest, :global
   slot :inner_block, required: true
 
+  @spec simple_table(map()) :: term()
   def simple_table(assigns) do
     ~H"""
     <table class={["table table-sm table-zebra table-pin-rows", @class]} {@rest}>
@@ -569,6 +586,7 @@ defmodule MaestroWeb.CoreComponents do
   slot :title, required: true
   slot :actions
 
+  @spec page_header(map()) :: term()
   def page_header(assigns) do
     ~H"""
     <div class={["flex gap-6 justify-between items-start mb-6", @class]}>
@@ -598,6 +616,7 @@ defmodule MaestroWeb.CoreComponents do
   attr :rest, :global
   slot :inner_block, required: true
 
+  @spec section_card(map()) :: term()
   def section_card(assigns) do
     ~H"""
     <div class={["card bg-base-100 shadow-xl", @class]} {@rest}>
@@ -623,6 +642,7 @@ defmodule MaestroWeb.CoreComponents do
   attr :class, :string, default: nil
   slot :inner_block, required: true
 
+  @spec stats_grid(map()) :: term()
   def stats_grid(assigns) do
     ~H"""
     <div class={["stats stats-vertical lg:stats-horizontal shadow mb-6 w-full", @class]}>
@@ -654,6 +674,7 @@ defmodule MaestroWeb.CoreComponents do
   attr :class, :string, default: nil
   slot :inner_block, required: true
 
+  @spec simple_card(map()) :: term()
   def simple_card(assigns) do
     ~H"""
     <div class={["card bg-base-100 shadow-xl", @class]}>

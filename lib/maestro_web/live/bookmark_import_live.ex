@@ -1,8 +1,12 @@
 defmodule MaestroWeb.BookmarkImportLive do
+  @moduledoc """
+  LiveView for the Bookmark Import page.
+  """
   use MaestroWeb, :live_view
   alias Maestro.Resources.BookmarkImporter
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
     {:ok,
      socket
@@ -13,14 +17,20 @@ defmodule MaestroWeb.BookmarkImportLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("validate", _params, socket) do
     {:noreply, socket}
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
     {:noreply, cancel_upload(socket, :bookmarks, ref)}
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("import", _params, socket) do
     socket = assign(socket, :importing, true)
 
@@ -66,6 +76,7 @@ defmodule MaestroWeb.BookmarkImportLive do
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
@@ -204,6 +215,8 @@ defmodule MaestroWeb.BookmarkImportLive do
   defp error_to_string(:too_many_files), do: "Only one file allowed"
   defp error_to_string(err), do: "Upload error: #{inspect(err)}"
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(params, _uri, socket) do
     {:noreply, apply_params(socket, socket.assigns.live_action, params)}
   end

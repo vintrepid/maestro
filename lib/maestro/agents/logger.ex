@@ -9,6 +9,7 @@ defmodule Maestro.Agents.Logger do
   @doc """
   Finds or creates an agent, starts a session, and returns both.
   """
+  @spec start_session(any(), any(), any()) :: term()
   def start_session(agent_name, task_description, opts \\ []) do
     agent = find_or_create_agent(agent_name, opts)
 
@@ -27,6 +28,7 @@ defmodule Maestro.Agents.Logger do
   @doc """
   Logs a request (user prompt, tool call, etc.) within a session.
   """
+  @spec log_request(any(), map(), any(), any(), any()) :: term()
   def log_request(agent, session, kind, content, opts \\ []) do
     {:ok, request} =
       Request.create(%{
@@ -44,6 +46,7 @@ defmodule Maestro.Agents.Logger do
   @doc """
   Logs the response to a previously created request.
   """
+  @spec log_response(any(), any(), any()) :: term()
   def log_response(request, response, opts \\ []) do
     {:ok, updated} =
       Request.respond(request, %{
@@ -59,6 +62,7 @@ defmodule Maestro.Agents.Logger do
   @doc """
   Ends a session as completed or failed.
   """
+  @spec end_session(map(), any()) :: term()
   def end_session(session, status \\ :completed) do
     result =
       case status do

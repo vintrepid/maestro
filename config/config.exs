@@ -134,5 +134,4 @@ config :phoenix, :json_library, Jason
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
 
-config :fun_with_flags, :cache_bust_notifications,
-  enabled: false
+config :fun_with_flags, :cache_bust_notifications, enabled: false

@@ -258,11 +258,61 @@ const Mermaid = {
   }
 };
 
+const ProjectGitInfoHook = {
+  mounted() {
+    const projectId = this.el.dataset.projectId;
+    const projectPath = this.el.dataset.projectPath;
+    const button = this.el.querySelector('button');
+
+    button.addEventListener('click', () => this.loadGitInfo(projectId, projectPath));
+  },
+
+  async loadGitInfo(projectId, projectPath) {
+    const url = `/api/git/info?project_path=${encodeURIComponent(projectPath)}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      this.el.querySelector(`#git-branch-${projectId}`).textContent = data.current_branch;
+      this.el.querySelector(`#git-current-${projectId}`).textContent = data.current_branch;
+
+      let badgesHTML = '';
+      if (data.commits_ahead) {
+        badgesHTML += `<span class="badge badge-warning">+${data.commits_ahead} ahead</span>`;
+      }
+      if (data.commits_behind) {
+        badgesHTML += `<span class="badge badge-error">-${data.commits_behind} behind</span>`;
+      }
+      this.el.querySelector(`#git-badges-${projectId}`).innerHTML = badgesHTML;
+
+      if (data.other_branches && data.other_branches.length > 0) {
+        const branchesHTML = '<div class="text-sm text-base-content/60 mb-2">Other Branches</div>' +
+          data.other_branches.slice(0, 5).map(b => `
+            <div class="flex items-center justify-between py-1">
+              <span class="font-mono text-sm">${b.branch}</span>
+              <div class="flex gap-1">
+                ${b.ahead ? `<span class="badge badge-xs badge-warning">+${b.ahead}</span>` : ''}
+                ${b.behind ? `<span class="badge badge-xs badge-error">-${b.behind}</span>` : ''}
+              </div>
+            </div>
+          `).join('');
+
+        this.el.querySelector(`#git-branches-${projectId}`).innerHTML = branchesHTML;
+      }
+
+      this.el.querySelector(`#git-info-${projectId}`).style.display = 'block';
+    } catch (err) {
+      console.error('Failed to load git info:', err);
+    }
+  }
+};
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook, GitDropdownHook, ShiftClickHook, AgentDashboard, Mermaid},
+  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook, GitDropdownHook, ProjectGitInfoHook, ShiftClickHook, AgentDashboard, Mermaid},
 })
 
 window.addEventListener("phx:theme-changed", (e) => {

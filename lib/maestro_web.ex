@@ -17,8 +17,10 @@ defmodule MaestroWeb do
   those modules here.
   """
 
+  @spec static_paths() :: term()
   def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
 
+  @spec router() :: term()
   def router do
     quote do
       use Phoenix.Router, helpers: false
@@ -30,12 +32,14 @@ defmodule MaestroWeb do
     end
   end
 
+  @spec channel() :: term()
   def channel do
     quote do
       use Phoenix.Channel
     end
   end
 
+  @spec controller() :: term()
   def controller do
     quote do
       use Phoenix.Controller, formats: [:html, :json]
@@ -48,6 +52,7 @@ defmodule MaestroWeb do
     end
   end
 
+  @spec live_view() :: term()
   def live_view do
     quote do
       use Phoenix.LiveView
@@ -58,6 +63,7 @@ defmodule MaestroWeb do
     end
   end
 
+  @spec live_component() :: term()
   def live_component do
     quote do
       use Phoenix.LiveComponent
@@ -66,6 +72,7 @@ defmodule MaestroWeb do
     end
   end
 
+  @spec html() :: term()
   def html do
     quote do
       use Phoenix.Component
@@ -98,6 +105,7 @@ defmodule MaestroWeb do
     end
   end
 
+  @spec verified_routes() :: term()
   def verified_routes do
     quote do
       use Phoenix.VerifiedRoutes,

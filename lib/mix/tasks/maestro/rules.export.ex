@@ -27,13 +27,15 @@ defmodule Mix.Tasks.Maestro.Rules.Export do
   alias Maestro.Ops.Rules.Bundler
 
   @impl true
+  @spec run([String.t()]) :: :ok
   def run(args) do
     Mix.Task.run("app.start")
 
-    {opts, _, _} = OptionParser.parse(args,
-      strict: [bundle: :string, json: :boolean, dir: :string],
-      aliases: [b: :bundle, j: :json, d: :dir]
-    )
+    {opts, _, _} =
+      OptionParser.parse(args,
+        strict: [bundle: :string, json: :boolean, dir: :string],
+        aliases: [b: :bundle, j: :json, d: :dir]
+      )
 
     dir = opts[:dir] || "."
     json? = opts[:json] || false
@@ -130,9 +132,10 @@ defmodule Mix.Tasks.Maestro.Rules.Export do
       |> Map.values()
       |> Enum.map(fn content ->
         lines = String.split(content, "\n")
+
         Enum.count(lines, &String.starts_with?(&1, "MUST:")) +
-        Enum.count(lines, &String.starts_with?(&1, "SHOULD:")) +
-        Enum.count(lines, &String.starts_with?(&1, "PREFER:"))
+          Enum.count(lines, &String.starts_with?(&1, "SHOULD:")) +
+          Enum.count(lines, &String.starts_with?(&1, "PREFER:"))
       end)
       |> Enum.sum()
 

@@ -1,22 +1,29 @@
 defmodule MaestroWeb.GitDropdownLive do
+  @moduledoc """
+  LiveView for the Git Dropdown page.
+  """
   use MaestroWeb, :live_component
 
+  @spec mount(Phoenix.LiveView.Socket.t()) :: term()
   def mount(socket) do
-    {:ok, assign(socket,
-      loaded: false,
-      current_branch: nil,
-      commits_ahead: nil,
-      commits_behind: nil,
-      other_branches: [],
-      project_path: nil
-    )}
+    {:ok,
+     assign(socket,
+       loaded: false,
+       current_branch: nil,
+       commits_ahead: nil,
+       commits_behind: nil,
+       other_branches: [],
+       project_path: nil
+     )}
   end
 
+  @spec update(map(), Phoenix.LiveView.Socket.t()) :: term()
   def update(assigns, socket) do
     project_path = Map.get(assigns, :project_path)
     {:ok, assign(socket, project_path: project_path)}
   end
 
+  @spec render(map()) :: term()
   def render(assigns) do
     ~H"""
     <div class="dropdown dropdown-end">
@@ -41,7 +48,10 @@ defmodule MaestroWeb.GitDropdownLive do
         <% end %>
       </div>
       <%= if @loaded do %>
-        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-64">
+        <ul
+          tabindex="0"
+          class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-64"
+        >
           <li class="menu-title">Current Branch</li>
           <li class="px-4 py-2">
             <span class="font-mono text-sm">{@current_branch}</span>
@@ -70,14 +80,16 @@ defmodule MaestroWeb.GitDropdownLive do
     """
   end
 
+  @spec handle_event(any(), map(), Phoenix.LiveView.Socket.t()) :: term()
   def handle_event("load_git_info", _params, socket) do
     project_path = socket.assigns.project_path
-    
-    git_info = if project_path do
-      get_git_info(project_path)
-    else
-      get_git_info(File.cwd!())
-    end
+
+    git_info =
+      if project_path do
+        get_git_info(project_path)
+      else
+        get_git_info(File.cwd!())
+      end
 
     {:noreply, assign(socket, Map.merge(git_info, %{loaded: true}))}
   end
@@ -104,20 +116,30 @@ defmodule MaestroWeb.GitDropdownLive do
   end
 
   defp get_commits_ahead_of_master(project_path) do
-    case System.cmd("git", ["rev-list", "--count", "master..HEAD"], stderr_to_stdout: true, cd: project_path) do
+    case System.cmd("git", ["rev-list", "--count", "master..HEAD"],
+           stderr_to_stdout: true,
+           cd: project_path
+         ) do
       {count, 0} ->
-        count_int = String.trim(count) |> String.to_integer()
+        count_int = String.to_integer(String.trim(count))
         if count_int > 0, do: count_int, else: nil
-      _ -> nil
+
+      _ ->
+        nil
     end
   end
 
   defp get_commits_behind_master(project_path) do
-    case System.cmd("git", ["rev-list", "--count", "HEAD..master"], stderr_to_stdout: true, cd: project_path) do
+    case System.cmd("git", ["rev-list", "--count", "HEAD..master"],
+           stderr_to_stdout: true,
+           cd: project_path
+         ) do
       {count, 0} ->
-        count_int = String.trim(count) |> String.to_integer()
+        count_int = String.to_integer(String.trim(count))
         if count_int > 0, do: count_int, else: nil
-      _ -> nil
+
+      _ ->
+        nil
     end
   end
 
@@ -131,19 +153,31 @@ defmodule MaestroWeb.GitDropdownLive do
         |> Enum.map(&String.replace_prefix(&1, "* ", ""))
         |> Enum.reject(&(&1 == current_branch))
         |> Enum.map(fn branch ->
-          ahead = case System.cmd("git", ["rev-list", "--count", "master..#{branch}"], stderr_to_stdout: true, cd: project_path) do
-            {count, 0} ->
-              count_int = String.trim(count) |> String.to_integer()
-              if count_int > 0, do: count_int, else: nil
-            _ -> nil
-          end
+          ahead =
+            case System.cmd("git", ["rev-list", "--count", "master..#{branch}"],
+                   stderr_to_stdout: true,
+                   cd: project_path
+                 ) do
+              {count, 0} ->
+                count_int = String.to_integer(String.trim(count))
+                if count_int > 0, do: count_int, else: nil
 
-          behind = case System.cmd("git", ["rev-list", "--count", "#{branch}..master"], stderr_to_stdout: true, cd: project_path) do
-            {count, 0} ->
-              count_int = String.trim(count) |> String.to_integer()
-              if count_int > 0, do: count_int, else: nil
-            _ -> nil
-          end
+              _ ->
+                nil
+            end
+
+          behind =
+            case System.cmd("git", ["rev-list", "--count", "#{branch}..master"],
+                   stderr_to_stdout: true,
+                   cd: project_path
+                 ) do
+              {count, 0} ->
+                count_int = String.to_integer(String.trim(count))
+                if count_int > 0, do: count_int, else: nil
+
+              _ ->
+                nil
+            end
 
           if ahead || behind do
             {branch, ahead, behind}
@@ -153,7 +187,9 @@ defmodule MaestroWeb.GitDropdownLive do
         end)
         |> Enum.reject(&is_nil/1)
         |> Enum.sort_by(fn {_branch, ahead, _behind} -> -(ahead || 0) end)
-      _ -> []
+
+      _ ->
+        []
     end
   end
 end

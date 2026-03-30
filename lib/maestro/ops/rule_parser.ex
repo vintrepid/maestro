@@ -7,6 +7,7 @@ defmodule Maestro.Ops.RuleParser do
   @min_rule_length 30
 
   @doc "Parse a usage-rules markdown file into rule attribute maps."
+  @spec parse_rules_from_file(String.t(), any(), any()) :: term()
   def parse_rules_from_file(path, dep, sub_rule_name) do
     File.read!(path)
     |> String.split("\n")
@@ -24,12 +25,13 @@ defmodule Maestro.Ops.RuleParser do
         source_commit: get_dep_version(dep),
         source_context: "#{dep}:#{sub_rule_name}",
         applies_to: applies_to(dep),
-        tags: [dep, sub_rule_name] |> Enum.uniq()
+        tags: Enum.uniq([dep, sub_rule_name])
       }
     end)
   end
 
   @doc "SHA256 hash of normalized content for deduplication."
+  @spec content_hash(any()) :: term()
   def content_hash(text) do
     text
     |> normalize()
@@ -38,6 +40,7 @@ defmodule Maestro.Ops.RuleParser do
   end
 
   @doc "Normalize content for comparison: trim, collapse whitespace, downcase."
+  @spec normalize(any()) :: term()
   def normalize(content) do
     content
     |> String.trim()
@@ -48,6 +51,7 @@ defmodule Maestro.Ops.RuleParser do
   end
 
   @doc "SHA256 hash of raw file content (for RuleSource change detection)."
+  @spec file_hash(String.t()) :: term()
   def file_hash(path) do
     File.read!(path)
     |> then(&:crypto.hash(:sha256, &1))
@@ -55,6 +59,7 @@ defmodule Maestro.Ops.RuleParser do
   end
 
   @doc "Chunk markdown lines into individual rule strings."
+  @spec chunk_rules(any()) :: term()
   def chunk_rules(lines) do
     {chunks, current} =
       Enum.reduce(lines, {[], nil}, fn line, {chunks, current} ->
@@ -83,6 +88,7 @@ defmodule Maestro.Ops.RuleParser do
   end
 
   @doc "Detect severity from rule text."
+  @spec detect_severity(any()) :: term()
   def detect_severity(text) do
     cond do
       Regex.match?(~r/\*\*(Always|ALWAYS|Never|NEVER|must|MUST|FORBIDDEN)\*\*/i, text) -> :must
@@ -92,27 +98,45 @@ defmodule Maestro.Ops.RuleParser do
   end
 
   @doc "Categorize a rule based on its source dep and sub-rule file."
+  @spec categorize(any(), any()) :: term()
   def categorize("ash", "testing"), do: :testing
+  @spec categorize(any(), any()) :: term()
   def categorize("ash", "authorization"), do: :security
+  @spec categorize(any(), any()) :: term()
   def categorize("ash" <> _, _), do: :ash
+  @spec categorize(any(), any()) :: term()
   def categorize("phoenix", "liveview"), do: :liveview
+  @spec categorize(any(), any()) :: term()
   def categorize("phoenix", "html"), do: :heex
+  @spec categorize(any(), any()) :: term()
   def categorize("phoenix", "ecto"), do: :ash
+  @spec categorize(any(), any()) :: term()
   def categorize("phoenix", "phoenix"), do: :routing
+  @spec categorize(any(), any()) :: term()
   def categorize("phoenix", "elixir"), do: :elixir
+  @spec categorize(any(), any()) :: term()
   def categorize("phoenix", _), do: :liveview
+  @spec categorize(any(), any()) :: term()
   def categorize("igniter", _), do: :elixir
+  @spec categorize(any(), any()) :: term()
   def categorize("usage_rules", "elixir"), do: :elixir
+  @spec categorize(any(), any()) :: term()
   def categorize("usage_rules", "otp"), do: :elixir
+  @spec categorize(any(), any()) :: term()
   def categorize("usage_rules", _), do: :elixir
+  @spec categorize(any(), any()) :: term()
   def categorize(_, _), do: :elixir
 
   @doc "Determine which project types a dep's rules apply to."
+  @spec applies_to(any()) :: term()
   def applies_to("ash" <> _), do: ["ash"]
+  @spec applies_to(any()) :: term()
   def applies_to("phoenix"), do: ["phoenix"]
+  @spec applies_to(any()) :: term()
   def applies_to(_), do: ["all"]
 
   @doc "Extract version string from a dep's mix.exs."
+  @spec get_dep_version(any()) :: term()
   def get_dep_version(dep) do
     mix_exs = Path.join(["deps", dep, "mix.exs"])
 
@@ -128,6 +152,7 @@ defmodule Maestro.Ops.RuleParser do
   end
 
   @doc "Get description from a dep's mix.exs."
+  @spec get_dep_description(any()) :: term()
   def get_dep_description(dep) do
     mix_exs = Path.join(["deps", dep, "mix.exs"])
 
@@ -142,6 +167,7 @@ defmodule Maestro.Ops.RuleParser do
   end
 
   @doc "Find all usage-rules files for a dependency."
+  @spec find_rule_files(any()) :: term()
   def find_rule_files(dep_name) do
     dep_path = Path.join("deps", dep_name)
 
@@ -161,14 +187,14 @@ defmodule Maestro.Ops.RuleParser do
   Strips usage-rules markers and parses both bullet-point rules and
   section-based content blocks.
   """
+  @spec parse_agents_file(String.t(), any()) :: term()
   def parse_agents_file(path, library_name \\ "phoenix-framework") do
     content = File.read!(path)
 
     # Split into sections by ## headers
     sections = split_sections(content)
 
-    sections
-    |> Enum.flat_map(fn {heading, body} ->
+    Enum.flat_map(sections, fn {heading, body} ->
       sub = heading_to_sub_rule(heading)
 
       body
@@ -187,7 +213,7 @@ defmodule Maestro.Ops.RuleParser do
           source_commit: nil,
           source_context: "#{library_name}:#{sub}",
           applies_to: ["phoenix"],
-          tags: [library_name, sub] |> Enum.uniq()
+          tags: Enum.uniq([library_name, sub])
         }
       end)
     end)
@@ -202,15 +228,22 @@ defmodule Maestro.Ops.RuleParser do
     {sections, current_heading, current_lines} =
       Enum.reduce(lines, {[], "project", []}, fn line, {sections, heading, lines} ->
         if String.starts_with?(line, "## ") do
-          section = {heading, Enum.reverse(lines) |> Enum.join("\n")}
-          new_heading = line |> String.trim_leading("## ") |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
+          section = {heading, Enum.join(Enum.reverse(lines), "\n")}
+
+          new_heading =
+            line
+            |> String.trim_leading("## ")
+            |> String.downcase()
+            |> String.replace(~r/[^a-z0-9]+/, "-")
+            |> String.trim("-")
+
           {[section | sections], new_heading, []}
         else
           {sections, heading, [line | lines]}
         end
       end)
 
-    final = {current_heading, Enum.reverse(current_lines) |> Enum.join("\n")}
+    final = {current_heading, Enum.join(Enum.reverse(current_lines), "\n")}
     Enum.reverse([final | sections])
   end
 
@@ -226,12 +259,21 @@ defmodule Maestro.Ops.RuleParser do
   end
 
   # Category from section heading — with content-based fallback
-  defp agents_categorize(sub, _content) when sub in ["js-and-css", "ui-ux", "ui-ux-design"], do: :css
+  defp agents_categorize(sub, _content) when sub in ["js-and-css", "ui-ux", "ui-ux-design"],
+    do: :css
+
   defp agents_categorize("elixir", _content), do: :elixir
   defp agents_categorize("mix", _content), do: :elixir
-  defp agents_categorize(sub, _content) when sub in ["test", "liveview-tests", "testing"], do: :testing
+
+  defp agents_categorize(sub, _content) when sub in ["test", "liveview-tests", "testing"],
+    do: :testing
+
   defp agents_categorize("phoenix-html", _content), do: :heex
-  defp agents_categorize(sub, _content) when sub in ["phoenix-liveview", "liveview-streams", "liveview-javascript"], do: :liveview
+
+  defp agents_categorize(sub, _content)
+       when sub in ["phoenix-liveview", "liveview-streams", "liveview-javascript"],
+       do: :liveview
+
   defp agents_categorize("phoenix-v1-8" <> _, _content), do: :liveview
   defp agents_categorize("phoenix-liveview" <> _, _content), do: :liveview
   defp agents_categorize("liveview-javascript" <> _, _content), do: :liveview
@@ -242,16 +284,35 @@ defmodule Maestro.Ops.RuleParser do
     content_lower = String.downcase(content)
 
     cond do
-      String.contains?(content_lower, ["ash.", "ash_", "changeset", "resource "]) -> :ash
-      String.contains?(content_lower, ["liveview", "live_view", "socket", "handle_event", "phx-"]) -> :liveview
-      String.contains?(content_lower, ["heex", "~h\"", ".heex", "<."]) -> :heex
-      String.contains?(content_lower, ["genserver", "supervisor", "otp", "application.start"]) -> :elixir
-      String.contains?(content_lower, ["mix test", "assert ", "exunit", "test \""]) -> :testing
-      String.contains?(content_lower, ["router", "route", "plug ", "pipeline"]) -> :routing
-      String.contains?(content_lower, ["tailwind", "css", "daisyui"]) -> :css
-      String.contains?(content_lower, ["git ", "branch", "commit", "deploy"]) -> :architecture
-      String.contains?(content_lower, ["task", "agent", "maestro", "coordinate"]) -> :architecture
-      true -> :architecture
+      String.contains?(content_lower, ["ash.", "ash_", "changeset", "resource "]) ->
+        :ash
+
+      String.contains?(content_lower, ["liveview", "live_view", "socket", "handle_event", "phx-"]) ->
+        :liveview
+
+      String.contains?(content_lower, ["heex", "~h\"", ".heex", "<."]) ->
+        :heex
+
+      String.contains?(content_lower, ["genserver", "supervisor", "otp", "application.start"]) ->
+        :elixir
+
+      String.contains?(content_lower, ["mix test", "assert ", "exunit", "test \""]) ->
+        :testing
+
+      String.contains?(content_lower, ["router", "route", "plug ", "pipeline"]) ->
+        :routing
+
+      String.contains?(content_lower, ["tailwind", "css", "daisyui"]) ->
+        :css
+
+      String.contains?(content_lower, ["git ", "branch", "commit", "deploy"]) ->
+        :architecture
+
+      String.contains?(content_lower, ["task", "agent", "maestro", "coordinate"]) ->
+        :architecture
+
+      true ->
+        :architecture
     end
   end
 
@@ -259,9 +320,10 @@ defmodule Maestro.Ops.RuleParser do
   Parse a startup.json file into rule attribute maps.
   Extracts rules from embedded markdown in source_files, anti_patterns, workflow, etc.
   """
+  @spec parse_startup_json(String.t(), any()) :: term()
   def parse_startup_json(path, library_name \\ "maestro-startup") do
     json = path |> File.read!() |> Jason.decode!()
-    basename = Path.basename(path, ".json") |> String.downcase()
+    basename = String.downcase(Path.basename(path, ".json"))
 
     # Collect all string values from the JSON recursively
     text_values = extract_json_texts(json)
@@ -286,15 +348,20 @@ defmodule Maestro.Ops.RuleParser do
         source_commit: nil,
         source_context: "#{library_name}:#{basename}",
         applies_to: ["all"],
-        tags: [library_name, basename] |> Enum.uniq()
+        tags: Enum.uniq([library_name, basename])
       }
     end)
   end
 
   # Recursively extract all string values from a JSON structure
   defp extract_json_texts(value) when is_binary(value) and byte_size(value) >= 40, do: [value]
-  defp extract_json_texts(value) when is_map(value), do: Enum.flat_map(Map.values(value), &extract_json_texts/1)
-  defp extract_json_texts(value) when is_list(value), do: Enum.flat_map(value, &extract_json_texts/1)
+
+  defp extract_json_texts(value) when is_map(value),
+    do: Enum.flat_map(Map.values(value), &extract_json_texts/1)
+
+  defp extract_json_texts(value) when is_list(value),
+    do: Enum.flat_map(value, &extract_json_texts/1)
+
   defp extract_json_texts(_), do: []
 
   defp startup_categorize("critical_10"), do: :architecture
@@ -308,6 +375,7 @@ defmodule Maestro.Ops.RuleParser do
   Parse a directory of Claude memory markdown files into rule attribute maps.
   Each file's body (after frontmatter) becomes one candidate rule.
   """
+  @spec parse_memory_dir(any(), any()) :: term()
   def parse_memory_dir(dir, library_name \\ "claude-memory") do
     Path.wildcard(Path.join(dir, "*.md"))
     |> Enum.reject(&String.ends_with?(&1, "MEMORY.md"))
@@ -320,17 +388,19 @@ defmodule Maestro.Ops.RuleParser do
         name = frontmatter["name"] || Path.basename(path, ".md")
         type = frontmatter["type"] || "project"
 
-        [%{
-          content: body,
-          content_hash: content_hash(body),
-          category: memory_categorize(type),
-          severity: memory_severity(type),
-          source_project_slug: library_name,
-          source_commit: nil,
-          source_context: "#{library_name}:#{name}",
-          applies_to: ["all"],
-          tags: [library_name, type]
-        }]
+        [
+          %{
+            content: body,
+            content_hash: content_hash(body),
+            category: memory_categorize(type),
+            severity: memory_severity(type),
+            source_project_slug: library_name,
+            source_commit: nil,
+            source_context: "#{library_name}:#{name}",
+            applies_to: ["all"],
+            tags: [library_name, type]
+          }
+        ]
       else
         []
       end
@@ -367,6 +437,7 @@ defmodule Maestro.Ops.RuleParser do
   defp memory_severity(_), do: :prefer
 
   @doc "Extract sub-rule name from a file path."
+  @spec sub_rule_name(String.t()) :: term()
   def sub_rule_name(path) do
     parts = path |> Path.relative_to("deps") |> String.split("/")
 

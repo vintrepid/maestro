@@ -1,15 +1,19 @@
 defmodule MaestroWeb.Components.GuidelinesViewer do
+  @moduledoc """
+  Guidelines Viewer component.
+  """
   use MaestroWeb, :html
 
   attr :class, :string, default: nil
   attr :project, :string, default: nil
 
+  @spec guidelines_viewer(map()) :: term()
   def guidelines_viewer(assigns) do
     project = assigns[:project] || get_project_name()
     startup_sequence = get_startup_sequence(project)
     agents_tree = get_agents_tree()
     total_size = calculate_total_size(agents_tree)
-    
+
     assigns = assign(assigns, :startup_sequence, startup_sequence)
     assigns = assign(assigns, :agents_tree, agents_tree)
     assigns = assign(assigns, :total_size, total_size)
@@ -26,7 +30,9 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
 
       <div class="flex items-center justify-between mt-4 mb-2">
         <div class="text-xs font-bold text-accent">📂 All Documentation</div>
-        <div class="text-xs text-base-content/60 font-mono">Total: {format_file_size(@total_size)}</div>
+        <div class="text-xs text-base-content/60 font-mono">
+          Total: {format_file_size(@total_size)}
+        </div>
       </div>
       <%= for item <- @agents_tree do %>
         <.tree_item item={item} level={0} path_prefix="agents" />
@@ -86,13 +92,19 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
 
   defp tree_item(assigns) do
     assigns = assign(assigns, :current_path, Path.join(assigns.path_prefix, assigns.item.name))
-    assigns = assign(assigns, :indent_class, case assigns.level do
-      0 -> ""
-      1 -> "pl-4"
-      2 -> "pl-8"
-      3 -> "pl-12"
-      _ -> "pl-16"
-    end)
+
+    assigns =
+      assign(
+        assigns,
+        :indent_class,
+        case assigns.level do
+          0 -> ""
+          1 -> "pl-4"
+          2 -> "pl-8"
+          3 -> "pl-12"
+          _ -> "pl-16"
+        end
+      )
 
     ~H"""
     <div class={@indent_class}>
@@ -140,9 +152,9 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
       path: "AGENTS.md",
       description: "Start here - points to startup instructions"
     }
-    
+
     startup_file = Path.join([File.cwd!(), "agents", "startup", "STARTUP.md"])
-    
+
     if File.exists?(startup_file) do
       content = File.read!(startup_file)
       startup_items = parse_startup_file(content)
@@ -151,10 +163,10 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
       [agents_md]
     end
   end
-  
+
   defp parse_startup_file(content) do
     lines = String.split(content, "\n")
-    
+
     lines
     |> Enum.with_index()
     |> Enum.filter(fn {line, _idx} ->
@@ -162,6 +174,7 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
     end)
     |> Enum.map(fn {line, _idx} ->
       [_, path, description] = Regex.run(~r/^\d+\.\s+`([^`]+)`\s+-\s+(.+)$/, line)
+
       %{
         name: path,
         path: path,
@@ -171,11 +184,12 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
   end
 
   defp get_project_name do
-    Mix.Project.config()[:app] |> to_string()
+    to_string(Mix.Project.config()[:app])
   end
 
   defp get_agents_tree do
     agents_path = Path.join([File.cwd!(), "agents"])
+
     if File.exists?(agents_path) do
       build_directory_tree(agents_path)
     else
@@ -189,6 +203,7 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
     |> Enum.sort()
     |> Enum.map(fn item ->
       item_path = Path.join(path, item)
+
       if File.dir?(item_path) do
         children = build_directory_tree(item_path)
         %{name: item, type: :directory, children: children}
@@ -198,11 +213,11 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
       end
     end)
   end
-  
+
   defp format_file_size(bytes) when bytes < 1024, do: "#{bytes}B"
   defp format_file_size(bytes) when bytes < 1024 * 1024, do: "#{div(bytes, 1024)}KB"
   defp format_file_size(bytes), do: "#{Float.round(bytes / (1024 * 1024), 1)}MB"
-  
+
   defp calculate_total_size(tree) do
     Enum.reduce(tree, 0, fn item, acc ->
       case item.type do

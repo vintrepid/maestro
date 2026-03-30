@@ -1,7 +1,11 @@
 defmodule MaestroWeb.AdminLive.PageInventoryLive do
+  @moduledoc """
+  LiveView for the Page Inventory page.
+  """
   use MaestroWeb, :live_view
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
     search_tag = "h1"
 
@@ -57,9 +61,8 @@ defmodule MaestroWeb.AdminLive.PageInventoryLive do
         regex =
           ~r/<#{Regex.escape(tag)}(?:\s[^>]*)?>.*?<\/#{Regex.escape(tag)}>|<#{Regex.escape(tag)}(?:\s[^>]*)?\s*\/>/s
 
-        Regex.scan(regex, content)
-        |> Enum.map(fn [match] ->
-          start_pos = :binary.match(content, match) |> elem(0)
+        Enum.map(Regex.scan(regex, content), fn [match] ->
+          start_pos = elem(:binary.match(content, match), 0)
 
           line_number =
             content
@@ -76,11 +79,14 @@ defmodule MaestroWeb.AdminLive.PageInventoryLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("change_search_tag", %{"tag" => tag}, socket) do
     {:noreply, assign_pages(socket, tag)}
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
@@ -158,6 +164,8 @@ defmodule MaestroWeb.AdminLive.PageInventoryLive do
   end
 
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(params, _uri, socket) do
     {:noreply, apply_params(socket, socket.assigns.live_action, params)}
   end

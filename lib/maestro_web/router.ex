@@ -1,11 +1,12 @@
 defmodule MaestroWeb.Router do
+  @moduledoc false
   use MaestroWeb, :router
 
   import Oban.Web.Router
   use AshAuthentication.Phoenix.Router
 
   import AshAuthentication.Plug.Helpers
-  
+
   @css_linter_module CssLinterWeb.Live.AnalysisLive
 
   pipeline :browser do
@@ -23,10 +24,10 @@ defmodule MaestroWeb.Router do
     plug :load_from_bearer
     plug :set_actor, :user
   end
-  
+
   scope "/" do
     pipe_through :browser
-    
+
     live_session :css_linter,
       on_mount: [{MaestroWeb.LiveUserAuth, :load_current_user}] do
       live "/admin/css-analysis", @css_linter_module, :index

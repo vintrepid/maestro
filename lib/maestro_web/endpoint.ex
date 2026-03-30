@@ -1,4 +1,5 @@
 defmodule MaestroWeb.Endpoint do
+  @moduledoc false
   use Phoenix.Endpoint, otp_app: :maestro
 
   # The session will be stored in the cookie and signed,

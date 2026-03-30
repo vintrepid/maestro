@@ -1,7 +1,11 @@
 defmodule MaestroWeb.HomeLive do
+  @moduledoc """
+  LiveView for the Home page.
+  """
   use MaestroWeb, :live_view
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
     case Maestro.Ops.AppState.get_current_project() do
       nil ->
@@ -13,6 +17,7 @@ defmodule MaestroWeb.HomeLive do
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
@@ -43,6 +48,8 @@ defmodule MaestroWeb.HomeLive do
   end
 
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(params, _uri, socket) do
     {:noreply, apply_params(socket, socket.assigns.live_action, params)}
   end

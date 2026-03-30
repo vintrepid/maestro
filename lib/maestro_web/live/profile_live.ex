@@ -1,4 +1,7 @@
 defmodule MaestroWeb.ProfileLive do
+  @moduledoc """
+  LiveView for the Profile page.
+  """
   use MaestroWeb, :live_view
 
   alias MaestroWeb.Components.GitWidget
@@ -6,6 +9,7 @@ defmodule MaestroWeb.ProfileLive do
   import MaestroWeb.Live.Helpers.FileOpener
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
     if socket.assigns[:current_user] do
       user = socket.assigns.current_user
@@ -22,18 +26,24 @@ defmodule MaestroWeb.ProfileLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("validate", %{"form" => params}, socket) do
     form = AshPhoenix.Form.validate(socket.assigns.form, params)
     {:noreply, assign(socket, :form, form)}
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("open_file", %{"path" => path}, socket) do
     open_file(path)
     {:noreply, socket}
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("save", %{"form" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
       {:ok, user} ->
@@ -49,6 +59,7 @@ defmodule MaestroWeb.ProfileLive do
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
@@ -90,6 +101,8 @@ defmodule MaestroWeb.ProfileLive do
   end
 
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(params, _uri, socket) do
     {:noreply, apply_params(socket, socket.assigns.live_action, params)}
   end

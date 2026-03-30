@@ -1,10 +1,12 @@
 defmodule MaestroWeb.TasksLive do
+  @moduledoc """
+  LiveView for the Tasks page.
+  """
   use MaestroWeb, :live_view
-  import Ecto.Query
-  alias Maestro.Repo
   alias Maestro.Ops.Task
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
     {:ok,
      socket
@@ -13,6 +15,8 @@ defmodule MaestroWeb.TasksLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("delete_task", %{"id" => id}, socket) do
     task = Task.by_id!(String.to_integer(id))
 
@@ -30,13 +34,16 @@ defmodule MaestroWeb.TasksLive do
 
   defp load_tasks(socket) do
     tasks =
-      Repo.all(list_tasks_query())
-      |> Maestro.Ops.load!([:display_name])
+      Task
+      |> Ash.Query.sort(updated_at: :desc)
+      |> Ash.read!(authorize?: false)
+      |> Ash.load!([:display_name], authorize?: false)
 
     assign(socket, :tasks, tasks)
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
@@ -61,11 +68,9 @@ defmodule MaestroWeb.TasksLive do
     """
   end
 
-  def list_tasks_query do
-    from t in Task, order_by: [desc: t.updated_at]
-  end
-
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(params, _uri, socket) do
     {:noreply, apply_params(socket, socket.assigns.live_action, params)}
   end

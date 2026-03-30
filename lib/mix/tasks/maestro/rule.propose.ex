@@ -25,6 +25,7 @@ defmodule Mix.Tasks.Maestro.Rule.Propose do
   use Mix.Task
   @shortdoc "Propose a new agent rule with provenance"
 
+  @spec run([String.t()]) :: :ok
   def run(args) do
     Mix.Task.run("app.start")
 
@@ -53,8 +54,13 @@ defmodule Mix.Tasks.Maestro.Rule.Propose do
       source_project_slug: opts[:source_project],
       source_commit: opts[:source_commit],
       source_context: opts[:context],
-      tags: if(opts[:tags], do: String.split(opts[:tags], ",") |> Enum.map(&String.trim/1), else: []),
-      applies_to: if(opts[:applies_to], do: String.split(opts[:applies_to], ",") |> Enum.map(&String.trim/1), else: ["all"])
+      tags:
+        if(opts[:tags], do: Enum.map(String.split(opts[:tags], ","), &String.trim/1), else: []),
+      applies_to:
+        if(opts[:applies_to],
+          do: Enum.map(String.split(opts[:applies_to], ","), &String.trim/1),
+          else: ["all"]
+        )
     }
 
     case Maestro.Ops.Rule.propose(attrs) do

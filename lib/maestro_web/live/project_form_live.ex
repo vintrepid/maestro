@@ -1,8 +1,12 @@
 defmodule MaestroWeb.ProjectFormLive do
+  @moduledoc """
+  LiveView for the Project Form page.
+  """
   use MaestroWeb, :live_view
   alias Maestro.Ops.Project
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(params, _session, socket) do
     project =
       if params["slug"] do
@@ -24,20 +28,26 @@ defmodule MaestroWeb.ProjectFormLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("validate", %{"form" => params}, socket) do
     form =
-      socket.assigns.form.source
-      |> AshPhoenix.Form.validate(params)
+      AshPhoenix.Form.validate(socket.assigns.form.source, params)
 
     {:noreply, assign(socket, :form, to_form(form))}
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("save", %{"form" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.form.source, params: params, authorize?: false) do
       {:ok, project} ->
         {:noreply,
          socket
-         |> put_flash(:info, if(socket.assigns.project, do: "Project updated", else: "Project created"))
+         |> put_flash(
+           :info,
+           if(socket.assigns.project, do: "Project updated", else: "Project created")
+         )
          |> push_navigate(to: ~p"/projects/#{project.slug}")}
 
       {:error, form} ->
@@ -46,6 +56,7 @@ defmodule MaestroWeb.ProjectFormLive do
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={assigns[:current_user]}>
@@ -82,6 +93,8 @@ defmodule MaestroWeb.ProjectFormLive do
   end
 
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(_params, _uri, socket) do
     {:noreply, socket}
   end

@@ -4,7 +4,9 @@ defmodule MaestroWeb.TaskApiController do
   Used by the Claude Code UserPromptSubmit hook to automatically log tasks.
   """
   use MaestroWeb, :controller
+  import Ash.Query
 
+  @spec create_or_update(Plug.Conn.t(), map()) :: term()
   def create_or_update(conn, %{"prompt" => prompt} = params) do
     project_slug = params["project"] || "maestro"
     project = Maestro.Ops.get_project_by_slug(project_slug)
@@ -16,18 +18,26 @@ defmodule MaestroWeb.TaskApiController do
       if current do
         # Update existing task with latest prompt context
         notes = (current.notes || "") <> "\n---\n#{prompt}"
-        {:ok, t} = Maestro.Ops.Task.update(current, %{notes: String.trim(notes)}, authorize?: false)
+
+        {:ok, t} =
+          Maestro.Ops.Task.update(current, %{notes: String.trim(notes)}, authorize?: false)
+
         t
       else
         # Create new task
-        {:ok, t} = Maestro.Ops.Task.create(%{
-          title: String.slice(prompt, 0, 120),
-          description: prompt,
-          task_type: :feature,
-          status: :in_progress,
-          entity_type: "Project",
-          entity_id: if(project, do: to_string(project.id), else: nil)
-        }, authorize?: false)
+        {:ok, t} =
+          Maestro.Ops.Task.create(
+            %{
+              title: String.slice(prompt, 0, 120),
+              description: prompt,
+              task_type: :feature,
+              status: :in_progress,
+              entity_type: "Project",
+              entity_id: if(project, do: to_string(project.id), else: nil)
+            },
+            authorize?: false
+          )
+
         t
       end
 
@@ -35,13 +45,11 @@ defmodule MaestroWeb.TaskApiController do
   end
 
   defp current_task do
-    import Ecto.Query
-
-    Maestro.Repo.one(
-      from t in Maestro.Ops.Task,
-        where: t.status == :in_progress,
-        order_by: [desc: t.updated_at],
-        limit: 1
-    )
+    Maestro.Ops.Task
+    |> filter(status == :in_progress)
+    |> sort(updated_at: :desc)
+    |> limit(1)
+    |> Ash.read!(authorize?: false)
+    |> List.first()
   end
 end

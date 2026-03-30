@@ -1,8 +1,12 @@
 defmodule MaestroWeb.TaskFormLive do
+  @moduledoc """
+  LiveView for the Task Form page.
+  """
   use MaestroWeb, :live_view
   alias Maestro.Ops.Task
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(params, _session, socket) do
     task =
       if params["id"] do
@@ -48,14 +52,17 @@ defmodule MaestroWeb.TaskFormLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("validate", %{"form" => params}, socket) do
     form =
-      socket.assigns.form.source
-      |> AshPhoenix.Form.validate(params)
+      AshPhoenix.Form.validate(socket.assigns.form.source, params)
 
     {:noreply, assign(socket, :form, to_form(form))}
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("save", %{"form" => params}, socket) do
     form = socket.assigns.form.source
     is_new_task = socket.assigns.task == nil
@@ -85,31 +92,41 @@ defmodule MaestroWeb.TaskFormLive do
     end
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("edit_notes", _params, socket) do
     {:noreply, assign(socket, :editing_notes, true)}
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("cancel_edit_notes", _params, socket) do
     {:noreply, assign(socket, :editing_notes, false)}
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("edit_description", _params, socket) do
     {:noreply, assign(socket, :editing_description, true)}
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("cancel_edit_description", _params, socket) do
     {:noreply, assign(socket, :editing_description, false)}
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("run_task", _params, socket) do
     task = socket.assigns.task
 
     if task do
       entity_project =
         if task.entity_type == "Project" do
-          case Maestro.Repo.get(Maestro.Ops.Project, task.entity_id) do
-            nil -> nil
-            project -> project
+          case Maestro.Ops.Project.by_id(task.entity_id, authorize?: false) do
+            {:ok, project} -> project
+            _ -> nil
           end
         else
           nil
@@ -125,31 +142,29 @@ defmodule MaestroWeb.TaskFormLive do
           case System.cmd("mix", ["maestro.task.request", to_string(task.id), project_path],
                  stderr_to_stdout: true
                ) do
-            {output, 0} ->
+            {_output, 0} ->
               {:noreply,
-               socket
-               |> put_flash(
+               put_flash(
+                 socket,
                  :info,
                  "Task coordinated successfully! Check #{entity_project.name} project."
                )}
 
             {output, _} ->
               {:noreply,
-               socket
-               |> put_flash(
+               put_flash(
+                 socket,
                  :error,
                  "Failed to coordinate task: #{String.slice(output, 0..200)}..."
                )}
           end
         else
-          {:noreply,
-           socket
-           |> put_flash(:error, "Project directory not found: #{project_path}")}
+          {:noreply, put_flash(socket, :error, "Project directory not found: #{project_path}")}
         end
       else
         {:noreply,
-         socket
-         |> put_flash(
+         put_flash(
+           socket,
            :error,
            "Task must belong to a Project to be run. This task belongs to #{task.entity_type}."
          )}
@@ -159,6 +174,8 @@ defmodule MaestroWeb.TaskFormLive do
     end
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("mark_complete", _params, socket) do
     task = socket.assigns.task
 
@@ -182,6 +199,7 @@ defmodule MaestroWeb.TaskFormLive do
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
@@ -373,7 +391,7 @@ defmodule MaestroWeb.TaskFormLive do
                   </div>
                   <MaestroWeb.Components.TaskTable.task_table
                     id="task-subtasks-table"
-                    query_fn={fn -> task_subtasks_query(@task.id) end}
+                    data_fn={fn -> task_subtasks(@task.id) end}
                   />
                 </div>
               <% end %>
@@ -522,9 +540,9 @@ defmodule MaestroWeb.TaskFormLive do
   end
 
   defp get_entity_name("Project", entity_id) when not is_nil(entity_id) do
-    case Maestro.Repo.get(Maestro.Ops.Project, entity_id) do
-      nil -> nil
-      project -> project.name
+    case Maestro.Ops.Project.by_id(entity_id, authorize?: false) do
+      {:ok, project} -> project.name
+      _ -> nil
     end
   end
 
@@ -541,15 +559,18 @@ defmodule MaestroWeb.TaskFormLive do
   defp is_nil_or_empty(""), do: true
   defp is_nil_or_empty(_), do: false
 
-  defp task_subtasks_query(task_id) do
-    import Ecto.Query
+  defp task_subtasks(task_id) do
+    require Ash.Query
 
-    from t in Task,
-      where: t.entity_type == "Task" and t.entity_id == ^to_string(task_id),
-      order_by: [desc: t.inserted_at]
+    Task
+    |> Ash.Query.filter(entity_type == "Task" and entity_id == ^to_string(task_id))
+    |> Ash.Query.sort(inserted_at: :desc)
+    |> Ash.read!(authorize?: false)
   end
 
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(params, _uri, socket) do
     {:noreply, apply_params(socket, socket.assigns.live_action, params)}
   end

@@ -1,9 +1,13 @@
 defmodule MaestroWeb.AliasesLive do
+  @moduledoc """
+  LiveView for the Aliases page.
+  """
   use MaestroWeb, :live_view
 
   @aliases_file Path.expand("~/dev/maestro/agents/ALIASES.md")
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
     content = File.read!(@aliases_file)
 
@@ -15,10 +19,14 @@ defmodule MaestroWeb.AliasesLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("edit", _params, socket) do
     {:noreply, assign(socket, :editing, true)}
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("save", %{"content" => content}, socket) do
     File.write!(@aliases_file, content)
 
@@ -29,11 +37,14 @@ defmodule MaestroWeb.AliasesLive do
      |> put_flash(:info, "Aliases saved successfully")}
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("cancel", _params, socket) do
     {:noreply, assign(socket, :editing, false)}
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
@@ -87,6 +98,8 @@ defmodule MaestroWeb.AliasesLive do
   end
 
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(params, _uri, socket) do
     {:noreply, apply_params(socket, socket.assigns.live_action, params)}
   end

@@ -25,6 +25,7 @@ defmodule Mix.Tasks.Maestro.Agent.Run do
   use Mix.Task
 
   @impl true
+  @spec run([String.t()]) :: :ok
   def run(args) do
     Mix.Task.run("app.start")
 
@@ -82,11 +83,11 @@ defmodule Mix.Tasks.Maestro.Agent.Run do
     })
 
     # Close the session
-    case status do
-      :completed -> Maestro.Agents.Session.finish(session)
-      :failed -> Maestro.Agents.Session.fail(session, %{metadata: %{error: result}})
-    end
-    |> case do
+    # Close the session
+    case (case status do
+            :completed -> Maestro.Agents.Session.finish(session)
+            :failed -> Maestro.Agents.Session.fail(session, %{metadata: %{error: result}})
+          end) do
       {:ok, session} -> Maestro.Agents.PubSub.broadcast_session_ended(session)
       _ -> :ok
     end

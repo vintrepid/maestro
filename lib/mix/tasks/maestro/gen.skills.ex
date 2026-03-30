@@ -22,6 +22,7 @@ defmodule Mix.Tasks.Maestro.Gen.Skills do
 
   @default_output Path.expand("~/.claude/commands")
 
+  @spec run([String.t()]) :: :ok
   def run(args) do
     Mix.Task.run("app.start")
 
@@ -39,8 +40,7 @@ defmodule Mix.Tasks.Maestro.Gen.Skills do
     tag_groups =
       rules
       |> Enum.flat_map(fn rule ->
-        (rule.tags || [])
-        |> Enum.map(fn tag -> {tag, rule} end)
+        Enum.map(rule.tags || [], fn tag -> {tag, rule} end)
       end)
       |> Enum.group_by(fn {tag, _} -> tag end, fn {_, rule} -> rule end)
       |> Enum.filter(fn {_tag, rules} -> length(rules) >= 2 end)

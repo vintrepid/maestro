@@ -1,8 +1,12 @@
 defmodule MaestroWeb.ResourceFormLive do
+  @moduledoc """
+  LiveView for the Resource Form page.
+  """
   use MaestroWeb, :live_view
   alias Maestro.Resources.Resource
 
   @impl true
+  @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(params, _session, socket) do
     resource =
       if params["id"] do
@@ -41,14 +45,17 @@ defmodule MaestroWeb.ResourceFormLive do
   end
 
   @impl true
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("validate", %{"form" => params}, socket) do
     form =
-      socket.assigns.form.source
-      |> AshPhoenix.Form.validate(params)
+      AshPhoenix.Form.validate(socket.assigns.form.source, params)
 
     {:noreply, assign(socket, :form, to_form(form))}
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("save", %{"form" => params}, socket) do
     form = socket.assigns.form.source
 
@@ -64,6 +71,8 @@ defmodule MaestroWeb.ResourceFormLive do
     end
   end
 
+  @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("scrape_url", %{"url" => url}, socket) do
     case Maestro.Resources.WebScraper.scrape_and_create(
            url,
@@ -83,6 +92,7 @@ defmodule MaestroWeb.ResourceFormLive do
   end
 
   @impl true
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
@@ -204,6 +214,8 @@ defmodule MaestroWeb.ResourceFormLive do
   end
 
   @impl true
+  @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_params(params, _uri, socket) do
     {:noreply, apply_params(socket, socket.assigns.live_action, params)}
   end

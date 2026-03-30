@@ -1,4 +1,7 @@
 defmodule Maestro.Agents.Request do
+  @moduledoc """
+  Request resource.
+  """
   use Ash.Resource,
     otp_app: :maestro,
     domain: Maestro.Agents,
@@ -10,12 +13,23 @@ defmodule Maestro.Agents.Request do
     repo Maestro.Repo
   end
 
+  code_interface do
+    define :create
+    define :read
+    define :destroy
+    define :respond
+    define :by_session, args: [:session_id]
+    define :by_agent, args: [:agent_id]
+    define :recent
+  end
+
   actions do
     defaults [:read, :destroy]
 
     create :create do
       primary? true
       accept [:agent_id, :session_id, :kind, :content, :metadata]
+
       change fn changeset, _ctx ->
         Ash.Changeset.after_action(changeset, fn _changeset, request ->
           Maestro.Agents.PubSub.broadcast_request(request)
@@ -28,6 +42,7 @@ defmodule Maestro.Agents.Request do
       require_atomic? false
       accept [:response, :response_metadata, :duration_ms]
       change set_attribute(:responded_at, &DateTime.utc_now/0)
+
       change fn changeset, _ctx ->
         Ash.Changeset.after_action(changeset, fn _changeset, request ->
           Maestro.Agents.PubSub.broadcast_response(request)
@@ -113,15 +128,5 @@ defmodule Maestro.Agents.Request do
       allow_nil? true
       public? true
     end
-  end
-
-  code_interface do
-    define :create
-    define :read
-    define :destroy
-    define :respond
-    define :by_session, args: [:session_id]
-    define :by_agent, args: [:agent_id]
-    define :recent
   end
 end

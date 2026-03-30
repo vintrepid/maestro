@@ -16,6 +16,7 @@ defmodule Mix.Tasks.Maestro.Agent.Session do
   use Mix.Task
 
   @impl true
+  @spec run([String.t()]) :: :ok
   def run(args) do
     description = Enum.join(args, " ")
     Mix.shell().info("Session: #{description}")

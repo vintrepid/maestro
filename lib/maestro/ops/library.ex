@@ -1,4 +1,7 @@
 defmodule Maestro.Ops.Library do
+  @moduledoc """
+  Library resource.
+  """
   use Ash.Resource,
     otp_app: :maestro,
     domain: Maestro.Ops,
@@ -8,6 +11,14 @@ defmodule Maestro.Ops.Library do
   postgres do
     table "libraries"
     repo Maestro.Repo
+  end
+
+  code_interface do
+    define :create
+    define :read
+    define :update
+    define :destroy
+    define :by_name, get_by: [:name], action: :read
   end
 
   actions do
@@ -31,10 +42,6 @@ defmodule Maestro.Ops.Library do
     policy always() do
       authorize_if always()
     end
-  end
-
-  identities do
-    identity :unique_name, [:name]
   end
 
   attributes do
@@ -69,11 +76,7 @@ defmodule Maestro.Ops.Library do
     has_many :rules, Maestro.Ops.Rule
   end
 
-  code_interface do
-    define :create
-    define :read
-    define :update
-    define :destroy
-    define :by_name, get_by: [:name], action: :read
+  identities do
+    identity :unique_name, [:name]
   end
 end

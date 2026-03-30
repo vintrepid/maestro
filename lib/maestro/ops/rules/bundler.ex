@@ -30,11 +30,11 @@ defmodule Maestro.Ops.Rules.Bundler do
   @doc """
   Generates all bundles and returns a map of bundle_name => content.
   """
+  @spec generate_all() :: term()
   def generate_all do
     rules = fetch_approved_rules()
 
-    [:universal, :ui, :model, :devops]
-    |> Map.new(fn bundle ->
+    Map.new([:universal, :ui, :model, :devops], fn bundle ->
       {bundle, generate_bundle(bundle, rules)}
     end)
   end
@@ -42,6 +42,7 @@ defmodule Maestro.Ops.Rules.Bundler do
   @doc """
   Generates a single bundle as a compact string.
   """
+  @spec generate_bundle(any(), any()) :: term()
   def generate_bundle(bundle_name, rules \\ nil) do
     rules = rules || fetch_approved_rules()
 
@@ -61,6 +62,7 @@ defmodule Maestro.Ops.Rules.Bundler do
   Writes bundles to files in the given directory.
   Returns the list of files written.
   """
+  @spec write_bundles(any()) :: term()
   def write_bundles(dir \\ ".") do
     bundles = generate_all()
 
@@ -75,13 +77,13 @@ defmodule Maestro.Ops.Rules.Bundler do
   Generates a compact rules.json with only essential fields,
   sized for agent consumption.
   """
+  @spec generate_compact_json(any()) :: term()
   def generate_compact_json(bundle_name \\ :universal) do
     rules = fetch_approved_rules()
     bundle_rules = filter_for_bundle(rules, bundle_name)
 
     sorted =
-      bundle_rules
-      |> Enum.sort_by(fn r -> {-r.priority, severity_rank(r.severity)} end)
+      Enum.sort_by(bundle_rules, fn r -> {-r.priority, severity_rank(r.severity)} end)
 
     compact =
       Enum.map(sorted, fn r ->
@@ -106,30 +108,33 @@ defmodule Maestro.Ops.Rules.Bundler do
   # --- Private ---
 
   defp fetch_approved_rules do
-    Repo.all(
-      from r in "rules",
-        where: r.status == "approved",
-        select: %{
-          id: type(r.id, :string),
-          content: r.content,
-          category: r.category,
-          severity: r.severity,
-          priority: r.priority,
-          bundle: r.bundle,
-          fix_type: r.fix_type,
-          fix_template: r.fix_template,
-          fix_target: r.fix_target,
-          fix_search: r.fix_search
-        },
-        order_by: [desc: r.priority, asc: r.severity]
+    Enum.map(
+      Repo.all(
+        from r in "rules",
+          where: r.status == "approved",
+          select: %{
+            id: type(r.id, :string),
+            content: r.content,
+            category: r.category,
+            severity: r.severity,
+            priority: r.priority,
+            bundle: r.bundle,
+            fix_type: r.fix_type,
+            fix_template: r.fix_template,
+            fix_target: r.fix_target,
+            fix_search: r.fix_search
+          },
+          order_by: [desc: r.priority, asc: r.severity]
+      ),
+      fn r ->
+        %{
+          r
+          | category: safe_to_atom(r.category),
+            severity: safe_to_atom(r.severity),
+            bundle: safe_to_atom(r.bundle || "universal")
+        }
+      end
     )
-    |> Enum.map(fn r ->
-      %{r |
-        category: safe_to_atom(r.category),
-        severity: safe_to_atom(r.severity),
-        bundle: safe_to_atom(r.bundle || "universal")
-      }
-    end)
   end
 
   defp filter_for_bundle(rules, :maestro) do
@@ -141,16 +146,18 @@ defmodule Maestro.Ops.Rules.Bundler do
 
     Enum.filter(rules, fn r ->
       # Include if explicitly assigned to this bundle
-      r.bundle == bundle_name or
       # Or if it's universal and categories match
-      (r.bundle == :universal and r.category in categories) or
       # Always include universal bundle rules in all bundles
-      (bundle_name != :universal and r.bundle == :universal and r.category in Map.get(@bundle_categories, :universal, []))
+      r.bundle == bundle_name or
+        (r.bundle == :universal and r.category in categories) or
+        (bundle_name != :universal and r.bundle == :universal and
+           r.category in Map.get(@bundle_categories, :universal, []))
     end)
   end
 
   defp format_bundle(name, rules) do
-    header = "# #{String.capitalize(to_string(name))} Rules\n# #{length(rules)} rules · Generated #{Date.utc_today()}\n\n"
+    header =
+      "# #{String.capitalize(to_string(name))} Rules\n# #{length(rules)} rules · Generated #{Date.utc_today()}\n\n"
 
     body =
       rules

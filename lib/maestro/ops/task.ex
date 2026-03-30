@@ -1,4 +1,7 @@
 defmodule Maestro.Ops.Task do
+  @moduledoc """
+  Task resource.
+  """
   use Ash.Resource,
     domain: Maestro.Ops,
     data_layer: AshPostgres.DataLayer,
@@ -7,6 +10,53 @@ defmodule Maestro.Ops.Task do
   postgres do
     table "tasks"
     repo Maestro.Repo
+  end
+
+  code_interface do
+    define :create
+    define :read
+    define :update
+    define :mark_complete
+    define :destroy
+    define :by_id, get_by: [:id], action: :read
+  end
+
+  actions do
+    defaults [:read, :destroy]
+
+    create :create do
+      accept [
+        :title,
+        :description,
+        :notes,
+        :due_at,
+        :completed_at,
+        :task_type,
+        :status,
+        :entity_type,
+        :entity_id
+      ]
+    end
+
+    update :update do
+      accept [
+        :title,
+        :description,
+        :notes,
+        :due_at,
+        :completed_at,
+        :task_type,
+        :status,
+        :entity_type,
+        :entity_id
+      ]
+    end
+
+    update :mark_complete do
+      accept []
+      change set_attribute(:status, :done)
+      change set_attribute(:completed_at, &DateTime.utc_now/0)
+    end
   end
 
   attributes do
@@ -47,41 +97,27 @@ defmodule Maestro.Ops.Task do
   end
 
   calculations do
-    calculate :display_name, :string, expr(
-      cond do
-        not is_nil(title) and entity_type == "Project" ->
-          fragment("? || ' - ' || (SELECT name FROM projects WHERE id = CAST(? AS uuid))", title, entity_id)
-        not is_nil(title) and entity_type == "Task" ->
-          fragment("? || ' - ' || (SELECT title FROM tasks WHERE id = CAST(? AS integer))", title, entity_id)
-        true -> title
-      end
-    )
-  end
+    calculate :display_name,
+              :string,
+              expr(
+                cond do
+                  not is_nil(title) and entity_type == "Project" ->
+                    fragment(
+                      "? || ' - ' || (SELECT name FROM projects WHERE id = CAST(? AS uuid))",
+                      title,
+                      entity_id
+                    )
 
-  actions do
-    defaults [:read, :destroy]
+                  not is_nil(title) and entity_type == "Task" ->
+                    fragment(
+                      "? || ' - ' || (SELECT title FROM tasks WHERE id = CAST(? AS integer))",
+                      title,
+                      entity_id
+                    )
 
-    create :create do
-      accept [:title, :description, :notes, :due_at, :completed_at, :task_type, :status, :entity_type, :entity_id]
-    end
-
-    update :update do
-      accept [:title, :description, :notes, :due_at, :completed_at, :task_type, :status, :entity_type, :entity_id]
-    end
-
-    update :mark_complete do
-      accept []
-      change set_attribute(:status, :done)
-      change set_attribute(:completed_at, &DateTime.utc_now/0)
-    end
-  end
-
-  code_interface do
-    define :create
-    define :read
-    define :update
-    define :mark_complete
-    define :destroy
-    define :by_id, get_by: [:id], action: :read
+                  true ->
+                    title
+                end
+              )
   end
 end
