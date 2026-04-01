@@ -35,13 +35,16 @@ defmodule Maestro.Ops.AuditRunner do
   def run(opts \\ []) do
     project_path = Keyword.get(opts, :project_path, @project_path)
     deep? = Keyword.get(opts, :deep, GiuliaClient.available?())
+    all_paths = [project_path | owned_dep_paths(project_path)]
 
-    total_modules = length(Path.wildcard(Path.join(project_path, "lib/**/*.ex")))
+    total_modules =
+      Enum.sum(Enum.map(all_paths, fn p -> length(Path.wildcard(Path.join(p, "lib/**/*.ex"))) end))
+
     {:ok, audit} = Audit.create(%{total_modules: total_modules}, authorize?: false)
 
     try do
-      maestro_by_module = run_rule_audit(project_path, opts)
-      lint_by_module = run_lint_checks(project_path)
+      maestro_by_module = run_rule_audit(all_paths, opts)
+      lint_by_module = run_lint_checks(all_paths)
       giulia_by_module = if deep?, do: run_deep_audit(project_path), else: %{}
       persist_merged_results(audit, maestro_by_module, lint_by_module, giulia_by_module)
       Audit.complete(audit, %{}, authorize?: false)
@@ -86,9 +89,9 @@ defmodule Maestro.Ops.AuditRunner do
 
   # -- Rule audit strategy --
 
-  defp run_rule_audit(project_path, opts) do
+  defp run_rule_audit(project_paths, opts) when is_list(project_paths) do
     pages =
-      SiteAudit.discover_modules(project_path) ++
+      Enum.flat_map(project_paths, &SiteAudit.discover_modules/1) ++
         SiteAudit.discover_pages(MaestroWeb.Router, MaestroWeb)
 
     pages = Enum.uniq_by(pages, & &1.module)
@@ -121,12 +124,15 @@ defmodule Maestro.Ops.AuditRunner do
     MaestroTool.Lint.Checks.MissingLayout
   ]
 
-  defp run_lint_checks(project_path) do
+  defp run_lint_checks(project_paths) when is_list(project_paths) do
     checks = @lint_checks
 
-    Path.wildcard(Path.join(project_path, "lib/**/*.ex"))
-    |> Enum.reject(&String.contains?(&1, "_build"))
-    |> Enum.reduce(%{}, fn file, acc ->
+    Enum.flat_map(project_paths, fn project_path ->
+      Path.wildcard(Path.join(project_path, "lib/**/*.ex"))
+      |> Enum.reject(&String.contains?(&1, "_build"))
+      |> Enum.map(&{&1, project_path})
+    end)
+    |> Enum.reduce(%{}, fn {file, project_path}, acc ->
       source = File.read!(file)
       rel_path = Path.relative_to(file, project_path)
 
@@ -138,8 +144,7 @@ defmodule Maestro.Ops.AuditRunner do
             Enum.flat_map(checks, fn check ->
               check_meta = check.meta()
 
-              check.check(ast, meta)
-              |> Enum.map(fn v ->
+              Enum.map(check.check(ast, meta), fn v ->
                 %{
                   "rule_id" => "lint:#{check_meta.name}",
                   "rule_content" => check_meta.description,
@@ -180,6 +185,28 @@ defmodule Maestro.Ops.AuditRunner do
       [_, name] -> name
       _ -> nil
     end
+  end
+
+  # Returns absolute paths to owned (path) dependencies' roots.
+  defp owned_dep_paths(project_path) do
+    Mix.Project.config()[:deps]
+    |> Enum.flat_map(fn
+      {_name, opts} when is_list(opts) ->
+        case Keyword.get(opts, :path) do
+          nil -> []
+          path -> [Path.expand(path, project_path)]
+        end
+
+      {_name, _ver, opts} when is_list(opts) ->
+        case Keyword.get(opts, :path) do
+          nil -> []
+          path -> [Path.expand(path, project_path)]
+        end
+
+      _ ->
+        []
+    end)
+    |> Enum.filter(&File.dir?/1)
   end
 
   # -- Deep audit strategy (Giulia) --
