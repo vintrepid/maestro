@@ -114,8 +114,15 @@ defmodule Maestro.Ops.AuditRunner do
 
   # -- Lint check strategy (maestro_tool checks with provenance) --
 
+  @lint_checks [
+    MaestroTool.Lint.Checks.BareOkMatch,
+    MaestroTool.Lint.Checks.BangInHandleEvent,
+    MaestroTool.Lint.Checks.PubSubHandleInfo,
+    MaestroTool.Lint.Checks.MissingLayout
+  ]
+
   defp run_lint_checks(project_path) do
-    checks = Mix.Tasks.Maestro.Lint.registered_checks()
+    checks = @lint_checks
 
     Path.wildcard(Path.join(project_path, "lib/**/*.ex"))
     |> Enum.reject(&String.contains?(&1, "_build"))
