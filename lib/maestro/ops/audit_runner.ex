@@ -3,15 +3,16 @@ defmodule Maestro.Ops.AuditRunner do
   Executes a full audit run across all project modules.
 
   Combines multiple audit strategies:
-  - **Rule audit** — checks modules against approved/proposed/linter rules from Maestro DB
-  - **Lint checks** — AST-based checks from maestro_tool (with provenance: author, source, category)
-  - **Deep audit** — AST analysis via Giulia daemon (dead code, god modules, complexity, conventions)
+  - **Rule audit** — checks modules against approved/proposed/linter rules from the Maestro DB.
+    Linter rules with `lint_config.check_module` delegate to AST-based check modules
+    (e.g. MaestroTool.Lint.Checks.BangInHandleEvent). All rules — including lint checks —
+    live in the DB as Rule records with provenance (source_project_slug, source_context).
+  - **Deep audit** — AST analysis via Giulia daemon (dead code, god modules, complexity)
+
+  Scans the main project and all owned (path) dependencies.
 
   The runner owns the orchestration: discover modules, apply strategies, merge findings,
   persist results. Callers (LiveViews, mix tasks) just pass options and get back an Audit.
-
-  Lint checks carry provenance metadata so their origin (e.g. "Calvin via maestro_tool")
-  is visible in audit results and the UI.
   """
 
   alias Maestro.Ops.{Audit, AuditResult, Rule}
@@ -43,10 +44,9 @@ defmodule Maestro.Ops.AuditRunner do
     {:ok, audit} = Audit.create(%{total_modules: total_modules}, authorize?: false)
 
     try do
-      maestro_by_module = run_rule_audit(all_paths, opts)
-      lint_by_module = run_lint_checks(all_paths)
+      rule_by_module = run_rule_audit(all_paths, opts)
       giulia_by_module = if deep?, do: run_deep_audit(project_path), else: %{}
-      persist_merged_results(audit, maestro_by_module, lint_by_module, giulia_by_module)
+      persist_merged_results(audit, rule_by_module, giulia_by_module)
       Audit.complete(audit, %{}, authorize?: false)
       {:ok, audit}
     rescue
@@ -115,78 +115,6 @@ defmodule Maestro.Ops.AuditRunner do
     end)
   end
 
-  # -- Lint check strategy (maestro_tool checks with provenance) --
-
-  @lint_checks [
-    MaestroTool.Lint.Checks.BareOkMatch,
-    MaestroTool.Lint.Checks.BangInHandleEvent,
-    MaestroTool.Lint.Checks.PubSubHandleInfo,
-    MaestroTool.Lint.Checks.MissingLayout
-  ]
-
-  defp run_lint_checks(project_paths) when is_list(project_paths) do
-    checks = @lint_checks
-
-    Enum.flat_map(project_paths, fn project_path ->
-      Path.wildcard(Path.join(project_path, "lib/**/*.ex"))
-      |> Enum.reject(&String.contains?(&1, "_build"))
-      |> Enum.map(&{&1, project_path})
-    end)
-    |> Enum.reduce(%{}, fn {file, project_path}, acc ->
-      source = File.read!(file)
-      rel_path = Path.relative_to(file, project_path)
-
-      case Sourceror.parse_string(source) do
-        {:ok, ast} ->
-          meta = %{path: rel_path, source: source}
-
-          violations =
-            Enum.flat_map(checks, fn check ->
-              check_meta = check.meta()
-
-              Enum.map(check.check(ast, meta), fn v ->
-                %{
-                  "rule_id" => "lint:#{check_meta.name}",
-                  "rule_content" => check_meta.description,
-                  "rule_category" => to_string(check_meta.category),
-                  "pass?" => false,
-                  "evidence" => [v.message],
-                  "line" => v.line,
-                  "author" => check_meta.author,
-                  "source" => to_string(check_meta.source),
-                  "fixable" => Map.get(v, :fixable, check_meta.fixable),
-                  "severity" => to_string(Map.get(v, :severity, check_meta.severity))
-                }
-              end)
-            end)
-
-          if violations == [] do
-            acc
-          else
-            mod_name = extract_module_name(source) || rel_path
-
-            Map.update(acc, mod_name, %{
-              path: rel_path,
-              source_file: file,
-              findings: violations
-            }, fn existing ->
-              %{existing | findings: existing.findings ++ violations}
-            end)
-          end
-
-        _ ->
-          acc
-      end
-    end)
-  end
-
-  defp extract_module_name(source) do
-    case Regex.run(~r/defmodule\s+([\w.]+)/, source) do
-      [_, name] -> name
-      _ -> nil
-    end
-  end
-
   # Returns absolute paths to owned (path) dependencies' roots.
   defp owned_dep_paths(project_path) do
     Mix.Project.config()[:deps]
@@ -221,18 +149,17 @@ defmodule Maestro.Ops.AuditRunner do
 
   # -- Merge & persist --
 
-  defp persist_merged_results(audit, maestro_by_module, lint_by_module, giulia_by_module) do
+  defp persist_merged_results(audit, rule_by_module, giulia_by_module) do
     all_module_names =
-      [maestro_by_module, lint_by_module, giulia_by_module]
+      [rule_by_module, giulia_by_module]
       |> Enum.flat_map(&Map.keys/1)
       |> MapSet.new()
 
     for mod <- all_module_names do
-      maestro = Map.get(maestro_by_module, mod, %{findings: []})
-      lint = Map.get(lint_by_module, mod, %{findings: []})
+      rule = Map.get(rule_by_module, mod, %{findings: []})
       giulia = Map.get(giulia_by_module, mod, %{findings: []})
 
-      merged_findings = maestro.findings ++ lint.findings ++ giulia.findings
+      merged_findings = rule.findings ++ giulia.findings
       fail_count = Enum.count(merged_findings, &(not &1["pass?"]))
 
       if fail_count > 0 do
@@ -243,8 +170,8 @@ defmodule Maestro.Ops.AuditRunner do
             do: round(pass_count / (fail_count + pass_count) * 100),
             else: 100
 
-        path = Map.get(maestro, :path) || Map.get(lint, :path) || Map.get(giulia, :path) || mod
-        source_file = Map.get(maestro, :source_file) || Map.get(lint, :source_file) || Map.get(giulia, :source_file)
+        path = Map.get(rule, :path) || Map.get(giulia, :path) || mod
+        source_file = Map.get(rule, :source_file) || Map.get(giulia, :source_file)
 
         AuditResult.create!(
           %{

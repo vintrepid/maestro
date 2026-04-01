@@ -4,6 +4,8 @@ defmodule Maestro.Ops.Rule.FixConfig do
   template code, target location, and search pattern.
   """
 
+  @derive {Jason.Encoder, except: [:__meta__]}
+
   use Ash.Resource,
     data_layer: :embedded
 

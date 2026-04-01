@@ -171,7 +171,9 @@ defmodule Maestro.Ops.Rules.SiteAudit do
       rule_category: rule.category,
       type: :skip,
       pattern: nil,
-      func_name: nil
+      func_name: nil,
+      check_module: nil,
+      source_project: rule.source_project_slug
     }
 
     categorize_check(base, rule, content)
@@ -180,6 +182,11 @@ defmodule Maestro.Ops.Rules.SiteAudit do
   # Categorize rules into AST check types based on their content
   defp categorize_check(base, rule, content) do
     cond do
+      # AST module check — rule has a check_module in lint_config
+      has_check_module?(rule) ->
+        mod = String.to_existing_atom("Elixir.#{rule.lint_config.check_module}")
+        %{base | type: :ast_check_module, check_module: mod}
+
       # Form rules — check HEEx AST for form patterns
       form_rule?(content) ->
         %{base | type: :ast_form_check}
@@ -209,6 +216,12 @@ defmodule Maestro.Ops.Rules.SiteAudit do
       true ->
         derive_ast_check(base, content)
     end
+  end
+
+  defp has_check_module?(rule) do
+    rule.lint_config != nil and
+      is_binary(rule.lint_config.check_module) and
+      rule.lint_config.check_module != ""
   end
 
   defp form_rule?(content) do
@@ -297,6 +310,7 @@ defmodule Maestro.Ops.Rules.SiteAudit do
     }
 
     case check.type do
+      :ast_check_module -> check_with_module(page, check, result)
       :ast_form_check -> check_forms(page, result)
       :ast_icon_check -> check_icons(page, result)
       :ast_stream_check -> check_streams(page, result)
@@ -307,6 +321,33 @@ defmodule Maestro.Ops.Rules.SiteAudit do
       :ast_absent -> check_pattern_absent(page, check, result)
       :ast_present -> check_pattern_present(page, check, result)
       :skip -> result
+    end
+  end
+
+  # -- AST module check --
+  # Delegates to a MaestroTool.Lint.Check module from the DB rule's lint_config.
+
+  defp check_with_module(page, check, result) do
+    mod = check.check_module
+    meta = %{path: page.path, source: page.source}
+
+    violations =
+      if page.ast do
+        mod.check(page.ast, meta)
+      else
+        []
+      end
+
+    if violations == [] do
+      result
+    else
+      evidence = Enum.map(violations, & &1.message)
+
+      %{
+        result
+        | pass?: false,
+          evidence: evidence
+      }
     end
   end
 
