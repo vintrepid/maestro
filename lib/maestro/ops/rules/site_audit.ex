@@ -418,11 +418,14 @@ defmodule Maestro.Ops.Rules.SiteAudit do
   # -- Lint pattern check (structural search in AST for specific constructs) --
 
   defp check_lint_pattern(page, check, result) do
-    # For lint patterns, search the source since these are specific regex patterns
-    # defined by the rule author for anti-patterns
+    # Match lint patterns only in code, not inside string literals or module attributes.
+    # Strip strings, heredocs, sigils, and comments before matching to avoid false positives
+    # (e.g. LintExtractor containing patterns as data, not as actual code usage).
     case Regex.compile(check.pattern) do
       {:ok, regex} ->
-        if Regex.match?(regex, page.source) do
+        code_only = strip_string_literals(page.source)
+
+        if Regex.match?(regex, code_only) do
           %{result | pass?: false, evidence: ["Lint pattern matched: #{check.pattern}"]}
         else
           result
@@ -431,6 +434,28 @@ defmodule Maestro.Ops.Rules.SiteAudit do
       _ ->
         result
     end
+  end
+
+  # Strip string literals, heredocs, sigils, and comments from source
+  # so lint patterns only match actual code, not data/docs.
+  defp strip_string_literals(source) do
+    source
+    # Strip heredocs (triple-quoted strings) first
+    |> String.replace(~r/~[A-Z]\"{3}.*?\"{3}/s, "\"\"")
+    |> String.replace(~r/\"{3}.*?\"{3}/s, "\"\"")
+    # Strip sigils with delimiters
+    |> String.replace(~r/~[a-zA-Z]\(.*?\)/s, "\"\"")
+    |> String.replace(~r/~[a-zA-Z]\[.*?\]/s, "\"\"")
+    |> String.replace(~r/~[a-zA-Z]\{.*?\}/s, "\"\"")
+    |> String.replace(~r/~[a-zA-Z]<.*?>/s, "\"\"")
+    |> String.replace(~r/~[a-zA-Z]\/.*?\//s, "\"\"")
+    |> String.replace(~r/~[a-zA-Z]\|.*?\|/s, "\"\"")
+    # Strip regular double-quoted strings (non-greedy, single-line)
+    |> String.replace(~r/"(?:[^"\\]|\\.)*"/s, "\"\"")
+    # Strip single-quoted charlists
+    |> String.replace(~r/'(?:[^'\\]|\\.)*'/s, "''")
+    # Strip line comments
+    |> String.replace(~r/#.*$$/m, "")
   end
 
   # -- Pattern absent/present checks --
