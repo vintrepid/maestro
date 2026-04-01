@@ -75,6 +75,95 @@ defmodule Maestro.Ops.Audit.Facade do
     |> Enum.any?()
   end
 
+  @doc """
+  Returns a diff summary comparing two audit runs.
+  Shows new rules, resolved findings, and files affected.
+  """
+  @spec diff_audits(term(), term()) :: term()
+  def diff_audits(nil, _current), do: %{new_findings: [], resolved_findings: [], files_changed: []}
+  def diff_audits(_previous, nil), do: %{new_findings: [], resolved_findings: [], files_changed: []}
+
+  def diff_audits(%{id: prev_id}, %{id: curr_id}) do
+    prev_results =
+      AuditResult
+      |> Ash.Query.filter(audit_id == ^prev_id)
+      |> Ash.read!()
+
+    curr_results =
+      AuditResult
+      |> Ash.Query.filter(audit_id == ^curr_id)
+      |> Ash.read!()
+
+    prev_keys = finding_keys(prev_results)
+    curr_keys = finding_keys(curr_results)
+
+    new_findings =
+      MapSet.difference(curr_keys, prev_keys)
+      |> MapSet.to_list()
+      |> Enum.sort()
+
+    resolved_findings =
+      MapSet.difference(prev_keys, curr_keys)
+      |> MapSet.to_list()
+      |> Enum.sort()
+
+    prev_modules = MapSet.new(prev_results, & &1.module_name)
+    curr_modules = MapSet.new(curr_results, & &1.module_name)
+
+    files_changed =
+      MapSet.union(
+        MapSet.difference(curr_modules, prev_modules),
+        MapSet.difference(prev_modules, curr_modules)
+      )
+      |> MapSet.to_list()
+      |> Enum.sort()
+
+    %{
+      new_findings: new_findings,
+      resolved_findings: resolved_findings,
+      files_changed: files_changed,
+      prev_total_fail: Enum.sum(Enum.map(prev_results, & &1.fail)),
+      curr_total_fail: Enum.sum(Enum.map(curr_results, & &1.fail)),
+      new_rules: new_rule_ids(prev_results, curr_results)
+    }
+  end
+
+  defp finding_keys(results) do
+    results
+    |> Enum.flat_map(fn r ->
+      Enum.map(r.findings, fn f ->
+        {r.module_name, f["rule_id"] || f["rule_category"], List.first(f["evidence"] || [])}
+      end)
+    end)
+    |> MapSet.new()
+  end
+
+  defp new_rule_ids(prev_results, curr_results) do
+    prev_ids =
+      prev_results
+      |> Enum.flat_map(fn r -> Enum.map(r.findings, &(&1["rule_id"])) end)
+      |> MapSet.new()
+
+    curr_results
+    |> Enum.flat_map(fn r -> Enum.map(r.findings, &(&1["rule_id"])) end)
+    |> MapSet.new()
+    |> MapSet.difference(prev_ids)
+    |> MapSet.to_list()
+    |> Enum.sort()
+  end
+
+  @doc """
+  Returns the two most recent completed audits for diffing.
+  """
+  @spec latest_two_completed() :: term()
+  def latest_two_completed do
+    Audit
+    |> Ash.Query.filter(status == :completed)
+    |> Ash.Query.sort(inserted_at: :desc)
+    |> Ash.Query.limit(2)
+    |> Ash.read!(load: @aggregates)
+  end
+
   @spec run_audit(term()) :: term()
   def run_audit(opts), do: AuditRunner.run(opts)
 

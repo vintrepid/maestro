@@ -17,11 +17,13 @@ defmodule MaestroWeb.AuditLive do
 
     latest = Audit.latest_completed()
     giulia_up = connected?(socket) and Audit.deep_audit_available?()
+    diff = compute_diff(latest)
 
     {:ok,
      socket
      |> assign(:page_title, "Code Audit")
      |> assign(:audit, latest)
+     |> assign(:audit_diff, diff)
      |> assign(:query, Audit.results_query(latest))
      |> assign(:by_category, Audit.category_summary(latest))
      |> assign(:view_mode, "modules")
@@ -116,9 +118,12 @@ defmodule MaestroWeb.AuditLive do
         socket
       end
 
+    diff = compute_diff(latest)
+
     {:noreply,
      socket
      |> assign(:audit, latest)
+     |> assign(:audit_diff, diff)
      |> assign(:query, Audit.results_query(latest))
      |> assign(:by_category, Audit.category_summary(latest))
      |> assign(:running, false)
@@ -224,6 +229,70 @@ defmodule MaestroWeb.AuditLive do
               <div class="stat">
                 <div class="stat-title">Fail</div>
                 <div class="stat-value text-error">{@audit.total_results}</div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <%= if @audit_diff do %>
+          <div class="audit-diff" id="audit-diff">
+            <div class="collapse collapse-arrow bg-base-200">
+              <input type="checkbox" checked />
+              <div class="collapse-title font-medium">
+                Changes since last audit
+                <span class="badge badge-sm ml-2">
+                  {length(@audit_diff.new_findings)} new /
+                  {length(@audit_diff.resolved_findings)} resolved
+                </span>
+              </div>
+              <div class="collapse-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <h4 class="text-sm font-semibold mb-1">Findings delta</h4>
+                    <p class="text-xs">
+                      {@audit_diff.prev_total_fail} &rarr; {@audit_diff.curr_total_fail}
+                      <%= if @audit_diff.curr_total_fail < @audit_diff.prev_total_fail do %>
+                        <span class="text-success ml-1">
+                          ({@audit_diff.prev_total_fail - @audit_diff.curr_total_fail} resolved)
+                        </span>
+                      <% end %>
+                      <%= if @audit_diff.curr_total_fail > @audit_diff.prev_total_fail do %>
+                        <span class="text-error ml-1">
+                          (+{@audit_diff.curr_total_fail - @audit_diff.prev_total_fail} new)
+                        </span>
+                      <% end %>
+                    </p>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-semibold mb-1">New rules</h4>
+                    <%= if @audit_diff.new_rules == [] do %>
+                      <p class="text-xs opacity-50">None</p>
+                    <% else %>
+                      <ul class="text-xs">
+                        <%= for rule_id <- @audit_diff.new_rules do %>
+                          <li class="badge badge-info badge-xs mb-1">{rule_id}</li>
+                        <% end %>
+                      </ul>
+                    <% end %>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-semibold mb-1">Modules changed</h4>
+                    <%= if @audit_diff.files_changed == [] do %>
+                      <p class="text-xs opacity-50">None</p>
+                    <% else %>
+                      <div class="flex flex-wrap gap-1">
+                        <%= for mod <- Enum.take(@audit_diff.files_changed, 10) do %>
+                          <span class="badge badge-ghost badge-xs">{short_module(mod)}</span>
+                        <% end %>
+                        <%= if length(@audit_diff.files_changed) > 10 do %>
+                          <span class="text-xs opacity-50">
+                            +{length(@audit_diff.files_changed) - 10} more
+                          </span>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -340,6 +409,7 @@ defmodule MaestroWeb.AuditLive do
                   <th>Category</th>
                   <th>Rule</th>
                   <th>Evidence</th>
+                  <th>Source</th>
                 </tr>
               </thead>
               <tbody>
@@ -353,7 +423,15 @@ defmodule MaestroWeb.AuditLive do
                       <% end %>
                     </td>
                     <td><span class="badge badge-outline badge-xs">{f["rule_category"]}</span></td>
-                    <td class="audit-rule-content">{f["rule_content"]}</td>
+                    <td class="audit-rule-content">
+                      {f["rule_content"]}
+                      <%= if f["line"] do %>
+                        <span class="text-xs opacity-50 ml-1">L{f["line"]}</span>
+                      <% end %>
+                      <%= if f["fixable"] do %>
+                        <span class="badge badge-warning badge-xs ml-1">fixable</span>
+                      <% end %>
+                    </td>
                     <td>
                       <%= if f["evidence"] && f["evidence"] != [] do %>
                         <ul class="audit-issue-list">
@@ -361,6 +439,16 @@ defmodule MaestroWeb.AuditLive do
                             <li class="audit-issue">{ev}</li>
                           <% end %>
                         </ul>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= if f["author"] do %>
+                        <span class="text-xs">
+                          {f["author"]}
+                          <span class="opacity-50">via {f["source"]}</span>
+                        </span>
+                      <% else %>
+                        <span class="text-xs opacity-50">maestro</span>
                       <% end %>
                     </td>
                   </tr>
@@ -387,6 +475,15 @@ defmodule MaestroWeb.AuditLive do
 
   defp refresh_table(socket) do
     Cinder.Refresh.refresh_table(socket, "audit-results-table")
+  end
+
+  defp compute_diff(nil), do: nil
+
+  defp compute_diff(_latest) do
+    case Audit.latest_two_completed() do
+      [current, previous] -> Audit.diff_audits(previous, current)
+      _ -> nil
+    end
   end
 
   defp short_module(module_name) do
