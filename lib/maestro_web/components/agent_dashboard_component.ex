@@ -86,7 +86,10 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
         {:noreply, socket}
 
       session ->
-        db_session = Ash.get!(Maestro.Agents.Session, session.id, authorize?: false)
+        db_session = case Ash.get(Maestro.Agents.Session, session.id, authorize?: false) do
+          {:ok, val} -> val
+          {:error, _} -> nil
+        end
         Maestro.Agents.Logger.end_session(db_session)
         {:noreply, socket}
     end
@@ -98,8 +101,14 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
         {:noreply, socket}
 
       session ->
-        agent = Ash.get!(Maestro.Agents.Agent, session.agent_id, authorize?: false)
-        db_session = Ash.get!(Maestro.Agents.Session, session.id, authorize?: false)
+        agent = case Ash.get(Maestro.Agents.Agent, session.agent_id, authorize?: false) do
+          {:ok, val} -> val
+          {:error, _} -> nil
+        end
+        db_session = case Ash.get(Maestro.Agents.Session, session.id, authorize?: false) do
+          {:ok, val} -> val
+          {:error, _} -> nil
+        end
         Maestro.Agents.Logger.log_request(agent, db_session, :agent_response, milestone)
         {:noreply, assign(socket, task_input: "")}
     end
