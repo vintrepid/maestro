@@ -1,21 +1,21 @@
 {
   "pending": [
-    "71 proposed rules need curation at /rules"
+    "74 proposed rules need curation at /rules"
   ],
   "status": "in_progress",
   "state": {
-    "approved_rules": 45,
-    "proposed_rules": 71,
-    "quality_pass_rate": "87%",
+    "approved_rules": 56,
+    "proposed_rules": 74,
+    "quality_pass_rate": "88%",
     "site_audit": {
-      "avg_score": "97%",
+      "avg_score": "99%",
       "failures": [
-        "architecture: 6",
+        "components: 3",
         "liveview: 3"
       ],
-      "pages": 21
+      "pages": 23
     }
   },
-  "session_date": "2026-03-30",
-  "summary": "Major refactoring session: facade pattern for all LiveViews (audit/rules/agents), Giulia integration at port 4020, audit fixer pipeline for specs/moduledocs/pipes/atoms, rule dedup with god rules (88 duplicates consolidated into 25), superseded_by relationship, HeexCalls module for dead code filtering. Rules page layout needs CSS fix (page-header, filter-chips). 71 proposed rules remain for curation."
+  "session_date": "2026-04-02",
+  "summary": "Church of Code review, rule extraction, agent session model, Calvin payroll domain agent setup"
 }

@@ -49,15 +49,13 @@ defmodule Maestro.Agents.Facade do
   @doc "List recent requests across all sessions."
   @spec list_recent_requests() :: [map()]
   def list_recent_requests do
-    Request.recent!(authorize?: false)
-    |> Enum.map(&to_request_row/1)
+    Enum.map(Request.recent!(authorize?: false), &to_request_row/1)
   end
 
   @doc "List requests belonging to a specific session."
   @spec list_requests_for_session(String.t()) :: [map()]
   def list_requests_for_session(session_id) do
-    Request.by_session!(session_id, authorize?: false)
-    |> Enum.map(&to_request_row/1)
+    Enum.map(Request.by_session!(session_id, authorize?: false), &to_request_row/1)
   end
 
   @doc """

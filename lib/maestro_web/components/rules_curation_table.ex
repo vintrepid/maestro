@@ -8,6 +8,7 @@ defmodule MaestroWeb.Components.RulesCurationTable do
   attr :category_options, :list, required: true
   attr :bundle_options, :list, required: true
 
+  @spec rules_table(term()) :: term()
   def rules_table(assigns) do
     ~H"""
     <Cinder.collection

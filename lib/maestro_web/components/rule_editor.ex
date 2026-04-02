@@ -35,6 +35,7 @@ defmodule MaestroWeb.Components.RuleEditor do
   attr :editing, :any, required: true, doc: ":new or the rule struct being edited"
   attr :category_options, :list, required: true
 
+  @spec rule_editor(term()) :: term()
   def rule_editor(assigns) do
     assigns =
       assigns
@@ -69,7 +70,7 @@ defmodule MaestroWeb.Components.RuleEditor do
           placeholder="liveview, architecture"
           value={tags_display(@form[:tags].value)}
         />
-        <.input field={@form[:notes]} type="textarea" label="Notes" rows={2} />
+        <.input field={@form[:notes]} type="textarea" label="Notes" rows={6} />
 
         <div class="flex justify-end gap-2 mt-4">
           <button type="button" phx-click="cancel_edit" class="btn btn-ghost">Cancel</button>

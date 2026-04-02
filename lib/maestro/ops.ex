@@ -14,6 +14,8 @@ defmodule Maestro.Ops do
     resource Maestro.Ops.Skill
     resource Maestro.Ops.Audit
     resource Maestro.Ops.AuditResult
+    resource Maestro.Ops.AgentSession
+    resource Maestro.Ops.AgentSessionRule
   end
 
   alias Maestro.Ops.Project

@@ -6,6 +6,7 @@ defmodule MaestroWeb.Components.RulesStatsComponent do
   attr :quality_summary, :map, required: true
   attr :deps_info, :list, required: true
 
+  @spec rules_stats(term()) :: term()
   def rules_stats(assigns) do
     assigns = assign(assigns, :max_count, max_bundle_count(assigns.bundle_stats))
 

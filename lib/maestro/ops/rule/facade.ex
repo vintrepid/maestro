@@ -28,6 +28,7 @@ defmodule Maestro.Ops.Rule.Facade do
   # Domain Enumerations
   # ---------------------------------------------------------------------------
 
+  @spec status_options() :: term()
   def status_options do
     [
       {"Proposed", "proposed"},
@@ -38,6 +39,7 @@ defmodule Maestro.Ops.Rule.Facade do
     ]
   end
 
+  @spec category_options() :: term()
   def category_options do
     [
       {"Architecture", "architecture"},
@@ -55,6 +57,7 @@ defmodule Maestro.Ops.Rule.Facade do
     ]
   end
 
+  @spec bundle_options() :: term()
   def bundle_options do
     [
       {"Universal", "universal"},
@@ -72,8 +75,7 @@ defmodule Maestro.Ops.Rule.Facade do
   @doc "Returns the default sorted query for the rules table."
   @spec default_query() :: Ash.Query.t()
   def default_query do
-    Rule
-    |> sort(priority: :desc, category: :asc)
+    sort(Rule, priority: :desc, category: :asc)
   end
 
   @doc "Returns a query sorted by priority descending (no filters)."
@@ -282,21 +284,21 @@ defmodule Maestro.Ops.Rule.Facade do
   @doc "Returns an AshPhoenix form for creating a new rule."
   @spec new_form() :: Phoenix.HTML.Form.t()
   def new_form do
-    AshPhoenix.Form.for_create(Rule, :create, as: "rule") |> to_form()
+    to_form(AshPhoenix.Form.for_create(Rule, :create, as: "rule"))
   end
 
   @doc "Returns an AshPhoenix form for editing an existing rule."
   @spec edit_form(String.t()) :: {term(), Phoenix.HTML.Form.t()}
   def edit_form(id) do
     rule = Rule.by_id!(id, authorize?: false)
-    form = AshPhoenix.Form.for_update(rule, :update, as: "rule") |> to_form()
+    form = to_form(AshPhoenix.Form.for_update(rule, :update, as: "rule"))
     {rule, form}
   end
 
   @doc "Validates a form with params, returns updated form."
   @spec validate_form(term(), map()) :: Phoenix.HTML.Form.t()
   def validate_form(form_source, params) do
-    AshPhoenix.Form.validate(form_source, normalize_params(params)) |> to_form()
+    to_form(AshPhoenix.Form.validate(form_source, normalize_params(params)))
   end
 
   @doc "Submits a form. Returns {:ok, rule} or {:error, form}."
@@ -534,7 +536,7 @@ defmodule Maestro.Ops.Rule.Facade do
         category: category,
         severity: severity,
         tags: merged_tags,
-        source_context: "consolidated:#{DateTime.utc_now() |> DateTime.to_iso8601()}",
+        source_context: "consolidated:#{DateTime.to_iso8601(DateTime.utc_now())}",
         source_project_slug: "maestro"
       }, authorize?: false)
 
@@ -604,8 +606,8 @@ defmodule Maestro.Ops.Rule.Facade do
   end
 
   defp jaccard(set_a, set_b) do
-    intersection = MapSet.intersection(set_a, set_b) |> MapSet.size()
-    union = MapSet.union(set_a, set_b) |> MapSet.size()
+    intersection = MapSet.size(MapSet.intersection(set_a, set_b))
+    union = MapSet.size(MapSet.union(set_a, set_b))
     if union == 0, do: 0.0, else: intersection / union
   end
 
@@ -635,29 +637,40 @@ defmodule Maestro.Ops.Rule.Facade do
       |> Enum.uniq_by(& &1.id)
 
     groups =
-      Enum.group_by(all_in_pairs, fn r -> find_root(parent, r.id) end)
-      |> Enum.filter(fn {_, members} -> length(members) > 1 end)
-
-    # For each cluster, pick canonical (approved > proposed, highest priority)
-    Enum.map(groups, fn {_root, members} ->
-      sorted = Enum.sort_by(members, fn r ->
-        status_rank = if r.status == :approved, do: 0, else: 1
-        {status_rank, -(r.priority || 0)}
+      Enum.filter(Enum.group_by(all_in_pairs, fn r -> find_root(parent, r.id) end), fn {_, members} ->
+        length(members) > 1
       end)
 
-      [canonical | dupes] = sorted
-      avg_sim = if pairs != [] do
-        relevant = Enum.filter(pairs, fn {r1, r2, _} ->
-          r1.id in Enum.map(members, & &1.id) and r2.id in Enum.map(members, & &1.id)
-        end)
-        if relevant != [], do: Enum.sum(Enum.map(relevant, fn {_, _, s} -> s end)) / length(relevant), else: 0.0
-      else
-        0.0
-      end
-
-      %{canonical: canonical, duplicates: dupes, similarity: Float.round(avg_sim, 2)}
-    end)
-    |> Enum.sort_by(fn c -> -(1 + length(c.duplicates)) end)
+    # For each cluster, pick canonical (approved > proposed, highest priority)
+    Enum.sort_by(
+      # For each cluster, pick canonical (approved > proposed, highest priority)
+      Enum.map(groups, fn {_root, members} ->
+        sorted =
+          Enum.sort_by(members, fn r ->
+            status_rank = if r.status == :approved, do: 0, else: 1
+            {status_rank, -(r.priority || 0)}
+          end)
+    
+        [canonical | dupes] = sorted
+    
+        avg_sim =
+          if pairs != [] do
+            relevant =
+              Enum.filter(pairs, fn {r1, r2, _} ->
+                r1.id in Enum.map(members, & &1.id) and r2.id in Enum.map(members, & &1.id)
+              end)
+    
+            if relevant != [],
+              do: Enum.sum(Enum.map(relevant, fn {_, _, s} -> s end)) / length(relevant),
+              else: 0.0
+          else
+            0.0
+          end
+    
+        %{canonical: canonical, duplicates: dupes, similarity: Float.round(avg_sim, 2)}
+      end),
+      fn c -> -(1 + length(c.duplicates)) end
+    )
   end
 
   defp find_root(parent, id) do
