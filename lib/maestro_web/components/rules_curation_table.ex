@@ -7,6 +7,7 @@ defmodule MaestroWeb.Components.RulesCurationTable do
   attr :status_options, :list, required: true
   attr :category_options, :list, required: true
   attr :bundle_options, :list, required: true
+  attr :source_type_options, :list, required: true
 
   @spec rules_table(term()) :: term()
   def rules_table(assigns) do
@@ -67,6 +68,16 @@ defmodule MaestroWeb.Components.RulesCurationTable do
         filter={[type: :select, options: @category_options]}
       >
         {rule.category}
+      </:col>
+
+      <:col
+        :let={rule}
+        field="source_type"
+        label="Source"
+        sort
+        filter={[type: :select, options: @source_type_options]}
+      >
+        <span class={["badge badge-sm badge-outline", source_type_badge(rule.source_type)]}>{rule.source_type}</span>
       </:col>
 
       <:col :let={rule} field="content" label="Content" filter>
@@ -156,4 +167,10 @@ defmodule MaestroWeb.Components.RulesCurationTable do
   defp priority_color(p) when p >= 60, do: "text-warning"
   defp priority_color(_), do: "text-base-content/50"
 
+  defp source_type_badge(:library_file), do: "badge-info"
+  defp source_type_badge(:agent_session), do: "badge-accent"
+  defp source_type_badge(:article), do: "badge-secondary"
+  defp source_type_badge(:consolidated), do: "badge-warning"
+  defp source_type_badge(:manual), do: "badge-ghost"
+  defp source_type_badge(_), do: ""
 end

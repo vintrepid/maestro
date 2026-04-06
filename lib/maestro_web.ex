@@ -52,6 +52,42 @@ defmodule MaestroWeb do
     end
   end
 
+  @doc """
+  LiveView macro for Maestro pages.
+
+  ## Contract
+
+  Every LiveView page is a thin imperative shell. Domain logic lives in resources
+  and facades. The LiveView translates user intent into resource calls.
+
+  ### URL param state (resilience + shareability)
+
+  All meaningful page state MUST live in URL query params. This gives you:
+  - **Reconnect resilience** — assigns vanish on disconnect, URL params don't
+  - **Shareable links** — users can bookmark and share filtered views
+
+  For Cinder tables: `use Cinder.UrlSync` handles this automatically.
+  For custom state: drive from `handle_params`, not `handle_event`.
+
+      # Good: state from URL
+      def handle_params(params, _uri, socket) do
+        {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+      end
+
+      defp apply_params(socket, _action, %{"tab" => tab}), do: assign(socket, :tab, tab)
+      defp apply_params(socket, _action, _params), do: socket
+
+      # Bad: state from event only (lost on reconnect)
+      def handle_event("switch_tab", %{"tab" => tab}, socket) do
+        {:noreply, assign(socket, :tab, tab)}
+      end
+
+  ### Mount contract
+
+  - Subscribe to PubSub in mount (guarded by `connected?/1`)
+  - Defer expensive queries with `connected?/1` to avoid thundering herd on deploy
+  - Set page_title and initial assigns
+  """
   @spec live_view() :: term()
   def live_view do
     quote do

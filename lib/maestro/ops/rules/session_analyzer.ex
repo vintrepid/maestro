@@ -46,8 +46,7 @@ defmodule Maestro.Ops.Rules.SessionAnalyzer do
     compatible = compatible_bundles(session.bundle)
 
     rules =
-      Rule.approved!(authorize?: false)
-      |> Enum.filter(&(&1.bundle in compatible))
+      Enum.filter(Rule.approved!(authorize?: false), &(&1.bundle in compatible))
 
     findings =
       Enum.flat_map(rules, fn rule ->
@@ -187,7 +186,7 @@ defmodule Maestro.Ops.Rules.SessionAnalyzer do
       end)
 
     if dupes != [] do
-      dupe_ids = Enum.map(dupes, &String.slice(&1.id, 0, 8)) |> Enum.join(", ")
+      dupe_ids = Enum.join(Enum.map(dupes, &String.slice(&1.id, 0, 8)), ", ")
 
       [%{
         rule_id: rule.id,

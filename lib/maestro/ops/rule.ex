@@ -47,6 +47,8 @@ defmodule Maestro.Ops.Rule do
         :source_project_slug,
         :source_commit,
         :source_context,
+        :source_type,
+        :source_agent_session_id,
         :applies_to,
         :tags,
         :library_id,
@@ -66,6 +68,8 @@ defmodule Maestro.Ops.Rule do
         :source_project_slug,
         :source_commit,
         :source_context,
+        :source_type,
+        :source_agent_session_id,
         :applies_to,
         :tags,
         :library_id,
@@ -86,6 +90,8 @@ defmodule Maestro.Ops.Rule do
         :source_project_slug,
         :source_commit,
         :source_context,
+        :source_type,
+        :source_agent_session_id,
         :applies_to,
         :tags,
         :library_id,
@@ -103,7 +109,14 @@ defmodule Maestro.Ops.Rule do
     end
 
     update :supersede do
-      accept [:superseded_by_id]
+      accept []
+      require_atomic? false
+
+      argument :superseded_by_id, :uuid do
+        allow_nil? false
+      end
+
+      change set_attribute(:superseded_by_id, arg(:superseded_by_id))
       change set_attribute(:status, :retired)
       change set_attribute(:retired_at, &DateTime.utc_now/0)
     end
@@ -246,6 +259,13 @@ defmodule Maestro.Ops.Rule do
       description "Why this rule exists — the incident or mistake that led to it"
     end
 
+    attribute :source_type, :atom do
+      constraints one_of: [:library_file, :agent_session, :article, :manual, :consolidated]
+      default :manual
+      public? true
+      description "How this rule was created/discovered"
+    end
+
     attribute :applies_to, {:array, :string} do
       default ["all"]
       public? true
@@ -347,6 +367,12 @@ defmodule Maestro.Ops.Rule do
     belongs_to :rule_source, Maestro.Ops.RuleSource do
       public? true
       allow_nil? true
+    end
+
+    belongs_to :source_agent_session, Maestro.Ops.AgentSession do
+      public? true
+      allow_nil? true
+      description "The agent session that originally produced this rule (if applicable)"
     end
 
     belongs_to :superseded_by, Maestro.Ops.Rule do

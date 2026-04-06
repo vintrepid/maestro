@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "additionalDirectories": ["/Users/vince/dev"],
     "allow": [
       "mcp__Tidewave-Web__browser_eval",
       "mcp__Tidewave__project_eval",
@@ -51,8 +52,13 @@
       "Bash(fly ssh:*)",
       "Bash(ls:*)",
       "Bash(echo:*)",
+      "Bash(rm:*)",
       "Skill(claude-api)",
-      "Skill(claude-api:*)"
+      "Skill(claude-api:*)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:swmansion.com)",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
     ]
   },
   "hooks": {

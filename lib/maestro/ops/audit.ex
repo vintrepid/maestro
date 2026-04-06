@@ -30,7 +30,7 @@ defmodule Maestro.Ops.Audit do
     defaults [:read, :destroy]
 
     create :create do
-      accept [:status, :total_modules]
+      accept [:status, :total_modules, :project_id]
     end
 
     update :complete do
@@ -60,6 +60,11 @@ defmodule Maestro.Ops.Audit do
   end
 
   relationships do
+    belongs_to :project, Maestro.Ops.Project do
+      attribute_type :uuid
+      allow_nil? true
+    end
+
     has_many :results, Maestro.Ops.AuditResult
   end
 

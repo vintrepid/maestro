@@ -15,13 +15,16 @@ defmodule MaestroWeb.AuditLive do
   def mount(_params, _session, socket) do
     if connected?(socket), do: Audit.subscribe()
 
+    projects = Audit.projects()
     latest = Audit.latest_completed()
     giulia_up = connected?(socket) and Audit.deep_audit_available?()
-    diff = compute_diff(latest)
+    diff = compute_diff(latest, nil)
 
     {:ok,
      socket
      |> assign(:page_title, "Code Audit")
+     |> assign(:projects, projects)
+     |> assign(:project, nil)
      |> assign(:audit, latest)
      |> assign(:audit_diff, diff)
      |> assign(:query, Audit.results_query(latest))
@@ -47,6 +50,15 @@ defmodule MaestroWeb.AuditLive do
   def handle_event("run_audit", _params, socket) do
     send(self(), :do_audit)
     {:noreply, assign(socket, :running, true)}
+  end
+
+  def handle_event("select_project", %{"project" => ""}, socket) do
+    {:noreply, load_audit_for_project(socket, nil)}
+  end
+
+  def handle_event("select_project", %{"project" => id}, socket) do
+    project = Enum.find(socket.assigns.projects, &(to_string(&1.id) == id))
+    {:noreply, load_audit_for_project(socket, project)}
   end
 
   def handle_event("toggle_filter", %{"filter" => filter}, socket) do
@@ -95,17 +107,18 @@ defmodule MaestroWeb.AuditLive do
   @impl true
   def handle_info(:do_audit, socket) do
     Audit.run_audit(
+      project_id: socket.assigns.project && to_string(socket.assigns.project.id),
       approved: socket.assigns.filter_approved,
       proposed: socket.assigns.filter_proposed,
       linter: socket.assigns.filter_linter,
       deep: socket.assigns.filter_giulia
     )
-
     {:noreply, socket}
   end
 
   def handle_info({:audit_changed, _action, _data}, socket) do
-    latest = Audit.latest_completed()
+    project_id = socket.assigns.project && to_string(socket.assigns.project.id)
+    latest = Audit.latest_completed(project_id)
 
     socket =
       if socket.assigns.selected_result do
@@ -118,7 +131,7 @@ defmodule MaestroWeb.AuditLive do
         socket
       end
 
-    diff = compute_diff(latest)
+    diff = compute_diff(latest, project_id)
 
     {:noreply,
      socket
@@ -150,6 +163,17 @@ defmodule MaestroWeb.AuditLive do
         <% end %>
 
         <div class="audit-controls">
+          <form phx-change="select_project" id="project-select-form">
+            <select id="project-select" class="select select-sm select-bordered" name="project">
+              <option value="">Maestro (this project)</option>
+              <%= for project <- @projects do %>
+                <option value={project.id} selected={@project && @project.id == project.id}>
+                  {project.name}
+                </option>
+              <% end %>
+            </select>
+          </form>
+
           <button phx-click="run_audit" class="btn btn-primary btn-sm" disabled={@running}>
             <%= if @running do %>
               <span class="loading loading-spinner loading-sm"></span> Running...
@@ -473,14 +497,28 @@ defmodule MaestroWeb.AuditLive do
 
   # -- View helpers (presentation only, no domain logic) --
 
+  defp load_audit_for_project(socket, project) do
+    pid = project && to_string(project.id)
+    latest = Audit.latest_completed(pid)
+    diff = compute_diff(latest, pid)
+
+    socket
+    |> assign(:project, project)
+    |> assign(:audit, latest)
+    |> assign(:audit_diff, diff)
+    |> assign(:query, Audit.results_query(latest))
+    |> assign(:by_category, Audit.category_summary(latest))
+    |> refresh_table()
+  end
+
   defp refresh_table(socket) do
     Cinder.Refresh.refresh_table(socket, "audit-results-table")
   end
 
-  defp compute_diff(nil), do: nil
+  defp compute_diff(nil, _project_id), do: nil
 
-  defp compute_diff(_latest) do
-    case Audit.latest_two_completed() do
+  defp compute_diff(_latest, project_id) do
+    case Audit.latest_two_completed(project_id) do
       [current, previous] -> Audit.diff_audits(previous, current)
       _ -> nil
     end
@@ -488,10 +526,9 @@ defmodule MaestroWeb.AuditLive do
 
   defp short_module(module_name) do
     module_name
-    |> String.replace("Elixir.MaestroWeb.", "")
-    |> String.replace("Elixir.Maestro.", "")
-    |> String.replace("Elixir.Mix.Tasks.", "mix ")
-    |> String.replace("Elixir.", "")
+    |> String.replace(~r/^Elixir\.(\w+)Web\./, "\\1Web.")
+    |> String.replace(~r/^Elixir\.Mix\.Tasks\./, "mix ")
+    |> String.replace(~r/^Elixir\./, "")
   end
 
   defp score_color(score) when score >= 80, do: "text-success"

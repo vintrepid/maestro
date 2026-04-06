@@ -21,6 +21,7 @@ defmodule Maestro.Ops.RuleParser do
         content_hash: content_hash(rule_text),
         category: categorize(dep, sub_rule_name),
         severity: detect_severity(rule_text),
+        source_type: :library_file,
         source_project_slug: dep,
         source_commit: get_dep_version(dep),
         source_context: "#{dep}:#{sub_rule_name}",

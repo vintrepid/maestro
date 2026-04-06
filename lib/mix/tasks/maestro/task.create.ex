@@ -59,7 +59,7 @@ defmodule Mix.Tasks.Maestro.Task.Create do
              task_type: task_type,
              status: status,
              entity_type: opts[:entity_type] || "project",
-             entity_id: opts[:entity_id] || "maestro"
+             entity_id: opts[:entity_id] || resolve_default_project_id()
            },
            authorize?: false
          ) do
@@ -69,6 +69,13 @@ defmodule Mix.Tasks.Maestro.Task.Create do
       {:error, error} ->
         Mix.shell().error("Failed to create task: #{inspect(error)}")
         System.halt(1)
+    end
+  end
+
+  defp resolve_default_project_id do
+    case Maestro.Ops.get_project_by_slug("maestro") do
+      nil -> "maestro"
+      project -> to_string(project.id)
     end
   end
 end

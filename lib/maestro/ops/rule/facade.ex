@@ -68,6 +68,17 @@ defmodule Maestro.Ops.Rule.Facade do
     ]
   end
 
+  @spec source_type_options() :: term()
+  def source_type_options do
+    [
+      {"Library File", "library_file"},
+      {"Agent Session", "agent_session"},
+      {"Article", "article"},
+      {"Manual", "manual"},
+      {"Consolidated", "consolidated"}
+    ]
+  end
+
   # ---------------------------------------------------------------------------
   # Queries
   # ---------------------------------------------------------------------------
@@ -460,7 +471,7 @@ defmodule Maestro.Ops.Rule.Facade do
   @spec extract_cinder_filters(map()) :: map()
   def extract_cinder_filters(params) do
     params
-    |> Enum.filter(fn {k, _v} -> k in ~w(status category severity) end)
+    |> Enum.filter(fn {k, _v} -> k in ~w(status category severity source_type) end)
     |> Map.new()
   end
 
@@ -536,6 +547,7 @@ defmodule Maestro.Ops.Rule.Facade do
         category: category,
         severity: severity,
         tags: merged_tags,
+        source_type: :consolidated,
         source_context: "consolidated:#{DateTime.to_iso8601(DateTime.utc_now())}",
         source_project_slug: "maestro"
       }, authorize?: false)

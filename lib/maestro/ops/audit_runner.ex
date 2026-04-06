@@ -41,7 +41,8 @@ defmodule Maestro.Ops.AuditRunner do
     total_modules =
       Enum.sum(Enum.map(all_paths, fn p -> length(Path.wildcard(Path.join(p, "lib/**/*.ex"))) end))
 
-    {:ok, audit} = Audit.create(%{total_modules: total_modules}, authorize?: false)
+    project_id = Keyword.get(opts, :project_id)
+    {:ok, audit} = Audit.create(%{total_modules: total_modules, project_id: project_id}, authorize?: false)
 
     try do
       rule_by_module = run_rule_audit(all_paths, opts)

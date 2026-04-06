@@ -3,6 +3,7 @@ defmodule MaestroWeb.TaskFormLive do
   LiveView for the Task Form page.
   """
   use MaestroWeb, :live_view
+  require Ash.Query
   alias Maestro.Ops.Task
 
   @impl true
@@ -41,11 +42,22 @@ defmodule MaestroWeb.TaskFormLive do
         get_entity_name(params["entity_type"], params["entity_id"])
       end
 
+    subtasks_query =
+      if task do
+        task_id = to_string(task.id)
+
+        Maestro.Ops.Task
+        |> Ash.Query.filter(entity_type == "task" and entity_id == ^task_id)
+        |> Ash.Query.sort(updated_at: :desc)
+        |> Ash.Query.load(:display_name)
+      end
+
     {:ok,
      socket
      |> assign(:page_title, if(task, do: "Edit Task", else: "New Task"))
      |> assign(:task, task)
      |> assign(:entity_name, entity_name)
+     |> assign(:subtasks_query, subtasks_query)
      |> assign(:editing_notes, false)
      |> assign(:editing_description, false)
      |> assign(:form, to_form(form))}
@@ -389,10 +401,21 @@ defmodule MaestroWeb.TaskFormLive do
                       <.icon name="hero-plus" class="w-3 h-3" /> New
                     </.link>
                   </div>
-                  <MaestroWeb.Components.TaskTable.task_table
+                  <Cinder.collection
                     id="task-subtasks-table"
-                    data_fn={fn -> task_subtasks(@task.id) end}
-                  />
+                    query={@subtasks_query}
+                    page_size={10}
+                    theme="daisy_ui"
+                  >
+                    <:col :let={task} field="display_name" label="Task">
+                      <.link navigate={~p"/tasks/#{task.id}/edit"} class="link link-primary text-xs">
+                        {task.display_name}
+                      </.link>
+                    </:col>
+                    <:col :let={task} field="status">
+                      <span class={"badge badge-xs #{status_class(task.status)}"}>{task.status}</span>
+                    </:col>
+                  </Cinder.collection>
                 </div>
               <% end %>
 
@@ -559,14 +582,10 @@ defmodule MaestroWeb.TaskFormLive do
   defp is_nil_or_empty(""), do: true
   defp is_nil_or_empty(_), do: false
 
-  defp task_subtasks(task_id) do
-    require Ash.Query
-
-    Task
-    |> Ash.Query.filter(entity_type == "Task" and entity_id == ^to_string(task_id))
-    |> Ash.Query.sort(inserted_at: :desc)
-    |> Ash.read!(authorize?: false)
-  end
+  defp status_class(:done), do: "badge-success"
+  defp status_class(:in_progress), do: "badge-warning"
+  defp status_class(:blocked), do: "badge-error"
+  defp status_class(_), do: "badge-ghost"
 
   @impl true
   @spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) ::

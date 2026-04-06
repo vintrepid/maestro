@@ -93,7 +93,7 @@ defmodule Maestro.Ops.Rules.Fixer do
   defp add_spec_from_finding(igniter, finding, page_result) do
     case parse_spec_finding(finding.rule_content) do
       {:ok, func_name, arity} ->
-        add_spec(igniter, page_result.module, func_name, arity)
+        add_spec(igniter, page_result.source_file, func_name, arity)
 
       :error ->
         {:ok, igniter}
@@ -113,10 +113,8 @@ defmodule Maestro.Ops.Rules.Fixer do
   defp parse_spec_finding(_), do: :error
 
   # Insert @spec stub before the function def using Sourceror
-  defp add_spec(igniter, module_name, func_name, arity) do
-    source_file = find_source_file(igniter, module_name)
-
-    if source_file do
+  defp add_spec(igniter, source_file, func_name, arity) do
+    if source_file && File.exists?(source_file) do
       source = File.read!(source_file)
 
       if String.contains?(source, "@spec #{func_name}(") do
@@ -209,7 +207,7 @@ defmodule Maestro.Ops.Rules.Fixer do
   ]
 
   defp add_moduledoc_from_finding(igniter, _finding, page_result) do
-    source_file = find_source_file(igniter, page_result.module)
+    source_file = page_result.source_file
 
     if source_file do
       source = File.read!(source_file)
@@ -306,7 +304,7 @@ defmodule Maestro.Ops.Rules.Fixer do
   # -- Single-value pipe fix: `x |> func()` → `func(x)` --
 
   defp fix_single_pipe(igniter, finding, page_result) do
-    source_file = find_source_file(igniter, page_result.module)
+    source_file = page_result.source_file
 
     if source_file do
       source = File.read!(source_file)
@@ -374,7 +372,7 @@ defmodule Maestro.Ops.Rules.Fixer do
   # -- Atom safety fix: `String.to_atom(x)` → `String.to_existing_atom(x)` --
 
   defp fix_runtime_atom(igniter, _finding, page_result) do
-    source_file = find_source_file(igniter, page_result.module)
+    source_file = page_result.source_file
 
     if source_file do
       source = File.read!(source_file)
@@ -422,20 +420,6 @@ defmodule Maestro.Ops.Rules.Fixer do
     end
   end
 
-  defp find_source_file(_igniter, module_name) do
-    # Convert module to expected file path
-    module_str =
-      module_name
-      |> to_string()
-      |> String.replace_prefix("Elixir.", "")
-
-    path =
-      module_str
-      |> Macro.underscore()
-      |> then(&Path.join(["lib", &1 <> ".ex"]))
-
-    if File.exists?(path), do: path, else: nil
-  end
 
   # -- Maestro rule fix strategies --
 

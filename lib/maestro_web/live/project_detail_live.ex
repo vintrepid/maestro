@@ -1,8 +1,8 @@
 defmodule MaestroWeb.ProjectDetailLive do
   use MaestroWeb, :live_view
+  require Ash.Query
   alias Maestro.Ops
   import MaestroWeb.Live.Helpers.FileOpener
-  import Ecto.Query
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
@@ -12,9 +12,18 @@ defmodule MaestroWeb.ProjectDetailLive do
          socket |> put_flash(:error, "Project not found") |> push_navigate(to: ~p"/projects")}
 
       project ->
+        project_id = to_string(project.id)
+
+        tasks_query =
+          Maestro.Ops.Task
+          |> Ash.Query.filter(entity_type == "project" and entity_id == ^project_id)
+          |> Ash.Query.sort(updated_at: :desc)
+          |> Ash.Query.load(:display_name)
+
         {:ok,
          socket
          |> assign(:project, project)
+         |> assign(:tasks_query, tasks_query)
          |> assign(:page_title, project.name)}
     end
   end
@@ -68,10 +77,24 @@ defmodule MaestroWeb.ProjectDetailLive do
                 <.icon name="hero-plus" class="w-4 h-4" /> New Task
               </.link>
             </div>
-            <MaestroWeb.Components.TaskTable.task_table
+            <Cinder.collection
               id="project-tasks-table"
-              data_fn={fn -> project_tasks_query(@project.id) end}
-            />
+              query={@tasks_query}
+              page_size={10}
+              theme="daisy_ui"
+            >
+              <:col :let={task} field="display_name" label="Task" search>
+                <.link navigate={~p"/tasks/#{task.id}/edit"} class="link link-primary text-xs">
+                  {task.display_name}
+                </.link>
+              </:col>
+              <:col :let={task} field="task_type" label="Type" filter={:select}>
+                <span class="badge badge-xs">{task.task_type}</span>
+              </:col>
+              <:col :let={task} field="status" filter={:select}>
+                <span class={"badge badge-xs #{status_class(task.status)}"}>{task.status}</span>
+              </:col>
+            </Cinder.collection>
           </div>
         </div>
 
@@ -198,16 +221,10 @@ defmodule MaestroWeb.ProjectDetailLive do
     """
   end
 
-  defp project_tasks_query(project_id) do
-    require Ash.Query
-
-    project_id_str = to_string(project_id)
-
-    Maestro.Ops.Task
-    |> Ash.Query.filter(entity_type == "project" and entity_id == ^project_id_str)
-    |> Ash.Query.sort(inserted_at: :desc)
-    |> Ash.read!(authorize?: false)
-  end
+  defp status_class(:done), do: "badge-success"
+  defp status_class(:in_progress), do: "badge-warning"
+  defp status_class(:blocked), do: "badge-error"
+  defp status_class(_), do: "badge-ghost"
 
   defp status_badge_class(status) when status in [:running, "running"], do: "badge-success"
   defp status_badge_class(status) when status in [:stopped, "stopped"], do: "badge-error"

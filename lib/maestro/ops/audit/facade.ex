@@ -13,16 +13,25 @@ defmodule Maestro.Ops.Audit.Facade do
   alias Maestro.Ops.Rules.Fixer
 
   @aggregates [:total_results, :total_fail, :total_pass_checks, :avg_score, :total_pass_modules]
+  @project_base Path.expand("~/dev")
+
+  @spec projects() :: [map()]
+  def projects do
+    Maestro.Ops.Project.active!(authorize?: false)
+  end
+
+  defp project_path(slug), do: Path.join(@project_base, slug)
 
   @spec subscribe() :: term()
   def subscribe do
     Phoenix.PubSub.subscribe(Maestro.PubSub, Maestro.Ops.AuditPubSub.topic())
   end
 
-  @spec latest_completed() :: term()
-  def latest_completed do
+  @spec latest_completed(String.t() | nil) :: term()
+  def latest_completed(project_id \\ nil) do
     Audit
     |> Ash.Query.filter(status == :completed)
+    |> filter_by_project(project_id)
     |> Ash.Query.sort(inserted_at: :desc)
     |> Ash.Query.limit(1)
     |> Ash.read!(load: @aggregates)
@@ -155,17 +164,30 @@ defmodule Maestro.Ops.Audit.Facade do
   @doc """
   Returns the two most recent completed audits for diffing.
   """
-  @spec latest_two_completed() :: term()
-  def latest_two_completed do
+  @spec latest_two_completed(String.t() | nil) :: term()
+  def latest_two_completed(project_id \\ nil) do
     Audit
     |> Ash.Query.filter(status == :completed)
+    |> filter_by_project(project_id)
     |> Ash.Query.sort(inserted_at: :desc)
     |> Ash.Query.limit(2)
     |> Ash.read!(load: @aggregates)
   end
 
   @spec run_audit(term()) :: term()
-  def run_audit(opts), do: AuditRunner.run(opts)
+  def run_audit(opts) do
+    case Keyword.get(opts, :project_id) do
+      nil ->
+        AuditRunner.run(opts)
+
+      project_id ->
+        project = Maestro.Ops.Project.by_id!(project_id, authorize?: false)
+
+        opts
+        |> Keyword.put(:project_path, project_path(project.slug))
+        |> AuditRunner.run()
+    end
+  end
 
   @spec deep_audit_available?() :: term()
   def deep_audit_available?, do: AuditRunner.deep_audit_available?()
@@ -175,6 +197,9 @@ defmodule Maestro.Ops.Audit.Facade do
 
   @spec fix_all(term()) :: term()
   def fix_all(audit) do
+    audit = Ash.load!(audit, [:project], authorize?: false)
+    path = if audit.project, do: project_path(audit.project.slug), else: File.cwd!()
+
     results =
       AuditResult
       |> Ash.Query.filter(audit_id == ^audit.id)
@@ -192,7 +217,7 @@ defmodule Maestro.Ops.Audit.Facade do
 
     mtimes_before = Map.new(all_files, fn f -> {f, file_mtime(f)} end)
 
-    igniter = Igniter.new()
+    igniter = Igniter.new() |> Map.put(:root, path)
 
     {updated_igniter, _} =
       Enum.reduce(results, {igniter, 0}, fn ar, {ign, count} ->
@@ -233,6 +258,9 @@ defmodule Maestro.Ops.Audit.Facade do
       _ -> nil
     end
   end
+
+  defp filter_by_project(query, nil), do: Ash.Query.filter(query, is_nil(project_id))
+  defp filter_by_project(query, id), do: Ash.Query.filter(query, project_id == ^id)
 
   defp atomize_finding(f) when is_map(f) do
     %{

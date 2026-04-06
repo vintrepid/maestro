@@ -4,7 +4,6 @@ defmodule MaestroWeb.RulesLive do
   use Cinder.UrlSync
 
   alias Maestro.Ops.Rule.Facade, as: Rules
-  alias Maestro.Ops.AgentSession
   import MaestroWeb.Components.RulesStatsComponent
   import MaestroWeb.Components.RulesCurationTable
 
@@ -33,28 +32,13 @@ defmodule MaestroWeb.RulesLive do
      |> assign(:active_tag, nil)
      |> assign(:selected_ids, MapSet.new())
      |> assign(:show_stats, false)
-     |> assign(:session_options, load_session_options())
-     |> assign(:active_session_id, nil)}
+     |> assign(:source_type_options, Rules.source_type_options())}
   end
 
   @impl true
   def handle_params(params, uri, socket) do
     socket = Cinder.UrlSync.handle_params(params, uri, socket)
     filters = Rules.extract_cinder_filters(params)
-
-    socket =
-      case Map.get(params, "session_id") do
-        nil ->
-          socket
-          |> assign(:active_session_id, nil)
-          |> assign(:query, Rules.default_query())
-
-        session_id ->
-          socket
-          |> assign(:active_session_id, session_id)
-          |> assign(:query, session_rules_query(session_id))
-      end
-
     {:noreply, assign(socket, :tag_counts, Rules.tag_cloud(filters))}
   end
 
@@ -180,14 +164,6 @@ defmodule MaestroWeb.RulesLive do
      |> put_flash(:info, "Retired #{count} rules")}
   end
 
-  def handle_event("filter_session", %{"session_id" => ""}, socket) do
-    {:noreply, push_patch(socket, to: ~p"/rules")}
-  end
-
-  def handle_event("filter_session", %{"session_id" => session_id}, socket) do
-    {:noreply, push_patch(socket, to: ~p"/rules?session_id=#{session_id}")}
-  end
-
   def handle_event("filter_source", %{"source" => source}, socket) do
     {:noreply, refresh_table(assign(socket, :query, Rules.query_by_source(source)))}
   end
@@ -244,19 +220,6 @@ defmodule MaestroWeb.RulesLive do
           deps_info={@deps_info}
         />
 
-        <form :if={@session_options != []} phx-change="filter_session" id="session-filter-form" class="flex items-center gap-2 mb-2">
-          <label class="text-sm font-semibold">Agent Session:</label>
-          <select name="session_id" class="select select-sm select-bordered">
-            <option value="">All rules</option>
-            <%= for {label, id} <- @session_options do %>
-              <option value={id} selected={@active_session_id == id}>{label}</option>
-            <% end %>
-          </select>
-          <span :if={@active_session_id} class="badge badge-primary badge-sm">
-            Session active
-          </span>
-        </form>
-
         <.filter_chips tag_counts={@tag_counts} active_tag={@active_tag} />
         <.category_chips category_counts={@category_counts} active_category={@active_category} />
 
@@ -266,6 +229,7 @@ defmodule MaestroWeb.RulesLive do
           status_options={@status_options}
           category_options={@category_options}
           bundle_options={@bundle_options}
+          source_type_options={@source_type_options}
         />
 
       </div>
@@ -276,25 +240,6 @@ defmodule MaestroWeb.RulesLive do
   # -- Minimal view helpers --
 
   defp refresh_table(socket), do: Cinder.Refresh.refresh_table(socket, "rules-table")
-
-  defp load_session_options do
-    AgentSession.active!(authorize?: false)
-    |> Enum.map(fn s -> {"#{s.name} (#{s.bundle})", s.id} end)
-  end
-
-  defp session_rules_query(session_id) do
-    session = AgentSession.by_id!(session_id, authorize?: false)
-    compatible_bundles = compatible_bundles(session.bundle)
-
-    require Ash.Query
-    Maestro.Ops.Rule
-    |> Ash.Query.filter(status == :approved and bundle in ^compatible_bundles)
-    |> Ash.Query.sort(priority: :desc, category: :asc)
-  end
-
-  defp compatible_bundles(:model), do: [:universal, :model]
-  defp compatible_bundles(:ui), do: [:universal, :ui]
-  defp compatible_bundles(_), do: [:universal, :model, :ui, :devops]
 
   defp refresh_counts(socket) do
     socket
