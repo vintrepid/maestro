@@ -31,6 +31,7 @@ defmodule MaestroWeb.LiveViewHelpers do
       end
 
       # Forward task PubSub messages to the agent dashboard
+      @spec handle_info(term(), term()) :: term()
       def handle_info({:task_changed, _action, _task}, socket) do
         send_update(MaestroWeb.Components.AgentDashboardComponent, id: "agent-dashboard")
         {:noreply, socket}

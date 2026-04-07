@@ -256,7 +256,7 @@ defmodule Maestro.Ops.Audit.Facade do
 
     mtimes_before = Map.new(all_files, fn f -> {f, file_mtime(f)} end)
 
-    igniter = Igniter.new() |> Map.put(:root, path)
+    igniter = Map.put(Igniter.new(), :root, path)
 
     {updated_igniter, errors} =
       Enum.reduce(results, {igniter, []}, fn ar, {ign, errs} ->
@@ -330,7 +330,7 @@ defmodule Maestro.Ops.Audit.Facade do
       violations when is_list(violations) and violations != [] ->
         atomized = Enum.map(violations, fn v ->
           Map.new(v, fn
-            {k, val} when is_binary(k) -> {String.to_atom(k), val}
+            {k, val} when is_binary(k) -> {String.to_existing_atom(k), val}
             {k, val} -> {k, val}
           end)
         end)

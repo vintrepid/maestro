@@ -16,6 +16,7 @@ defmodule MaestroWeb.Layouts do
   attr :live?, :boolean, default: true
   slot :inner_block, required: true
 
+  @spec app(term()) :: term()
   def app(assigns) do
     current_project = try do
       Maestro.Ops.AppState.get_current_project()
@@ -90,6 +91,7 @@ defmodule MaestroWeb.Layouts do
     <.flash_group flash={@flash} />
     """
   end
+@spec git_dropdown(term()) :: term()
 
   def git_dropdown(assigns) do
     ~H"""
@@ -109,6 +111,7 @@ defmodule MaestroWeb.Layouts do
       </ul>
     </div>
     """
+  @spec admin_menu(term()) :: term()
   end
 
   def admin_menu(assigns) do
@@ -142,6 +145,7 @@ defmodule MaestroWeb.Layouts do
     </div>
     """
   end
+@spec user_menu(term()) :: term()
 
   attr :current_user, :map, default: nil
 
@@ -200,6 +204,7 @@ defmodule MaestroWeb.Layouts do
       <a href="/sign-in" class="btn btn-ghost btn-sm mr-2">
         Sign In
       </a>
+    @spec theme_selector(term()) :: term()
     <% end %>
     """
   end
@@ -234,6 +239,7 @@ defmodule MaestroWeb.Layouts do
   end
 
   @doc """
+  @spec flash_group(term()) :: term()
   Shows the flash group with standard titles and content.
   """
   attr :flash, :map, required: true

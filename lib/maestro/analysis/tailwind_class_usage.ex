@@ -21,6 +21,7 @@ defmodule Maestro.Analysis.TailwindClassUsage do
     timestamps()
   end
 
+  @spec changeset(term(), term()) :: term()
   def changeset(class_usage, attrs) do
     class_usage
     |> cast(attrs, [
