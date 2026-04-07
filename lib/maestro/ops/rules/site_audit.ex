@@ -187,9 +187,10 @@ defmodule Maestro.Ops.Rules.SiteAudit do
         mod = String.to_existing_atom("Elixir.#{rule.lint_config.check_module}")
         %{base | type: :ast_check_module, check_module: mod}
 
-      # Form rules — check HEEx AST for form patterns
+      # Form rules — now handled by MaestroTool.Lint.Checks.FormUsage check module.
+      # Skip legacy string-based check; the linter rule with check_module handles it.
       form_rule?(content) ->
-        %{base | type: :ast_form_check}
+        %{base | type: :skip}
 
       # Icon rules — check for Heroicons module usage vs <.icon>
       icon_rule?(content) ->
@@ -346,7 +347,9 @@ defmodule Maestro.Ops.Rules.SiteAudit do
       %{
         result
         | pass?: false,
-          evidence: evidence
+          evidence: evidence,
+          violations: violations,
+          check_module: mod
       }
     end
   end

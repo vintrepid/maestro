@@ -12,19 +12,22 @@ defmodule MaestroWeb.AuditLive do
   alias Maestro.Ops.Audit.Facade, as: Audit
 
   @impl true
+  @spec mount(term(), term(), term()) :: term()
   def mount(_params, _session, socket) do
     if connected?(socket), do: Audit.subscribe()
 
     projects = Audit.projects()
-    latest = Audit.latest_completed()
+    default_project = Audit.default_project(projects)
+    project_id = default_project && to_string(default_project.id)
+    latest = Audit.latest_completed(project_id)
     giulia_up = connected?(socket) and Audit.deep_audit_available?()
-    diff = compute_diff(latest, nil)
+    diff = compute_diff(latest, project_id)
 
     {:ok,
      socket
      |> assign(:page_title, "Code Audit")
      |> assign(:projects, projects)
-     |> assign(:project, nil)
+     |> assign(:project, default_project)
      |> assign(:audit, latest)
      |> assign(:audit_diff, diff)
      |> assign(:query, Audit.results_query(latest))
@@ -41,39 +44,47 @@ defmodule MaestroWeb.AuditLive do
   end
 
   @impl true
+  @spec handle_params(term(), term(), term()) :: term()
   def handle_params(params, uri, socket) do
     socket = Cinder.UrlSync.handle_params(params, uri, socket)
     {:noreply, socket}
   end
 
   @impl true
+  @spec handle_event(term(), term(), term()) :: term()
   def handle_event("run_audit", _params, socket) do
     send(self(), :do_audit)
     {:noreply, assign(socket, :running, true)}
   end
 
+  @spec handle_event(term(), term(), term()) :: term()
   def handle_event("select_project", %{"project" => ""}, socket) do
     {:noreply, load_audit_for_project(socket, nil)}
   end
 
+  @spec handle_event(term(), term(), term()) :: term()
   def handle_event("select_project", %{"project" => id}, socket) do
     project = Enum.find(socket.assigns.projects, &(to_string(&1.id) == id))
     {:noreply, load_audit_for_project(socket, project)}
   end
 
+  @spec handle_event(term(), term(), term()) :: term()
   def handle_event("toggle_filter", %{"filter" => filter}, socket) do
     key = String.to_existing_atom("filter_#{filter}")
     {:noreply, assign(socket, key, not Map.get(socket.assigns, key))}
   end
 
+  @spec handle_event(term(), term(), term()) :: term()
   def handle_event("toggle_view", %{"mode" => mode}, socket) do
     {:noreply, assign(socket, :view_mode, mode)}
   end
 
+  @spec handle_event(term(), term(), term()) :: term()
   def handle_event("recheck_giulia", _params, socket) do
     {:noreply, assign(socket, :giulia_available, Audit.deep_audit_available?())}
   end
 
+  @spec handle_event(term(), term(), term()) :: term()
   def handle_event("select_page", %{"id" => id}, socket) do
     result = Audit.find_result(id)
     dag = if result, do: Audit.fetch_module_dag(result.module_name), else: nil
@@ -84,6 +95,7 @@ defmodule MaestroWeb.AuditLive do
      |> assign(:module_dag, dag)}
   end
 
+  @spec handle_event(term(), term(), term()) :: term()
   def handle_event("close_detail", _params, socket) do
     {:noreply,
      socket
@@ -91,18 +103,6 @@ defmodule MaestroWeb.AuditLive do
      |> assign(:module_dag, nil)}
   end
 
-  def handle_event("fix_all", _params, socket) do
-    case socket.assigns.audit do
-      nil ->
-        {:noreply, socket}
-
-      audit ->
-        {:ok, fixed_count} = Audit.fix_all(audit)
-
-        {:noreply,
-         put_flash(socket, :info, "Fixed #{fixed_count} file(s). Re-run audit to see results.")}
-    end
-  end
 
   @impl true
   def handle_info(:do_audit, socket) do
@@ -144,6 +144,7 @@ defmodule MaestroWeb.AuditLive do
   end
 
   @impl true
+  @spec render(term()) :: term()
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
@@ -178,7 +179,7 @@ defmodule MaestroWeb.AuditLive do
             <%= if @running do %>
               <span class="loading loading-spinner loading-sm"></span> Running...
             <% else %>
-              <.icon name="hero-play" class="w-4 h-4" /> Run Audit
+              <.icon name="hero-play" class="w-4 h-4" /> Audit &amp; Fix
             <% end %>
           </button>
 
@@ -228,11 +229,6 @@ defmodule MaestroWeb.AuditLive do
             </label>
           </div>
 
-          <%= if @audit && @audit.total_fail > 0 do %>
-            <button phx-click="fix_all" class="btn btn-warning btn-sm">
-              <.icon name="hero-wrench-screwdriver" class="w-4 h-4" /> Fix All
-            </button>
-          <% end %>
         </div>
 
         <%= if @audit && @audit.status == :completed do %>
@@ -411,7 +407,7 @@ defmodule MaestroWeb.AuditLive do
           <% end %>
         <% else %>
           <div class="audit-empty">
-            <p class="empty-state">Click "Run Audit" to analyze the project.</p>
+            <p class="empty-state">Click "Audit &amp; Fix" to analyze and auto-fix the project.</p>
           </div>
         <% end %>
 

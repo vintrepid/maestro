@@ -39,7 +39,7 @@ defmodule Maestro.Ops.Audit do
     end
 
     update :fail do
-      accept []
+      accept [:notes]
       change set_attribute(:status, :failed)
     end
   end
@@ -54,6 +54,7 @@ defmodule Maestro.Ops.Audit do
     end
 
     attribute :total_modules, :integer, default: 0
+    attribute :notes, :string, public?: true
 
     create_timestamp :inserted_at
     update_timestamp :updated_at

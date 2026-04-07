@@ -8,6 +8,35 @@ defmodule Maestro.Ops.Rules.Fixer do
   """
 
   alias Igniter.Code.{Function, Common}
+  require Logger
+
+  # Gate: every source write goes through validation. If the output doesn't parse,
+  # we refuse to write it. This makes it impossible for fixers to produce invalid code.
+  defp write_validated_source!(source_file, new_source) do
+    case Sourceror.parse_string(new_source) do
+      {:ok, _ast} ->
+        File.write!(source_file, new_source)
+
+      {:error, error} ->
+        Logger.error(
+          "Fixer refused to write invalid source to #{source_file}: #{inspect(error)}"
+        )
+
+        {:error, {:invalid_output, source_file, error}}
+    end
+  end
+
+  # Reads a source file, returning {:ok, source} or {:error, {:file_not_found, path}}.
+  # Never swallows missing files — callers propagate the error.
+  defp read_source(nil), do: {:ok, nil}
+
+  defp read_source(path) do
+    if File.exists?(path) do
+      {:ok, File.read!(path)}
+    else
+      {:error, {:file_not_found, path}}
+    end
+  end
 
   @doc """
   Applies a Maestro rule's fix to a module. Returns {:ok, igniter} or {:error, reason}.
@@ -30,32 +59,81 @@ defmodule Maestro.Ops.Rules.Fixer do
   Applies all fixable violations on a page result. Handles both Maestro rules and
   Giulia convention findings. Returns {:ok, igniter}.
   """
-  @spec fix_page(Igniter.t(), map(), map()) :: {:ok, Igniter.t()}
+  @spec fix_page(Igniter.t(), map(), map()) :: {:ok, Igniter.t()} | {:error, term()}
   def fix_page(igniter, page_result, rules_by_id) do
     failed = Enum.reject(page_result.findings, & &1.pass?)
 
-    # 1. Fix Maestro rule findings
-    maestro_fixable =
-      Enum.filter(failed, fn f ->
-        rule = rules_by_id[f.rule_id]
-        rule && rule.fix_type in [:add_callback]
+    # 1. Fix findings that carry a check_module with fix/2 — targeted, no re-parse
+    {module_fixable, remaining} =
+      Enum.split_with(failed, fn f ->
+        mod = Map.get(f, :check_module)
+        violations = Map.get(f, :violations, [])
+        mod && violations != [] && Enum.any?(violations, & &1[:fixable]) &&
+          function_exported?(mod, :fix, 2)
       end)
 
-    {:ok, igniter} =
-      Enum.reduce(maestro_fixable, {:ok, igniter}, fn finding, {:ok, ign} ->
-        rule = rules_by_id[finding.rule_id]
-        fix_it(ign, rule, page_result.module)
-      end)
+    with {:ok, igniter} <- fix_with_check_modules(igniter, module_fixable, page_result) do
+      # 2. Fix Maestro rule findings
+      maestro_fixable =
+        Enum.filter(remaining, fn f ->
+          rule = rules_by_id[f.rule_id]
+          rule && rule.fix_type in [:add_callback]
+        end)
 
-    # 2. Fix Giulia convention findings (no rule_id)
-    giulia_fixable =
-      Enum.filter(failed, fn f ->
-        is_nil(f.rule_id) and fixable_giulia_finding?(f)
-      end)
+      {igniter, errors} =
+        Enum.reduce(maestro_fixable, {igniter, []}, fn finding, {ign, errs} ->
+          rule = rules_by_id[finding.rule_id]
 
-    Enum.reduce(giulia_fixable, {:ok, igniter}, fn finding, {:ok, ign} ->
-      fix_giulia_finding(ign, finding, page_result)
-    end)
+          case fix_it(ign, rule, page_result.module) do
+            {:ok, new_ign} -> {new_ign, errs}
+            {:error, reason} -> {ign, [reason | errs]}
+          end
+        end)
+
+      # 3. Fix Giulia convention findings (no rule_id)
+      giulia_fixable =
+        Enum.filter(remaining, fn f ->
+          is_nil(f.rule_id) and fixable_giulia_finding?(f)
+        end)
+
+      {igniter, errors} =
+        Enum.reduce(giulia_fixable, {igniter, errors}, fn finding, {ign, errs} ->
+          case fix_giulia_finding(ign, finding, page_result) do
+            {:ok, new_ign} -> {new_ign, errs}
+            {:error, reason} -> {ign, [reason | errs]}
+          end
+        end)
+
+      if errors == [] do
+        {:ok, igniter}
+      else
+        {:error, errors}
+      end
+    end
+  end
+
+  # Apply fixes via check_module.fix/2 — one violation at a time, no re-parse needed.
+  # The check already found the violation; the fix acts on exactly that location.
+  defp fix_with_check_modules(igniter, findings, page_result) do
+    source_file = page_result.source_file
+
+    with {:ok, source} when not is_nil(source) <- read_source(source_file) do
+      new_source =
+        Enum.reduce(findings, source, fn finding, src ->
+          mod = finding.check_module
+          fixable_violations = Enum.filter(finding.violations, & &1[:fixable])
+
+          Enum.reduce(fixable_violations, src, fn violation, s ->
+            mod.fix(s, violation)
+          end)
+        end)
+
+      if new_source != source do
+        write_validated_source!(source_file, new_source)
+      end
+
+      {:ok, igniter}
+    end
   end
 
   # -- Giulia finding fixes --
@@ -114,17 +192,13 @@ defmodule Maestro.Ops.Rules.Fixer do
 
   # Insert @spec stub before the function def using Sourceror
   defp add_spec(igniter, source_file, func_name, arity) do
-    if source_file && File.exists?(source_file) do
-      source = File.read!(source_file)
-
+    with {:ok, source} <- read_source(source_file) do
       if String.contains?(source, "@spec #{func_name}(") do
-        # Already has a spec
         {:ok, igniter}
       else
         params = Enum.join(List.duplicate("term()", arity), ", ")
         spec_line = "  @spec #{func_name}(#{params}) :: term()"
 
-        # Find the def line and insert spec above it
         updated =
           source
           |> String.split("\n")
@@ -132,13 +206,11 @@ defmodule Maestro.Ops.Rules.Fixer do
           |> Enum.join("\n")
 
         if updated != source do
-          File.write!(source_file, updated)
+          write_validated_source!(source_file, updated)
         end
 
         {:ok, igniter}
       end
-    else
-      {:ok, igniter}
     end
   end
 
@@ -207,11 +279,7 @@ defmodule Maestro.Ops.Rules.Fixer do
   ]
 
   defp add_moduledoc_from_finding(igniter, _finding, page_result) do
-    source_file = page_result.source_file
-
-    if source_file do
-      source = File.read!(source_file)
-
+    with {:ok, source} <- read_source(page_result.source_file) do
       if source =~ ~r/@moduledoc/ do
         {:ok, igniter}
       else
@@ -234,8 +302,6 @@ defmodule Maestro.Ops.Rules.Fixer do
           _ -> {:ok, igniter}
         end
       end
-    else
-      {:ok, igniter}
     end
   end
 
@@ -303,21 +369,28 @@ defmodule Maestro.Ops.Rules.Fixer do
 
   # -- Single-value pipe fix: `x |> func()` → `func(x)` --
 
-  defp fix_single_pipe(igniter, finding, page_result) do
-    source_file = page_result.source_file
+  defp fix_single_pipe(igniter, _finding, page_result) do
+    with {:ok, source} <- read_source(page_result.source_file) do
+      new_source = apply_single_pipe_patches_iteratively(source)
 
-    if source_file do
-      source = File.read!(source_file)
-      patches = collect_single_pipe_patches(source)
-
-      if patches != [] do
-        new_source = Sourceror.patch_string(source, patches)
-        File.write!(source_file, new_source)
+      if new_source != source do
+        write_validated_source!(page_result.source_file, new_source)
       end
 
       {:ok, igniter}
-    else
-      {:ok, igniter}
+    end
+  end
+
+  # Iterate: fix outermost pipes first, re-parse to expose inner pipes, repeat.
+  defp apply_single_pipe_patches_iteratively(source, max_passes \\ 10)
+  defp apply_single_pipe_patches_iteratively(source, 0), do: source
+
+  defp apply_single_pipe_patches_iteratively(source, passes_remaining) do
+    case collect_single_pipe_patches(source) do
+      [] -> source
+      patches ->
+        new_source = Sourceror.patch_string(source, patches)
+        apply_single_pipe_patches_iteratively(new_source, passes_remaining - 1)
     end
   end
 
@@ -349,11 +422,32 @@ defmodule Maestro.Ops.Rules.Fixer do
               {node, patches}
           end)
 
-        patches
+        remove_overlapping_patches(patches)
 
       _ ->
         []
     end
+  end
+
+  # When an outer pipe contains an inner pipe, both produce patches with
+  # overlapping ranges. Sourceror.patch_string corrupts the output when patches
+  # overlap. Keep only the outermost patch (largest range) for each overlap group.
+  defp remove_overlapping_patches(patches) do
+    Enum.reject(patches, fn patch ->
+      Enum.any?(patches, fn other ->
+        other != patch and range_contains?(other.range, patch.range)
+      end)
+    end)
+  end
+
+  defp range_contains?(outer, inner) do
+    {os, oc} = {outer.start[:line], outer.start[:column]}
+    {oe, oec} = {outer.end[:line], outer.end[:column]}
+    {is_, ic} = {inner.start[:line], inner.start[:column]}
+    {ie, iec} = {inner.end[:line], inner.end[:column]}
+
+    (os < is_ or (os == is_ and oc <= ic)) and
+      (oe > ie or (oe == ie and oec >= iec))
   end
 
   defp collect_pipe_left_children(ast) do
@@ -372,19 +466,14 @@ defmodule Maestro.Ops.Rules.Fixer do
   # -- Atom safety fix: `String.to_atom(x)` → `String.to_existing_atom(x)` --
 
   defp fix_runtime_atom(igniter, _finding, page_result) do
-    source_file = page_result.source_file
-
-    if source_file do
-      source = File.read!(source_file)
+    with {:ok, source} <- read_source(page_result.source_file) do
       patches = collect_atom_patches(source)
 
       if patches != [] do
         new_source = Sourceror.patch_string(source, patches)
-        File.write!(source_file, new_source)
+        write_validated_source!(page_result.source_file, new_source)
       end
 
-      {:ok, igniter}
-    else
       {:ok, igniter}
     end
   end

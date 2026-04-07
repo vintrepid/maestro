@@ -1,4 +1,5 @@
 defmodule Maestro.Ops.Audit.Facade do
+  require Logger
   @moduledoc """
   Facade API for the Audit domain.
 
@@ -21,6 +22,24 @@ defmodule Maestro.Ops.Audit.Facade do
   end
 
   defp project_path(slug), do: Path.join(@project_base, slug)
+
+  @doc "Returns the default project to show in the audit UI. Prefers the project with the most recent completed audit."
+  @spec default_project([map()]) :: map() | nil
+  def default_project(projects) do
+    # Find which project has the most recent completed audit
+    projects
+    |> Enum.map(fn p ->
+      latest = latest_completed(to_string(p.id))
+      {p, latest && latest.inserted_at}
+    end)
+    |> Enum.reject(fn {_p, ts} -> is_nil(ts) end)
+    |> Enum.sort_by(fn {_p, ts} -> ts end, {:desc, DateTime})
+    |> List.first()
+    |> case do
+      {project, _} -> project
+      nil -> List.first(projects)
+    end
+  end
 
   @spec subscribe() :: term()
   def subscribe do
@@ -176,16 +195,30 @@ defmodule Maestro.Ops.Audit.Facade do
 
   @spec run_audit(term()) :: term()
   def run_audit(opts) do
-    case Keyword.get(opts, :project_id) do
-      nil ->
-        AuditRunner.run(opts)
+    result =
+      case Keyword.get(opts, :project_id) do
+        nil ->
+          AuditRunner.run(opts)
 
-      project_id ->
-        project = Maestro.Ops.Project.by_id!(project_id, authorize?: false)
+        project_id ->
+          project = Maestro.Ops.Project.by_id!(project_id, authorize?: false)
 
-        opts
-        |> Keyword.put(:project_path, project_path(project.slug))
-        |> AuditRunner.run()
+          opts
+          |> Keyword.put(:project_path, project_path(project.slug))
+          |> AuditRunner.run()
+      end
+
+    # Auto-fix after audit completes — review changes via git diff
+    with {:ok, audit} <- result do
+      case fix_all(audit) do
+        {:ok, fixed_count} ->
+          Logger.info("Auto-fixed #{fixed_count} file(s) after audit ##{audit.id}")
+
+        {:error, reason} ->
+          Logger.warning("Auto-fix errors after audit ##{audit.id}: #{inspect(reason)}")
+      end
+
+      {:ok, audit}
     end
   end
 
@@ -219,8 +252,8 @@ defmodule Maestro.Ops.Audit.Facade do
 
     igniter = Igniter.new() |> Map.put(:root, path)
 
-    {updated_igniter, _} =
-      Enum.reduce(results, {igniter, 0}, fn ar, {ign, count} ->
+    {updated_igniter, errors} =
+      Enum.reduce(results, {igniter, []}, fn ar, {ign, errs} ->
         pr = %{
           path: ar.path,
           module: Module.concat([ar.module_name]),
@@ -229,10 +262,18 @@ defmodule Maestro.Ops.Audit.Facade do
         }
 
         case Fixer.fix_page(ign, pr, rules_by_id) do
-          {:ok, new_ign} -> {new_ign, count + 1}
-          _ -> {ign, count}
+          {:ok, new_ign} -> {new_ign, errs}
+          {:error, reason} -> {ign, [{ar.path, reason} | errs]}
         end
       end)
+
+    if errors != [] do
+      error_notes = Enum.map_join(errors, "\n", fn {path, reason} ->
+        "#{path}: #{inspect(reason)}"
+      end)
+
+      Logger.warning("Fixer errors:\n#{error_notes}")
+    end
 
     # Write Igniter-tracked changes (Maestro rule fixes)
     sources = updated_igniter.rewrite.sources
