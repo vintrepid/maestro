@@ -44,17 +44,22 @@ defmodule Maestro.Ops.AuditRunner do
     project_id = Keyword.get(opts, :project_id)
     {:ok, audit} = Audit.create(%{total_modules: total_modules, project_id: project_id}, authorize?: false)
 
-    try do
-      rule_by_module = run_rule_audit(all_paths, opts)
-      giulia_by_module = if deep?, do: run_deep_audit(project_path), else: %{}
-      persist_merged_results(audit, rule_by_module, giulia_by_module)
+    {rule_by_module, rule_errors} = safe_run("rule audit", fn -> run_rule_audit(all_paths, opts) end)
+    {giulia_by_module, giulia_errors} =
+      if deep?, do: safe_run("giulia audit", fn -> run_deep_audit(project_path) end), else: {%{}, []}
+
+    persist_merged_results(audit, rule_by_module, giulia_by_module)
+
+    all_errors = rule_errors ++ giulia_errors
+
+    if all_errors == [] do
       Audit.complete(audit, %{}, authorize?: false)
-      {:ok, audit}
-    rescue
-      e ->
-        Audit.fail(audit, %{}, authorize?: false)
-        {:error, e}
+    else
+      error_notes = Enum.map_join(all_errors, "\n", fn {step, msg} -> "[#{step}] #{msg}" end)
+      Audit.fail(audit, %{notes: error_notes}, authorize?: false)
     end
+
+    {:ok, audit}
   end
 
   @doc """
@@ -199,5 +204,18 @@ defmodule Maestro.Ops.AuditRunner do
 
   defp safe_mermaid_id(name) do
     String.replace(name, ~r/[^a-zA-Z0-9_]/, "_")
+  end
+
+  # Run a step, returning {result, errors}. Never crashes — collects errors.
+  defp safe_run(step_name, func) do
+    try do
+      {func.(), []}
+    rescue
+      e ->
+        msg = Exception.message(e) <> "\n" <> Exception.format_stacktrace(__STACKTRACE__)
+        require Logger
+        Logger.error("Audit step '#{step_name}' failed: #{msg}")
+        {%{}, [{step_name, Exception.message(e)}]}
+    end
   end
 end

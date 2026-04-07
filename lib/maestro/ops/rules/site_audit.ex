@@ -88,7 +88,18 @@ defmodule Maestro.Ops.Rules.SiteAudit do
     applicable_checks = Enum.reject(checks, &(&1.type == :skip))
 
     Enum.map(pages, fn page ->
-      findings = Enum.map(applicable_checks, &check_page(page, &1))
+      findings = Enum.map(applicable_checks, fn check ->
+        try do
+          check_page(page, check)
+        rescue
+          e ->
+            require Logger
+            Logger.error("Check #{check.rule_id} crashed on #{page.path}: #{Exception.message(e)}")
+            %{rule_id: check.rule_id, rule_content: check.rule_content,
+              rule_category: check.rule_category, pass?: false,
+              evidence: ["CHECK CRASHED: #{Exception.message(e)}"]}
+        end
+      end)
       pass_count = Enum.count(findings, & &1.pass?)
       fail_count = Enum.count(findings, &(not &1.pass?))
       skip_count = length(checks) - length(applicable_checks)
@@ -344,13 +355,19 @@ defmodule Maestro.Ops.Rules.SiteAudit do
     else
       evidence = Enum.map(violations, & &1.message)
 
-      %{
-        result
-        | pass?: false,
-          evidence: evidence,
-          violations: violations,
-          check_module: mod
-      }
+      # Serialize violations for JSON storage — convert Sourceror.Range structs to maps
+      serializable_violations = Enum.map(violations, fn v ->
+        Map.update(v, :source_range, nil, fn
+          %Sourceror.Range{start: s, end: e} -> %{start: Enum.into(s, %{}), end: Enum.into(e, %{})}
+          other -> other
+        end)
+      end)
+
+      result
+      |> Map.put(:pass?, false)
+      |> Map.put(:evidence, evidence)
+      |> Map.put(:violations, serializable_violations)
+      |> Map.put(:check_module, mod)
     end
   end
 

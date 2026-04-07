@@ -208,14 +208,20 @@ defmodule Maestro.Ops.Audit.Facade do
           |> AuditRunner.run()
       end
 
-    # Auto-fix after audit completes — review changes via git diff
+    # Auto-fix only if audit completed — don't fix on partial/failed results
     with {:ok, audit} <- result do
-      case fix_all(audit) do
-        {:ok, fixed_count} ->
-          Logger.info("Auto-fixed #{fixed_count} file(s) after audit ##{audit.id}")
+      audit = Ash.reload!(audit, authorize?: false)
 
-        {:error, reason} ->
-          Logger.warning("Auto-fix errors after audit ##{audit.id}: #{inspect(reason)}")
+      if audit.status == :completed do
+        case fix_all(audit) do
+          {:ok, fixed_count} ->
+            Logger.info("Auto-fixed #{fixed_count} file(s) after audit ##{audit.id}")
+
+          {:error, reason} ->
+            Logger.warning("Auto-fix errors after audit ##{audit.id}: #{inspect(reason)}")
+        end
+      else
+        Logger.warning("Audit ##{audit.id} failed — skipping auto-fix. Notes: #{audit.notes}")
       end
 
       {:ok, audit}
