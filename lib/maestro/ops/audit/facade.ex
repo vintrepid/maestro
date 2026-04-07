@@ -247,12 +247,6 @@ defmodule Maestro.Ops.Audit.Facade do
     all_rules = Enum.filter(Rule.read!(), &(&1.status in [:approved, :linter]))
     rules_by_id = Map.new(all_rules, &{&1.id, &1})
 
-    # Only fix files in the target project — never modify deps or Maestro itself
-    project_lib = Path.join(path, "lib")
-    results = Enum.filter(results, fn ar ->
-      ar.source_file && String.starts_with?(ar.source_file, project_lib)
-    end)
-
     # Snapshot file mtimes before fixing (Giulia fixes write files directly)
     all_files =
       results

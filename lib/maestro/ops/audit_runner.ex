@@ -36,7 +36,7 @@ defmodule Maestro.Ops.AuditRunner do
   def run(opts \\ []) do
     project_path = Keyword.get(opts, :project_path, @project_path)
     deep? = Keyword.get(opts, :deep, GiuliaClient.available?())
-    all_paths = [project_path | owned_dep_paths(project_path)]
+    all_paths = [project_path]
 
     total_modules =
       Enum.sum(Enum.map(all_paths, fn p -> length(Path.wildcard(Path.join(p, "lib/**/*.ex"))) end))

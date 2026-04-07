@@ -1,4 +1,7 @@
 defmodule MaestroWeb.ProjectDetailLive do
+  @moduledoc """
+  LiveView for the Project Detail page.
+  """
   use MaestroWeb, :live_view
   require Ash.Query
   alias Maestro.Ops

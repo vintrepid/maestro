@@ -68,24 +68,24 @@ defmodule MaestroWeb.RuleDetailLive do
 
   def handle_event("approve", %{"id" => id}, socket) do
     case Rules.approve_rule(id) do
-      :ok -> {:noreply, reload(socket, id) |> put_flash(:info, "Rule approved")}
+      :ok -> {:noreply, put_flash(reload(socket, id), :info, "Rule approved")}
       {:error, msg} -> {:noreply, put_flash(socket, :error, msg)}
     end
   end
 
   def handle_event("retire", %{"id" => id}, socket) do
     Rules.retire_rule(id)
-    {:noreply, reload(socket, id) |> put_flash(:info, "Rule retired")}
+    {:noreply, put_flash(reload(socket, id), :info, "Rule retired")}
   end
 
   def handle_event("mark_linter", %{"id" => id}, socket) do
     Rules.mark_linter(id)
-    {:noreply, reload(socket, id) |> put_flash(:info, "Marked as linter rule")}
+    {:noreply, put_flash(reload(socket, id), :info, "Marked as linter rule")}
   end
 
   def handle_event("mark_anti_pattern", %{"id" => id}, socket) do
     Rules.mark_anti_pattern(id)
-    {:noreply, reload(socket, id) |> put_flash(:info, "Marked as anti-pattern")}
+    {:noreply, put_flash(reload(socket, id), :info, "Marked as anti-pattern")}
   end
 
   def handle_event("discuss", %{"id" => id}, socket) do
@@ -100,7 +100,7 @@ defmodule MaestroWeb.RuleDetailLive do
 
   def handle_event("delete", %{"id" => id}, socket) do
     Rules.destroy_rule(id)
-    {:noreply, push_navigate(socket, to: ~p"/rules") |> put_flash(:info, "Rule deleted")}
+    {:noreply, put_flash(push_navigate(socket, to: ~p"/rules"), :info, "Rule deleted")}
   end
 
   @impl true
