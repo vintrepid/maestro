@@ -141,54 +141,10 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
 
     ---
 
-    # Startup Protocol
+    # Startup
 
-    You MUST complete these steps BEFORE your first response. Do NOT greet the user.
-
-    ## Step 1: Read this file completely
-    Read every section. Do not skim.
-
-    ## Step 2: Fire the task runner (NON-NEGOTIABLE)
-    Call `project_eval` with:
-
-    ```elixir
-    Maestro.Ops.Task.create(%{
-      title: "...",  # from Current Task section below, or user's first message
-      task_type: :plan,
-      status: :in_progress,
-      entity_type: "project",
-      entity_id: "#{project_id}"
-    }, authorize?: false)
-    ```
-
-    If `project_eval` is not available, use `ToolSearch` to fetch it first.
-    You MUST have a Task ID before responding. No exceptions.
-
-    ## Step 2b: Check pending curation and discussion tasks
-    Call `project_eval` with:
-
-    ```elixir
-    Maestro.Ops.Rule.Facade.pending_rule_tasks()
-    |> Enum.map(fn t -> %{id: t.id, type: t.task_type, title: t.title, notes: t.notes} end)
-    ```
-
-    If there are pending tasks, process them BEFORE starting new work.
-    Curation tasks: find related rules, link canonical, mark done.
-    Discussion tasks: read the linked rule + notes, respond, mark done.
-
-    ## Step 3: First response format
-    Your first message MUST use this exact format:
-
-    ```
-    **Maestro** — [one-line summary of what you'll work on]
-
-    - Guidelines: read and acknowledged (rules acknowledged)
-    - **Task #[ID] created** in Agent Dashboard
-
-    Starting: [what you will do first]
-    ```
-
-    If your first message does not contain "Task #[ID] created", you failed startup.
+    Read this file. Read the Current Task section. That is your work. Start doing it.
+    Do not greet. Do not create tasks. Do not ask what to work on. Just do the work.
 
     ---
 
@@ -204,14 +160,6 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
     ---
 
     # Workflow
-
-    ## Task Runner (CRITICAL)
-    EVERY user request = a Maestro Task. No Task ID visible = STOP and create one.
-    Update task notes as you work. Mark done when complete.
-
-    ## Handoff
-    When ending a session, run `mix maestro.handoff "summary of what you did"` to write
-    `current_task.json` for the next agent. This is how context passes between sessions.
 
     ## Fix the Tool, Not the Problem
     NEVER do one-off manual work. If something needs to happen repeatedly, build or fix
@@ -287,34 +235,37 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
   end
 
   defp render_task_section(nil) do
-    # For Maestro: load active tasks from DB
-    import Ash.Query
-
-    active_tasks =
-      Maestro.Ops.Task
-      |> filter(status == :in_progress)
-      |> sort(updated_at: :desc)
-      |> limit(3)
-      |> Ash.read!(authorize?: false)
+    # Include handoff context from current_task.json if it exists
+    handoff = read_handoff()
 
     approved = length(Maestro.Ops.Rule.approved!(authorize?: false))
     proposed = length(Maestro.Ops.Rule.proposed!(authorize?: false))
 
-    task_lines =
-      case active_tasks do
-        [] ->
-          "**Task:** No active tasks. Check user's first message."
+    context = "#{approved} approved rules, #{proposed} proposed rules pending curation at /rules."
 
-        tasks ->
-          summaries =
-            tasks
-            |> Enum.map(fn t -> "Task ##{t.id}: #{t.title}" end)
-            |> Enum.join(". ")
+    if handoff do
+      "**Continue this work (from previous session):**\n\n#{handoff}\n\n**Domain context:** #{context}"
+    else
+      "**Task:** Check user's first message.\n\n**Domain context:** #{context}"
+    end
+  end
 
-          "**Task:** #{summaries}"
+  defp read_handoff do
+    path = Path.join(File.cwd!(), "current_task.json")
+
+    if File.exists?(path) do
+      case Jason.decode(File.read!(path)) do
+        {:ok, data} ->
+          summary = data["summary"] || data["title"] || ""
+          notes = data["notes"] || ""
+          next = data["next_steps"] || ""
+
+          parts = [summary, notes, next] |> Enum.reject(&(&1 == "")) |> Enum.join("\n\n")
+          if parts == "", do: nil, else: parts
+
+        _ -> nil
       end
-
-    "#{task_lines}\n\n**Domain context:** Status: in_progress. #{approved} approved rules, #{proposed} proposed rules pending curation at /rules."
+    end
   end
 
   defp render_task_section(task_id) do

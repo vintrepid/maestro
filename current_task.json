@@ -1,21 +1,18 @@
 {
   "pending": [
-    "74 proposed rules need curation at /rules"
+    "10 proposed rules need curation at /rules"
   ],
   "status": "in_progress",
   "state": {
-    "approved_rules": 56,
-    "proposed_rules": 74,
-    "quality_pass_rate": "88%",
+    "approved_rules": 83,
+    "proposed_rules": 10,
+    "quality_pass_rate": "92%",
     "site_audit": {
-      "avg_score": "99%",
-      "failures": [
-        "components: 3",
-        "liveview: 3"
-      ],
+      "avg_score": "100%",
+      "failures": [],
       "pages": 23
     }
   },
-  "session_date": "2026-04-02",
-  "summary": "Church of Code review, rule extraction, agent session model, Calvin payroll domain agent setup"
+  "session_date": "2026-04-07",
+  "summary": "Massive audit/fixer session: rewrote all 12 check modules to AST, auto-fix pipeline works, Calvin 95.2% Maestro 95.8%. Remaining 110 fails need check modules that do bigger refactors (query-in-component, bare rescue, raw Ecto, form for=). See current_task.json for details."
 }
