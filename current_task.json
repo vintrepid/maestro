@@ -1,11 +1,11 @@
 {
   "pending": [
-    "10 proposed rules need curation at /rules"
+    "11 proposed rules need curation at /rules"
   ],
   "status": "in_progress",
   "state": {
     "approved_rules": 83,
-    "proposed_rules": 10,
+    "proposed_rules": 11,
     "quality_pass_rate": "92%",
     "site_audit": {
       "avg_score": "100%",
@@ -13,6 +13,6 @@
       "pages": 23
     }
   },
-  "session_date": "2026-04-07",
-  "summary": "Massive audit/fixer session: rewrote all 12 check modules to AST, auto-fix pipeline works, Calvin 95.2% Maestro 95.8%. Remaining 110 fails need check modules that do bigger refactors (query-in-component, bare rescue, raw Ecto, form for=). See current_task.json for details."
+  "summary": "All 12 lint check modules rewritten to use Sourceror AST (no regex/string scanning). Auto-fix pipeline: audit scans project, fixes fixable violations, reports remainder. Calvin 95.2%% pass (72 unfixable), Maestro 95.8%% (38 unfixable). Startup protocol deliberately simplified to 2 lines — DO NOT restore the old ceremony. Severity prefix doubling fixed in gen.claude_md. NEXT: make remaining 'unfixable' rules fixable — query-in-component (40), bare rescue (23), raw Ecto from-queries (4), form for= patterns (33). Each is an AST transformation.",
+  "session_date": "2026-04-07"
 }

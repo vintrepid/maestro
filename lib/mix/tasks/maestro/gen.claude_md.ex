@@ -107,8 +107,9 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
           cat_rules
           |> Enum.map(fn rule ->
             prefix = severity_prefix(rule.severity)
+            content = normalize_content(rule.content)
             proposed = if rule.status == :proposed, do: " [PROPOSED]", else: ""
-            "#{prefix} #{rule.content}#{proposed}"
+            "#{prefix} #{content}#{proposed}"
           end)
           |> Enum.join("\n\n")
 
@@ -284,6 +285,16 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
       nil -> slug
       project -> to_string(project.id)
     end
+  end
+
+  # Strip leading severity markers from rule content — the prefix provides them
+  defp normalize_content(content) do
+    content
+    |> String.replace(~r/^\*\*(Always|Never|ALWAYS|NEVER)\*\*\s*/i, "")
+    |> String.replace(~r/^-\s*\*\*(Always|Never|Prefer|Avoid)\*\*\s*/i, "")
+    |> String.replace(~r/^-\s+/, "")
+    |> String.replace(~r/^(ALWAYS|NEVER)\s+/i, "")
+    |> String.trim()
   end
 
   defp severity_prefix(:must), do: "**ALWAYS**"

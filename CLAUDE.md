@@ -17,7 +17,7 @@ Do not greet. Do not create tasks. Do not ask what to work on. Just do the work.
 # Current Task
 **Continue this work (from previous session):**
 
-Massive audit/fixer session: rewrote all 12 check modules to AST, auto-fix pipeline works, Calvin 95.2% Maestro 95.8%. Remaining 110 fails need check modules that do bigger refactors (query-in-component, bare rescue, raw Ecto, form for=). See current_task.json for details.
+All 12 lint check modules rewritten to use Sourceror AST (no regex/string scanning). Auto-fix pipeline: audit scans project, fixes fixable violations, reports remainder. Calvin 95.2%% pass (72 unfixable), Maestro 95.8%% (38 unfixable). Startup protocol deliberately simplified to 2 lines — DO NOT restore the old ceremony. Severity prefix doubling fixed in gen.claude_md. NEXT: make remaining 'unfixable' rules fixable — query-in-component (40), bare rescue (23), raw Ecto from-queries (4), form for= patterns (33). Each is an AST transformation.
 
 **Domain context:** 83 approved rules, 11 proposed rules pending curation at /rules.
 
@@ -27,55 +27,55 @@ Massive audit/fixer session: rewrote all 12 check modules to AST, auto-fix pipel
 
 ## Architecture
 
-**ALWAYS** **Always** UI is a metaphor for the model. When implementing a UI interaction, start by asking: what action am I taking on which resource? Work outward from there. If the model is correct, the UI just re-renders from truth.
+**ALWAYS** UI is a metaphor for the model. When implementing a UI interaction, start by asking: what action am I taking on which resource? Work outward from there. If the model is correct, the UI just re-renders from truth.
 
-**ALWAYS** **Always** bake rules into tools, not just documentation. When you find yourself writing a rule that says "always do X," the better move is to make X the default in generators, templates, and macros. Rules are guardrails; tools are highways. A rule that lives only in CLAUDE.md can be ignored — a generator that produces the correct pattern by default cannot.
+**ALWAYS** bake rules into tools, not just documentation. When you find yourself writing a rule that says "always do X," the better move is to make X the default in generators, templates, and macros. Rules are guardrails; tools are highways. A rule that lives only in CLAUDE.md can be ignored — a generator that produces the correct pattern by default cannot.
 
-**ALWAYS** **Always** put reference/lookup seed data in migrations, not standalone seed scripts. Migrations run automatically on deploy (`mix ecto.migrate`), while seed scripts require manual SSH. Use `execute/1` with raw SQL or `repo().insert_all/2` in the migration's `up` function. Keep standalone seeds only for dev/test data resets.
+**ALWAYS** put reference/lookup seed data in migrations, not standalone seed scripts. Migrations run automatically on deploy (`mix ecto.migrate`), while seed scripts require manual SSH. Use `execute/1` with raw SQL or `repo().insert_all/2` in the migration's `up` function. Keep standalone seeds only for dev/test data resets.
 
-**ALWAYS** **Always** fix the tool first, then run the tool. Never do one-off manual work. If something needs to happen repeatedly (curation, refactoring, deployment), build or fix the mix task/tool that does it, then execute the task.
+**ALWAYS** fix the tool first, then run the tool. Never do one-off manual work. If something needs to happen repeatedly (curation, refactoring, deployment), build or fix the mix task/tool that does it, then execute the task.
 
-**ALWAYS** **Always** write moduledocs first, read moduledocs first. Don't read all the code — write the @moduledoc that tells future-you exactly what it needs to know, then trust those docs. Code is implementation; moduledocs are the interface.
+**ALWAYS** write moduledocs first, read moduledocs first. Don't read all the code — write the @moduledoc that tells future-you exactly what it needs to know, then trust those docs. Code is implementation; moduledocs are the interface.
 
-**ALWAYS** **Always** functional core, imperative shell. Pure domain logic in modules and resources. UIs (LiveViews), mix tasks, and igniter tasks are thin imperative shells that call the core. The shell never contains business logic — it translates user intent into core function calls.
+**ALWAYS** functional core, imperative shell. Pure domain logic in modules and resources. UIs (LiveViews), mix tasks, and igniter tasks are thin imperative shells that call the core. The shell never contains business logic — it translates user intent into core function calls.
 
-**ALWAYS** **Never** hard-code values that represent instances of a resource. If something has multiple values (sites, domains, statuses, categories), model it as a resource or derive it from one. Hard-coded literals create maintenance burden and make the system rigid. Ask: "Is this an instance of a resource?" If yes, model it.
+**ALWAYS** hard-code values that represent instances of a resource. If something has multiple values (sites, domains, statuses, categories), model it as a resource or derive it from one. Hard-coded literals create maintenance burden and make the system rigid. Ask: "Is this an instance of a resource?" If yes, model it.
 
-**ALWAYS** **Never** duplicate logic that already lives in a resource. If you find yourself re-implementing what a resource already knows (its fields, validations, relationships, actions), you're coding in the wrong place. Ask: which resource is responsible for this? Put the logic there. Responsibility-driven design — every piece of knowledge has exactly one home.
+**ALWAYS** duplicate logic that already lives in a resource. If you find yourself re-implementing what a resource already knows (its fields, validations, relationships, actions), you're coding in the wrong place. Ask: which resource is responsible for this? Put the logic there. Responsibility-driven design — every piece of knowledge has exactly one home.
 
-**ALWAYS** **Always** When correcting a specific problem, extract the general principle and apply it project-wide. Every correction teaches a pattern — fix all instances, not just the one pointed out. If the same violation exists in other files, fix them in the same pass.
+**ALWAYS** When correcting a specific problem, extract the general principle and apply it project-wide. Every correction teaches a pattern — fix all instances, not just the one pointed out. If the same violation exists in other files, fix them in the same pass.
 
-- - Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps
+- Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps
 
 - **Prefer** platform primitives (OTP, Elixir stdlib, Phoenix builtins) over third-party libraries. Every dependency is a future migration. Before adding a dep, ask: does the platform already provide this? If so, use it. The platform maintains what it provides.
 
-- **Never** add defensive checks inside trusted boundaries. If data has been validated by an Ash action (changeset validations, NOT NULL constraints), don't re-check it downstream. No nil guards on required fields, no "just in case" fallbacks within your own modules. Validate at the gates, trust within the walls.
+- add defensive checks inside trusted boundaries. If data has been validated by an Ash action (changeset validations, NOT NULL constraints), don't re-check it downstream. No nil guards on required fields, no "just in case" fallbacks within your own modules. Validate at the gates, trust within the walls.
 
-- **Always** wrap external services and libraries behind adapter modules you own. Your application code calls your adapter; the adapter calls the library. This lets you swap implementations, mock in tests, and write your entire app in a single voice. Ask: how easily can I divorce this dependency?
+- wrap external services and libraries behind adapter modules you own. Your application code calls your adapter; the adapter calls the library. This lets you swap implementations, mock in tests, and write your entire app in a single voice. Ask: how easily can I divorce this dependency?
 
-- **Always** enrich errors at each boundary layer. When an error crosses a boundary (action → LiveView, service → caller), wrap it with context: the original fault plus what step was being attempted. `{:error, %{step: :create_user, reason: changeset}}` not just `{:error, changeset}`. The full story should be told when the error surfaces.
+- enrich errors at each boundary layer. When an error crosses a boundary (action → LiveView, service → caller), wrap it with context: the original fault plus what step was being attempted. `{:error, %{step: :create_user, reason: changeset}}` not just `{:error, changeset}`. The full story should be told when the error surfaces.
 
-- **Always** discuss plans with the user before executing. Do not execute autonomously without alignment on the approach.
+- discuss plans with the user before executing. Do not execute autonomously without alignment on the approach.
 
-- **Always** trust task files — don't re-explore what the task already describes. Read the task payload before re-scanning the codebase.
+- trust task files — don't re-explore what the task already describes. Read the task payload before re-scanning the codebase.
 
-- Never say "You're right" or similar validating phrases. When corrected, acknowledge the correction by restating the correct approach and immediately applying it. Don't waste the user's time with empty agreement — show you understood by doing.
+- say "You're right" or similar validating phrases. When corrected, acknowledge the correction by restating the correct approach and immediately applying it. Don't waste the user's time with empty agreement — show you understood by doing.
 
-- **Always** Rules that can be checked programmatically (deprecated function usage, bad syntax patterns) should be enforced by tooling (mix tasks, compiler checks, Giulia conventions), not just agent documentation.
+- Rules that can be checked programmatically (deprecated function usage, bad syntax patterns) should be enforced by tooling (mix tasks, compiler checks, Giulia conventions), not just agent documentation.
 
 - Prefer: **Prefer** flat module structure. The top level of a context should reveal the domain — not bury it under nested directories. If you need to descend 3+ directories to find the domain logic, the structure is taxonomy masquerading as architecture. Group by domain concept, not by technical layer.
 
 ## Ash
 
-**ALWAYS** **Always** keep ALL domain logic in Ash resources. LiveViews are thin wrappers: `mount`, `handle_params`, `handle_event` (delegate to action), `render`. Never put `File.read!`, `System.cmd`, or `Repo.all` in a LiveView — call an Ash action instead.
+**ALWAYS** keep ALL domain logic in Ash resources. LiveViews are thin wrappers: `mount`, `handle_params`, `handle_event` (delegate to action), `render`. Never put `File.read!`, `System.cmd`, or `Repo.all` in a LiveView — call an Ash action instead.
 
-- **Always** Be descriptive with relationship names (e.g., use `:authored_posts` instead of just `:posts`)
+- Be descriptive with relationship names (e.g., use `:authored_posts` instead of just `:posts`)
 
-**ALWAYS** **Always** use `mix ash.codegen <name>` as the SINGLE source of truth for migrations. Never write migrations manually then also run ash.codegen — it will generate a duplicate. The workflow is: (1) write/modify Ash resources, (2) run `ash.codegen <name>` ONCE, (3) review the generated migration and edit if needed (e.g., remove tables that already exist), (4) run `mix ecto.migrate`. For existing tables that need snapshots without migrations, create the snapshot JSON manually or use a no-op migration.
+**ALWAYS** use `mix ash.codegen <name>` as the SINGLE source of truth for migrations. Never write migrations manually then also run ash.codegen — it will generate a duplicate. The workflow is: (1) write/modify Ash resources, (2) run `ash.codegen <name>` ONCE, (3) review the generated migration and edit if needed (e.g., remove tables that already exist), (4) run `mix ecto.migrate`. For existing tables that need snapshots without migrations, create the snapshot JSON manually or use a no-op migration.
 
-**ALWAYS** **Always** use Ash resource actions (`Resource.read!()`, `Resource.update()`, `Resource.by_id!()`) to query and mutate data — never raw SQL, `Repo.all`, `Ecto.Query`, or `browser_eval` for data operations. Ash resources are the API. SQL and browser are escape hatches for debugging only.
+**ALWAYS** use Ash resource actions (`Resource.read!()`, `Resource.update()`, `Resource.by_id!()`) to query and mutate data — never raw SQL, `Repo.all`, `Ecto.Query`, or `browser_eval` for data operations. Ash resources are the API. SQL and browser are escape hatches for debugging only.
 
-**ALWAYS** **Always** Ecto within Ash:
+**ALWAYS** Ecto within Ash:
 - Use `mix ecto.gen.migration name_with_underscores` for migrations.
 - Schema fields use `:string` type even for text columns.
 - `validate_number/2` does NOT support `:allow_nil` — validations skip nil by default.
@@ -84,21 +84,21 @@ Massive audit/fixer session: rewrote all 12 check modules to AST, auto-fix pipel
 - Fields set programmatically (e.g. `user_id`) must NOT be in `cast` — set explicitly for security.
 - Remember `import Ecto.Query` in seeds files.
 
-- **Always** Model polymorphic relationships using `Ash.Type.Union`. Configure foreign key constraints via `references` in AshPostgres.
+- Model polymorphic relationships using `Ash.Type.Union`. Configure foreign key constraints via `references` in AshPostgres.
 
-- **Always** AshAi prompt types: string prompts are processed as EEx templates with `@input` and `@context`. Message-based prompts use LangChain's `apply_prompt_templates`. Choose based on whether you need multi-turn conversation structure.
+- AshAi prompt types: string prompts are processed as EEx templates with `@input` and `@context`. Message-based prompts use LangChain's `apply_prompt_templates`. Choose based on whether you need multi-turn conversation structure.
 
-- **Always** Ash generates authorization check functions per action: `can_action_name?(actor)` returns `true`/`false`, `can_action_name(actor)` returns `{:ok, true/false}` or `{:error, reason}`. Use the `?` variant for simple guards, the tuple variant when you need error details.
+- Ash generates authorization check functions per action: `can_action_name?(actor)` returns `true`/`false`, `can_action_name(actor)` returns `{:ok, true/false}` or `{:error, reason}`. Use the `?` variant for simple guards, the tuple variant when you need error details.
 
-- **Always** Use the `relationship` route to fetch relationship data in JSON:API: e.g., `GET /posts/123/relationships/comments`.
+- Use the `relationship` route to fetch relationship data in JSON:API: e.g., `GET /posts/123/relationships/comments`.
 
-- **Always** AshAi prompt-backed actions use adapters per LLM provider:
+- AshAi prompt-backed actions use adapters per LLM provider:
 - OpenAI: `StructuredOutput` (native structured output)
 - Anthropic: `CompletionTool` (tool calling for structured output)
 - Non-OpenAI: `RequestJson` (requests JSON in prompt)
 Choose adapter based on the target model's capabilities.
 
-- **Always** Ash validations and changes:
+- Ash validations and changes:
 - Use custom validation modules (`use Ash.Resource.Validation`) for complex logic.
 - Use custom change modules (`use Ash.Resource.Change`) for reusable transformations.
 - Use `before_action/2`, `after_action/2` hooks for logic within the transaction.
@@ -106,17 +106,17 @@ Choose adapter based on the target model's capabilities.
 - Don't add validations that duplicate attribute constraints (e.g., `validate present(:name)` when `allow_nil? false`).
 - Use changes (not validations) when reading current record state via `get_data/2`.
 
-- **Always** The `load` option in Ash serves dual purposes: loading relationships/calculations AND making loaded attributes visible (including private ones). Loaded relationships include both public and private attributes.
+- The `load` option in Ash serves dual purposes: loading relationships/calculations AND making loaded attributes visible (including private ones). Loaded relationships include both public and private attributes.
 
 ## Components
 
 **ALWAYS** Use library components and build reusable components. Don't hand-build what a library already handles. When a component exists (calendar, table, form), USE IT. — otherwise agents will ignore this rule or apply it inconsistently.
 
-**ALWAYS** **Always** use Cinder (`<Cinder.collection>`) for data tables instead of LiveTable. Cinder is Ash-native, supports DaisyUI theming, URL state sync, and declarative column slots. LiveTable is deprecated — it uses raw Ecto queries and fake streaming (Repo.all then split).
+**ALWAYS** use Cinder (`<Cinder.collection>`) for data tables instead of LiveTable. Cinder is Ash-native, supports DaisyUI theming, URL state sync, and declarative column slots. LiveTable is deprecated — it uses raw Ecto queries and fake streaming (Repo.all then split).
 
-**ALWAYS** **Never** use self-closing `<:col field="foo" />` in Cinder collections. Cinder expects a render function (via `:let`) for every `:col` slot. A self-closing slot produces a nil render function, causing `BadFunctionError`. Always write `<:col :let={row} field="foo" label="Foo">{row.foo}</:col>` with explicit inner content.
+**ALWAYS** use self-closing `<:col field="foo" />` in Cinder collections. Cinder expects a render function (via `:let`) for every `:col` slot. A self-closing slot produces a nil render function, causing `BadFunctionError`. Always write `<:col :let={row} field="foo" label="Foo">{row.foo}</:col>` with explicit inner content.
 
-**ALWAYS** **Always** Use Phoenix's built-in components from `core_components.ex`:
+**ALWAYS** Use Phoenix's built-in components from `core_components.ex`:
 - `<.icon name="hero-x-mark" class="w-5 h-5"/>` for icons — never use Heroicons modules.
 - `<.input>` for form inputs — it's imported and handles validation display.
 - `<.flash_group>` lives in `Layouts` module only (Phoenix 1.8+) — never call it elsewhere.
@@ -124,67 +124,67 @@ Choose adapter based on the target model's capabilities.
 - Never use `@apply` in raw CSS.
 - Maintain the standard CSS import syntax from `phx.new` in app.css.
 
-- **Always** use the `daisy_ui` theme when using Cinder collections. Pass `theme="daisy_ui"` to `<Cinder.collection>`. This ensures tables use DaisyUI semantic classes (table, table-zebra, btn, badge) consistent with the rest of the app.
+- use the `daisy_ui` theme when using Cinder collections. Pass `theme="daisy_ui"` to `<Cinder.collection>`. This ensures tables use DaisyUI semantic classes (table, table-zebra, btn, badge) consistent with the rest of the app.
 
-- **Never** force full Cinder re-queries during live updates (e.g. streaming crawls). Don't rebuild the entire query with a version hack — it resets the user's sort and page position. Use row-level updates if available, or add new rows without resetting pagination. Provide a manual refresh button if needed.
+- force full Cinder re-queries during live updates (e.g. streaming crawls). Don't rebuild the entire query with a version hack — it resets the user's sort and page position. Use row-level updates if available, or add new rows without resetting pagination. Provide a manual refresh button if needed.
 
-- **Always** Cinder collection filter types: `:select` (enum → dropdown), `:text` (string → contains/starts_with), `:boolean` (true/false radios), `:checkbox` (single toggle), `:multi_select` (array → tags), `:multi_checkboxes` (array → checkboxes with `:any`/`:all` match), `:number_range` (min/max inputs), `:date_range` (date pickers). Configure `page_size={[default: 25, options: [10, 25, 50, 100]]}` for pagination.
+- Cinder collection filter types: `:select` (enum → dropdown), `:text` (string → contains/starts_with), `:boolean` (true/false radios), `:checkbox` (single toggle), `:multi_select` (array → tags), `:multi_checkboxes` (array → checkboxes with `:any`/`:all` match), `:number_range` (min/max inputs), `:date_range` (date pickers). Configure `page_size={[default: 25, options: [10, 25, 50, 100]]}` for pagination.
 
 ## Css
 
-**ALWAYS** **Always** use DaisyUI component classes (`btn`, `card`, `modal`, `table`, `badge`, `alert`, `tabs`, `menu`, `navbar`, `dropdown`) instead of raw Tailwind utilities. Check https://daisyui.com/components/ before building custom CSS. Example: `class="btn btn-primary"` not `class="px-4 py-2 bg-blue-500 text-white rounded"`.
+**ALWAYS** use DaisyUI component classes (`btn`, `card`, `modal`, `table`, `badge`, `alert`, `tabs`, `menu`, `navbar`, `dropdown`) instead of raw Tailwind utilities. Check https://daisyui.com/components/ before building custom CSS. Example: `class="btn btn-primary"` not `class="px-4 py-2 bg-blue-500 text-white rounded"`.
 
-**ALWAYS** **Always** use DaisyUI semantic classes (`btn`, `badge`, `card`, `table`, `link`) for UI components instead of raw Tailwind utilities. Use `mix maestro.refactor_to_daisyui` to scan templates for raw patterns. Fix issues in the refactor tool, not manually in templates.
+**ALWAYS** use DaisyUI semantic classes (`btn`, `badge`, `card`, `table`, `link`) for UI components instead of raw Tailwind utilities. Use `mix maestro.refactor_to_daisyui` to scan templates for raw patterns. Fix issues in the refactor tool, not manually in templates.
 
-**ALWAYS** **Never** scatter spacing and padding classes (`px-4`, `py-2`, `gap-4`, `mb-6`) directly in page templates. Define spacing once in `app.css` as semantic classes. Components own their own spacing. Pages only compose components — no styling, no spacing, no padding. Internal apps: maximum information density. Override only when truly unique.
+**ALWAYS** scatter spacing and padding classes (`px-4`, `py-2`, `gap-4`, `mb-6`) directly in page templates. Define spacing once in `app.css` as semantic classes. Components own their own spacing. Pages only compose components — no styling, no spacing, no padding. Internal apps: maximum information density. Override only when truly unique.
 
-- Prefer: **Always** Implement delightful UI details: hover effects, loading states, smooth transitions. Internal apps optimize for information density; micro-interactions should aid usability, not decoration.
+- Prefer: Implement delightful UI details: hover effects, loading states, smooth transitions. Internal apps optimize for information density; micro-interactions should aid usability, not decoration.
 
 ## Elixir
 
-- - Elixir has no `return` statement, nor early returns. The last expression in a block is always returned.
+- Elixir has no `return` statement, nor early returns. The last expression in a block is always returned.
 
-**ALWAYS** **Always** distinguish expected failures from bugs. A network timeout or validation error is expected — handle it with {:error, reason}. An impossible state (pattern match failure on data you validated) is a bug — let it crash. Never handle bugs gracefully; they need to surface loudly.
+**ALWAYS** distinguish expected failures from bugs. A network timeout or validation error is expected — handle it with {:error, reason}. An impossible state (pattern match failure on data you validated) is a bug — let it crash. Never handle bugs gracefully; they need to surface loudly.
 
-**ALWAYS** **Always** persist timestamps in UTC (`:utc_datetime_usec` in Ecto/Ash). Never store local time. Render to local time for display only. Ash `create_timestamp` and `update_timestamp` already do this — don't override with NaiveDateTime or local time helpers.
+**ALWAYS** persist timestamps in UTC (`:utc_datetime_usec` in Ecto/Ash). Never store local time. Render to local time for display only. Ash `create_timestamp` and `update_timestamp` already do this — don't override with NaiveDateTime or local time helpers.
 
-**ALWAYS** **Never** nest multiple modules in the same file — it causes cyclic dependencies and compilation errors. Each module gets its own file at the path matching its name: `MyApp.Foo.Bar` → `lib/my_app/foo/bar.ex`.
+**ALWAYS** nest multiple modules in the same file — it causes cyclic dependencies and compilation errors. Each module gets its own file at the path matching its name: `MyApp.Foo.Bar` → `lib/my_app/foo/bar.ex`.
 
-**ALWAYS** **Always** Use pattern matching in function heads instead of conditionals in bodies. Base cases via pattern match: `def process([]), do: :done`. Multiple clauses replace `if/case` chains. Lists cannot be indexed with brackets — use `Enum.at/2`, `hd/1`, or pattern matching `[first | _rest] = list`.
+**ALWAYS** Use pattern matching in function heads instead of conditionals in bodies. Base cases via pattern match: `def process([]), do: :done`. Multiple clauses replace `if/case` chains. Lists cannot be indexed with brackets — use `Enum.at/2`, `hd/1`, or pattern matching `[first | _rest] = list`.
 
-**ALWAYS** **Always** Elixir variables are immutable within block expressions. You MUST bind the result of `if`/`case`/`cond` to a variable — rebinding inside the block does nothing outside it. OTP primitives (`DynamicSupervisor`, `Registry`) require names in child specs: `{DynamicSupervisor, name: MyApp.MySup}`.
+**ALWAYS** Elixir variables are immutable within block expressions. You MUST bind the result of `if`/`case`/`cond` to a variable — rebinding inside the block does nothing outside it. OTP primitives (`DynamicSupervisor`, `Registry`) require names in child specs: `{DynamicSupervisor, name: MyApp.MySup}`.
 
-**ALWAYS** **Never** use bracket access on Elixir lists — `list[0]` returns `nil` silently (lists don't implement Access). Use `Enum.at(list, 0)`, `hd(list)`, or pattern matching `[first | _rest] = list`.
+**ALWAYS** use bracket access on Elixir lists — `list[0]` returns `nil` silently (lists don't implement Access). Use `Enum.at(list, 0)`, `hd(list)`, or pattern matching `[first | _rest] = list`.
 
-**ALWAYS** **Always** `%{}` matches ANY map, not just empty maps. Use `map_size(map) == 0` guard to check for truly empty maps.
+**ALWAYS** `%{}` matches ANY map, not just empty maps. Use `map_size(map) == 0` guard to check for truly empty maps.
 
-**ALWAYS** **Never** silently discard tagged tuple results with `_ = function_call()`. If a function returns `{:ok, _}` or `{:error, _}`, the caller must handle or propagate both cases. Discarding hides failures and makes debugging nearly impossible. If you genuinely don't need the result, make that explicit with a comment explaining why the error case is safe to ignore.
+**ALWAYS** silently discard tagged tuple results with `_ = function_call()`. If a function returns `{:ok, _}` or `{:error, _}`, the caller must handle or propagate both cases. Discarding hides failures and makes debugging nearly impossible. If you genuinely don't need the result, make that explicit with a comment explaining why the error case is safe to ignore.
 
-- **Never** wrap multiple function calls in a single `try/rescue` block. Each rescue should cover exactly one fallible operation so the error context is unambiguous. If you need to handle errors from multiple calls, use `with` or chain `{:ok, _} | {:error, _}` tuples.
+- wrap multiple function calls in a single `try/rescue` block. Each rescue should cover exactly one fallible operation so the error context is unambiguous. If you need to handle errors from multiple calls, use `with` or chain `{:ok, _} | {:error, _}` tuples.
 
-- **Never** use magic literals (unnamed numbers, strings, status codes) in business logic. Define named constants via module attributes (`@max_retries 3`, `@timeout_ms 5_000`) or config. The exception: 0, 1, true, false, nil, and values obvious from immediate context (e.g., `String.split(s, ",")` is fine).
+- use magic literals (unnamed numbers, strings, status codes) in business logic. Define named constants via module attributes (`@max_retries 3`, `@timeout_ms 5_000`) or config. The exception: 0, 1, true, false, nil, and values obvious from immediate context (e.g., `String.split(s, ",")` is fine).
 
-- **Always** commit before building. The build tests the commit, not uncommitted work. If the build fails, you have a clean rollback point and can fix forward with a new commit. `git commit` is cheap; lost work is expensive.
+- commit before building. The build tests the commit, not uncommitted work. If the build fails, you have a clean rollback point and can fix forward with a new commit. `git commit` is cheap; lost work is expensive.
 
-- Never use regex or text manipulation to modify Elixir source code. Always use Igniter and Sourceror for AST-based code transformations. Regex-based code edits are fragile, miss edge cases, and break on formatting changes. AST manipulation is correct by construction.
+- use regex or text manipulation to modify Elixir source code. Always use Igniter and Sourceror for AST-based code transformations. Regex-based code edits are fragile, miss edge cases, and break on formatting changes. AST manipulation is correct by construction.
 
-- **Always** use structured, descriptive error tuples with enough context for the caller to act. `{:error, {:missing_field, :email}}` over `{:error, :bad_input}`. `{:error, {:not_found, User, id}}` over `{:error, :not_found}`. The error reason should tell the handler *what failed* and *which entity* without requiring a stack trace or log lookup.
+- use structured, descriptive error tuples with enough context for the caller to act. `{:error, {:missing_field, :email}}` over `{:error, :bad_input}`. `{:error, {:not_found, User, id}}` over `{:error, :not_found}`. The error reason should tell the handler *what failed* and *which entity* without requiring a stack trace or log lookup.
 
-- Prefer: **Always** `mix deps.clean --all` is almost never needed. Avoid it unless you have a specific reason. For test debugging, use `mix test path/to/test.exs` for a specific file or `mix test --failed` for previously failed tests.
+- Prefer: `mix deps.clean --all` is almost never needed. Avoid it unless you have a specific reason. For test debugging, use `mix test path/to/test.exs` for a specific file or `mix test --failed` for previously failed tests.
 
 - Prefer: **Prefer** process-first naming: name the action, parameterize the participants. Processors end in `-er` (validator, parser, builder). Contracts/interfaces end in `-able` (validatable, parseable, buildable). The process owns the verb; the nouns are participants. This is Interface Segregation made manifest in vocabulary.
 
-- - Avoid nested `case` statements - refactor to a single `case`, `with` or separate functions
+- Avoid nested `case` statements - refactor to a single `case`, `with` or separate functions
 
-- - Use `assert_raise` for testing expected exceptions: `assert_raise ArgumentError, fn -> invalid_function() end`
+- Use `assert_raise` for testing expected exceptions: `assert_raise ArgumentError, fn -> invalid_function() end`
 
-- - Predicate function names should not start with `is` and should end in a question mark.
+- Predicate function names should not start with `is` and should end in a question mark.
 
-- - Set up processes such that they can handle crashing and being restarted by supervisors
+- Set up processes such that they can handle crashing and being restarted by supervisors
 
 ## Heex
 
-**ALWAYS** **Always** HEEx syntax rules:
+**ALWAYS** HEEx syntax rules:
 - Use `{...}` for interpolation in tag attributes and bodies: `<div id={@id}>{@name}</div>`.
 - Use `<%= ... %>` ONLY for block constructs (`if`, `for`, `case`).
 - Comments: `<%!-- comment --%>` (not HTML `<!-- -->`).
@@ -196,19 +196,19 @@ Choose adapter based on the target model's capabilities.
 
 ## Liveview
 
-**ALWAYS** - **Always** use `project_eval` for Elixir, never shell — otherwise the result will be incorrect or break downstream behavior
+**ALWAYS** use `project_eval` for Elixir, never shell — otherwise the result will be incorrect or break downstream behavior
 
-**ALWAYS** **Never** use `Enum` functions on LiveView streams — they are NOT enumerable. To filter/refresh, refetch data and re-stream with `stream(socket, :items, new_items, reset: true)`, otherwise you will get a protocol error at runtime.
+**ALWAYS** use `Enum` functions on LiveView streams — they are NOT enumerable. To filter/refresh, refetch data and re-stream with `stream(socket, :items, new_items, reset: true)`, otherwise you will get a protocol error at runtime.
 
-**ALWAYS** **Always** handle authentication flow at the router level with proper redirects — use `live_session` with `on_mount` hooks, e.g. `live_session :authenticated, on_mount: [{AppWeb.LiveUserAuth, :require_authenticated}]`
+**ALWAYS** handle authentication flow at the router level with proper redirects — use `live_session` with `on_mount` hooks, e.g. `live_session :authenticated, on_mount: [{AppWeb.LiveUserAuth, :require_authenticated}]`
 
-- - colocated hooks names **MUST ALWAYS** start with a `.` prefix, i.e. `.PhoneNumber`
+- colocated hooks names **MUST ALWAYS** start with a `.` prefix, i.e. `.PhoneNumber`
 
-**ALWAYS** **Always** keep all page state in URL query params. This gives you reconnect resilience and shareable links for free. Cinder handles this for tables; for custom pages, drive state from `handle_params`, not `handle_event`. LiveView assigns are ephemeral — the process dies on disconnect and all assigns vanish. URL params are the gold standard.
+**ALWAYS** keep all page state in URL query params. This gives you reconnect resilience and shareable links for free. Cinder handles this for tables; for custom pages, drive state from `handle_params`, not `handle_event`. LiveView assigns are ephemeral — the process dies on disconnect and all assigns vanish. URL params are the gold standard.
 
-**ALWAYS** **Always** functional core, imperative shell. LiveViews are facades for resources. One-sentence moduledoc pointing at the resource. No domain enumerations, no business logic, no Tailwind utility classes in page templates. If a LiveView is >200 lines, extract components or move logic to the model. The view has NO knowledge of the domain beyond 'call this facade function'.
+**ALWAYS** functional core, imperative shell. LiveViews are facades for resources. One-sentence moduledoc pointing at the resource. No domain enumerations, no business logic, no Tailwind utility classes in page templates. If a LiveView is >200 lines, extract components or move logic to the model. The view has NO knowledge of the domain beyond 'call this facade function'.
 
-**ALWAYS** **Always** LiveView essentials:
+**ALWAYS** LiveView essentials:
 - **Streams**: Use `stream/3` for collections, never regular lists. Parent element needs `phx-update="stream"` with a DOM id. Each child uses the stream-provided id. Streams don't support counting — track counts in a separate assign. To refresh, re-stream with `reset: true`.
 - **Hooks**: Every `phx-hook` element MUST have a unique DOM id AND `phx-update="ignore"` if the hook manages its own DOM.
 - **Re-streaming on assign change**: When updating an assign that affects streamed items, re-stream the affected items alongside the assign change.
@@ -216,37 +216,37 @@ Choose adapter based on the target model's capabilities.
 - **Naming**: `AppWeb.WeatherLive` with `Live` suffix. Router scope provides the alias — `live "/weather", WeatherLive`.
 - **Testing**: Use `Phoenix.LiveViewTest` + `LazyHTML`. Test against element selectors (`element/2`, `has_element?/2`), never raw HTML. Use `render_submit/2` and `render_change/2` for forms.
 
-**ALWAYS** **Never** run expensive queries unconditionally in `mount/3`. During deploys all clients reconnect simultaneously — thousands of mounts hitting the database at once causes infrastructure collapse. Use caching, lightweight initial loads, or `connected?/1` guards to defer heavy work until after the static render.
+**ALWAYS** run expensive queries unconditionally in `mount/3`. During deploys all clients reconnect simultaneously — thousands of mounts hitting the database at once causes infrastructure collapse. Use caching, lightweight initial loads, or `connected?/1` guards to defer heavy work until after the static render.
 
-- - **Avoid LiveComponent's** unless you have a strong, specific need for them
+- **Avoid LiveComponent's** unless you have a strong, specific need for them
 
 ## Pubsub
 
-**ALWAYS** NEVER manually reload data after a mutation in handle_event. The PubSub notifier handles it for ALL connected clients. If you're writing |> load_data() at the end of handle_event, you're doing it wrong.
+**ALWAYS** manually reload data after a mutation in handle_event. The PubSub notifier handles it for ALL connected clients. If you're writing |> load_data() at the end of handle_event, you're doing it wrong.
 
-**ALWAYS** **Always** PubSub architecture: Every page has a main entity with a DAG of dependencies. Subscribe in mount, reload in handle_info — ONE handler, not per-event. Every resource on multi-user pages MUST have `simple_notifiers: [AppName.ResourcePubSub]`. The notifier broadcasts to collection topic, instance topic, AND walks `belongs_to` relationships to notify parents.
+**ALWAYS** PubSub architecture: Every page has a main entity with a DAG of dependencies. Subscribe in mount, reload in handle_info — ONE handler, not per-event. Every resource on multi-user pages MUST have `simple_notifiers: [AppName.ResourcePubSub]`. The notifier broadcasts to collection topic, instance topic, AND walks `belongs_to` relationships to notify parents.
 
 ## Routing
 
-**ALWAYS** **Always** Phoenix router `scope` blocks prefix the alias for all routes within. Never create your own alias — the scope provides it: `scope "/admin", AppWeb.Admin do ... live "/users", UserLive ... end` points to `AppWeb.Admin.UserLive`.
+**ALWAYS** Phoenix router `scope` blocks prefix the alias for all routes within. Never create your own alias — the scope provides it: `scope "/admin", AppWeb.Admin do ... live "/users", UserLive ... end` points to `AppWeb.Admin.UserLive`.
 
 ## Security
 
-- **Always** When performing administrative actions, you can bypass authorization with `authorize?: false`
+- When performing administrative actions, you can bypass authorization with `authorize?: false`
 
-- - Always set the actor on the query/changeset/input, not when calling the action
+- set the actor on the query/changeset/input, not when calling the action
 
-- - To run actions as a particular user, look that user up and pass it as the `actor` option
+- To run actions as a particular user, look that user up and pass it as the `actor` option
 
-- - Use `forbid_unless` for required conditions, then `authorize_if` for the final check
+- Use `forbid_unless` for required conditions, then `authorize_if` for the final check
 
 ## Testing
 
-- - Prefer to use raising versions of functions whenever possible, as opposed to pattern matching
+- Prefer to use raising versions of functions whenever possible, as opposed to pattern matching
 
-**ALWAYS** **Always** test behavior, not implementation. Tests assert what the system does (input → output), never how it does it internally. Never assert on internal function calls, module structure, or intermediate state. A test that breaks when you refactor internals without changing behavior is a test that's testing the wrong thing.
+**ALWAYS** test behavior, not implementation. Tests assert what the system does (input → output), never how it does it internally. Never assert on internal function calls, module structure, or intermediate state. A test that breaks when you refactor internals without changing behavior is a test that's testing the wrong thing.
 
-**ALWAYS** **Always** keep tests fully isolated. No shared mutable state between tests — no module attributes, no shared database rows without sandbox, no test ordering dependencies. A test that passes alone but fails in a suite (or vice versa) is a false prophet.
+**ALWAYS** keep tests fully isolated. No shared mutable state between tests — no module attributes, no shared database rows without sandbox, no test ordering dependencies. A test that passes alone but fails in a suite (or vice versa) is a false prophet.
 
 - Verify features by calling Ash resource actions directly (via project_eval or tests), NOT by clicking in the browser. UI is a metaphor for the model — if the action works, the UI follows.
 
