@@ -310,12 +310,32 @@ defmodule Maestro.Ops.Audit.Facade do
   defp filter_by_project(query, id), do: Ash.Query.filter(query, project_id == ^id)
 
   defp atomize_finding(f) when is_map(f) do
-    %{
+    base = %{
       rule_id: f["rule_id"],
       rule_content: f["rule_content"],
       rule_category: f["rule_category"],
       pass?: f["pass?"],
       evidence: f["evidence"] || []
     }
+
+    # Restore check_module and violations for the fixer path
+    base =
+      case f["check_module"] do
+        mod when is_binary(mod) and mod != "" ->
+          Map.put(base, :check_module, String.to_existing_atom(mod))
+        _ -> base
+      end
+
+    case f["violations"] do
+      violations when is_list(violations) and violations != [] ->
+        atomized = Enum.map(violations, fn v ->
+          Map.new(v, fn
+            {k, val} when is_binary(k) -> {String.to_atom(k), val}
+            {k, val} -> {k, val}
+          end)
+        end)
+        Map.put(base, :violations, atomized)
+      _ -> base
+    end
   end
 end
