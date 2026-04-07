@@ -124,7 +124,20 @@ defmodule Maestro.Ops.Rules.Fixer do
           fixable_violations = Enum.filter(finding.violations, & &1[:fixable])
 
           Enum.reduce(fixable_violations, src, fn violation, s ->
-            mod.fix(s, violation)
+            try do
+              fixed = mod.fix(s, violation)
+
+              case Sourceror.parse_string(fixed) do
+                {:ok, _} -> fixed
+                {:error, _} ->
+                  Logger.warning("Fix produced invalid source for #{inspect(mod)}, skipping violation at line #{violation[:line]}")
+                  s
+              end
+            rescue
+              e ->
+                Logger.warning("Fix crashed for #{inspect(mod)} at line #{violation[:line]}: #{Exception.message(e)}")
+                s
+            end
           end)
         end)
 
