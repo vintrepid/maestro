@@ -209,6 +209,7 @@ defmodule MaestroWeb.Layouts do
     """
   end
 
+  @spec theme_selector(term()) :: term()
   def theme_selector(assigns) do
     ~H"""
     <div class="join">
@@ -244,6 +245,7 @@ defmodule MaestroWeb.Layouts do
   """
   attr :flash, :map, required: true
   attr :id, :string, default: "flash-group"
+@spec flash_group(term()) :: term()
 
   def flash_group(assigns) do
     ~H"""
