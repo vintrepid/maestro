@@ -1,9 +1,13 @@
 defmodule Maestro.Ops do
-  use Ash.Domain, otp_app: :maestro
+  use Ash.Domain, otp_app: :maestro, extensions: [AshJsonApi.Domain]
 
   @moduledoc """
   Ops domain — Ash resource registry.
   """
+
+  json_api do
+    authorize? false
+  end
 
   resources do
     resource Maestro.Ops.Project

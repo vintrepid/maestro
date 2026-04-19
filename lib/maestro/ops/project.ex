@@ -6,7 +6,18 @@ defmodule Maestro.Ops.Project do
     otp_app: :maestro,
     domain: Maestro.Ops,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    authorizers: [Ash.Policy.Authorizer],
+    extensions: [AshJsonApi.Resource]
+
+  json_api do
+    type "projects"
+
+    routes do
+      base "/projects"
+      index :read
+      get :read
+    end
+  end
 
   postgres do
     table "projects"

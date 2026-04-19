@@ -10,7 +10,18 @@ defmodule Maestro.Ops.Audit do
   use Ash.Resource,
     domain: Maestro.Ops,
     data_layer: AshPostgres.DataLayer,
-    simple_notifiers: [Maestro.Ops.AuditPubSub]
+    simple_notifiers: [Maestro.Ops.AuditPubSub],
+    extensions: [AshJsonApi.Resource]
+
+  json_api do
+    type "audits"
+
+    routes do
+      base "/audits"
+      index :read
+      get :read
+    end
+  end
 
   postgres do
     table "audits"

@@ -75,6 +75,8 @@ defmodule Maestro.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:open_api_spex, "~> 3.0"},
+      {:ash_json_api, "~> 1.0"},
       {:maestro_tool, path: "../forks/maestro_tool"},
       {:css_linter, path: "../forks/css_linter"},
       {:fun_with_flags, "~> 1.11"},

@@ -8,7 +8,18 @@ defmodule Maestro.Ops.AuditResult do
 
   use Ash.Resource,
     domain: Maestro.Ops,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    extensions: [AshJsonApi.Resource]
+
+  json_api do
+    type "audit_results"
+
+    routes do
+      base "/audit-results"
+      index :read
+      get :read
+    end
+  end
 
   postgres do
     table "audit_results"

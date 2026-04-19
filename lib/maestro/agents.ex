@@ -2,7 +2,11 @@ defmodule Maestro.Agents do
   @moduledoc """
   Agents domain — Ash resource registry.
   """
-  use Ash.Domain, otp_app: :maestro
+  use Ash.Domain, otp_app: :maestro, extensions: [AshJsonApi.Domain]
+
+  json_api do
+    authorize? false
+  end
 
   resources do
     resource Maestro.Agents.Agent

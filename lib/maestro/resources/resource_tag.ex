@@ -4,7 +4,18 @@ defmodule Maestro.Resources.ResourceTag do
   """
   use Ash.Resource,
     domain: Maestro.Resources,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    extensions: [AshJsonApi.Resource]
+
+  json_api do
+    type "resource_tags"
+
+    routes do
+      base "/resource-tags"
+      index :read
+      get :read
+    end
+  end
 
   postgres do
     table "resource_tags"

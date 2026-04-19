@@ -2,7 +2,11 @@ defmodule Maestro.Resources do
   @moduledoc """
   Resources domain — Ash resource registry.
   """
-  use Ash.Domain
+  use Ash.Domain, extensions: [AshJsonApi.Domain]
+
+  json_api do
+    authorize? false
+  end
 
   resources do
     resource Maestro.Resources.Resource

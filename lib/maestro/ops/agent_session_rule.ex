@@ -10,7 +10,18 @@ defmodule Maestro.Ops.AgentSessionRule do
     otp_app: :maestro,
     domain: Maestro.Ops,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    authorizers: [Ash.Policy.Authorizer],
+    extensions: [AshJsonApi.Resource]
+
+  json_api do
+    type "agent_session_rules"
+
+    routes do
+      base "/agent-session-rules"
+      index :read
+      get :read
+    end
+  end
 
   postgres do
     table "agent_session_rules"

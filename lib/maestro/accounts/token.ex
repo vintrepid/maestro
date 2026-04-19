@@ -7,7 +7,17 @@ defmodule Maestro.Accounts.Token do
     domain: Maestro.Accounts,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshAuthentication.TokenResource]
+    extensions: [AshAuthentication.TokenResource, AshJsonApi.Resource]
+
+  json_api do
+    type "tokens"
+
+    routes do
+      base "/tokens"
+      index :read
+      get :read
+    end
+  end
 
   postgres do
     table "tokens"

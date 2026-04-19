@@ -4,7 +4,18 @@ defmodule Maestro.Resources.TagHierarchy do
   """
   use Ash.Resource,
     domain: Maestro.Resources,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    extensions: [AshJsonApi.Resource]
+
+  json_api do
+    type "tag_hierarchies"
+
+    routes do
+      base "/tag-hierarchies"
+      index :read
+      get :read
+    end
+  end
 
   postgres do
     table "tag_hierarchies"

@@ -15,7 +15,18 @@ defmodule Maestro.Ops.AgentSession do
     otp_app: :maestro,
     domain: Maestro.Ops,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    authorizers: [Ash.Policy.Authorizer],
+    extensions: [AshJsonApi.Resource]
+
+  json_api do
+    type "agent_sessions"
+
+    routes do
+      base "/agent-sessions"
+      index :read
+      get :read
+    end
+  end
 
   postgres do
     table "ops_agent_sessions"

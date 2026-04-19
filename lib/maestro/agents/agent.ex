@@ -6,7 +6,18 @@ defmodule Maestro.Agents.Agent do
     otp_app: :maestro,
     domain: Maestro.Agents,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    authorizers: [Ash.Policy.Authorizer],
+    extensions: [AshJsonApi.Resource]
+
+  json_api do
+    type "agents"
+
+    routes do
+      base "/agents"
+      index :read
+      get :read
+    end
+  end
 
   postgres do
     table "agents"

@@ -6,7 +6,17 @@ defmodule Maestro.Accounts.User do
     otp_app: :maestro,
     domain: Maestro.Accounts,
     data_layer: AshPostgres.DataLayer,
-    extensions: [AshAuthentication]
+    extensions: [AshAuthentication, AshJsonApi.Resource]
+
+  json_api do
+    type "users"
+
+    routes do
+      base "/users"
+      index :read
+      get :read
+    end
+  end
 
   authentication do
     add_ons do
