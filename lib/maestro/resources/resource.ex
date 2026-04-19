@@ -14,6 +14,7 @@ defmodule Maestro.Resources.Resource do
       base "/resources"
       index :read
       get :read
+      delete :destroy
     end
   end
 

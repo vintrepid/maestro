@@ -16,6 +16,9 @@ defmodule Maestro.Ops.Skill do
       base "/skills"
       index :read
       get :read
+      post :create
+      patch :update
+      delete :destroy
     end
   end
 

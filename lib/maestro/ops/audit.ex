@@ -20,6 +20,7 @@ defmodule Maestro.Ops.Audit do
       base "/audits"
       index :read
       get :read
+      delete :destroy
     end
   end
 

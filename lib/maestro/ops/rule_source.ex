@@ -16,6 +16,9 @@ defmodule Maestro.Ops.RuleSource do
       base "/rule-sources"
       index :read
       get :read
+      post :create
+      patch :update
+      delete :destroy
     end
   end
 

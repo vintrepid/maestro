@@ -14,6 +14,8 @@ defmodule Maestro.Resources.TagHierarchy do
       base "/tag-hierarchies"
       index :read
       get :read
+      post :create
+      delete :destroy
     end
   end
 

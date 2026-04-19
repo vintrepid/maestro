@@ -16,6 +16,9 @@ defmodule Maestro.Ops.Library do
       base "/libraries"
       index :read
       get :read
+      post :create
+      patch :update
+      delete :destroy
     end
   end
 

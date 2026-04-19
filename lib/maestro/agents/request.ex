@@ -16,6 +16,8 @@ defmodule Maestro.Agents.Request do
       base "/requests"
       index :read
       get :read
+      post :create
+      delete :destroy
     end
   end
 

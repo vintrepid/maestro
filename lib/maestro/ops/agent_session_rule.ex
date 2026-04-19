@@ -20,6 +20,8 @@ defmodule Maestro.Ops.AgentSessionRule do
       base "/agent-session-rules"
       index :read
       get :read
+      post :create
+      delete :destroy
     end
   end
 

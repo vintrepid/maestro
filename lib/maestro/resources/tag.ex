@@ -14,6 +14,7 @@ defmodule Maestro.Resources.Tag do
       base "/tags"
       index :read
       get :read
+      delete :destroy
     end
   end
 

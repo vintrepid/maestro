@@ -16,6 +16,9 @@ defmodule Maestro.Agents.Session do
       base "/sessions"
       index :read
       get :read
+      post :create
+      patch :update
+      delete :destroy
     end
   end
 

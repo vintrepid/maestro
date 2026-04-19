@@ -16,6 +16,9 @@ defmodule Maestro.Agents.Agent do
       base "/agents"
       index :read
       get :read
+      post :create
+      patch :update
+      delete :destroy
     end
   end
 

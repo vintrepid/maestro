@@ -16,6 +16,9 @@ defmodule Maestro.Ops.Rule do
       base "/rules"
       index :read
       get :read
+      post :create
+      patch :update
+      delete :destroy
     end
   end
 

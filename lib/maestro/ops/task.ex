@@ -15,6 +15,7 @@ defmodule Maestro.Ops.Task do
       base "/tasks"
       index :read
       get :read
+      delete :destroy
     end
   end
 

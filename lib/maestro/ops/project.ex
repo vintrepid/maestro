@@ -16,6 +16,9 @@ defmodule Maestro.Ops.Project do
       base "/projects"
       index :read
       get :read
+      post :create
+      patch :update
+      delete :destroy
     end
   end
 
