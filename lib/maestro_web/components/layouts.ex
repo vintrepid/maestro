@@ -111,8 +111,9 @@ defmodule MaestroWeb.Layouts do
       </ul>
     </div>
     """
-  @spec admin_menu(term()) :: term()
   end
+
+  @spec admin_menu(term()) :: term()
 
   def admin_menu(assigns) do
     ~H"""
@@ -204,7 +205,6 @@ defmodule MaestroWeb.Layouts do
       <a href="/sign-in" class="btn btn-ghost btn-sm mr-2">
         Sign In
       </a>
-    @spec theme_selector(term()) :: term()
     <% end %>
     """
   end
@@ -240,12 +240,11 @@ defmodule MaestroWeb.Layouts do
   end
 
   @doc """
-  @spec flash_group(term()) :: term()
   Shows the flash group with standard titles and content.
   """
   attr :flash, :map, required: true
   attr :id, :string, default: "flash-group"
-@spec flash_group(term()) :: term()
+  @spec flash_group(term()) :: term()
 
   def flash_group(assigns) do
     ~H"""
