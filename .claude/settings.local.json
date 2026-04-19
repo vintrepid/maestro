@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "additionalDirectories": ["/Users/vince/dev"],
     "allow": [
       "mcp__Tidewave-Web__browser_eval",
       "mcp__Tidewave__project_eval",
@@ -58,7 +57,11 @@
       "WebFetch(domain:dev.to)",
       "WebFetch(domain:swmansion.com)",
       "Skill(update-config)",
-      "Skill(update-config:*)"
+      "Skill(update-config:*)",
+      "WebFetch(domain:github.com)"
+    ],
+    "additionalDirectories": [
+      "/Users/vince/dev"
     ]
   },
   "hooks": {
