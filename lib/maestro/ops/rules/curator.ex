@@ -185,6 +185,7 @@ defmodule Maestro.Ops.Rules.Curator do
     triage_proposed()
     retriage_approved()
     backfill_lint_metadata()
+    link_superseded_retired()
 
     log(
       "  #{stats.sources} sources, #{stats.new} new, #{stats.exact} exact dupes, #{stats.near} near dupes"
@@ -322,6 +323,95 @@ defmodule Maestro.Ops.Rules.Curator do
       end)
 
     if linked > 0, do: log("  Linked #{linked} legacy rules")
+  end
+
+  # Minimum jaro score to consider a retired→approved link at all.
+  @supersede_threshold 0.85
+  # How much better the best match must be than runner-up to count as unambiguous.
+  @supersede_margin 0.05
+
+  # For every retired rule without a superseded_by_id, search the approved
+  # rules for the closest content match. If one approved rule is a clear
+  # winner (above @supersede_threshold AND beats runner-up by
+  # @supersede_margin), set superseded_by_id. Otherwise log as ambiguous /
+  # unmatched. Approved set is small (~dozens) so O(retired × approved) is
+  # fine.
+  defp link_superseded_retired do
+    approved = Rule.approved!()
+
+    approved_prepared =
+      Enum.map(approved, fn rule ->
+        {rule.id, RuleParser.normalize(rule.content)}
+      end)
+
+    retired_unlinked =
+      Rule.read!()
+      |> Enum.filter(&(&1.status == :retired and is_nil(&1.superseded_by_id)))
+
+    {linked, ambiguous} =
+      Enum.reduce(retired_unlinked, {0, 0}, fn rule, {l, a} ->
+        case best_approved_match(rule.content, approved_prepared) do
+          {:match, approved_id} ->
+            Rule.update(rule, %{superseded_by_id: approved_id})
+            {l + 1, a}
+
+          :ambiguous ->
+            {l, a + 1}
+
+          :none ->
+            {l, a}
+        end
+      end)
+
+    cond do
+      linked > 0 ->
+        log("  Linked #{linked} retired rules to canonical approved rules")
+
+      true ->
+        :ok
+    end
+
+    if ambiguous > 0 do
+      log("  #{ambiguous} retired rules had multiple strong matches (manual review in /rules)")
+    end
+  end
+
+  defp best_approved_match(content, approved_prepared) do
+    normalized = RuleParser.normalize(content)
+    norm_len = String.length(normalized)
+
+    # Only meaningful-length content is comparable.
+    if norm_len <= 20 do
+      :none
+    else
+      scored =
+        approved_prepared
+        |> Enum.map(fn {id, approved_norm} ->
+          {id, similarity(normalized, approved_norm)}
+        end)
+        |> Enum.filter(fn {_id, score} -> score >= @supersede_threshold end)
+        |> Enum.sort_by(&elem(&1, 1), :desc)
+
+      case scored do
+        [] ->
+          :none
+
+        [{id, _score}] ->
+          {:match, id}
+
+        [{id, top} | [{_id2, second} | _]] ->
+          if top - second >= @supersede_margin, do: {:match, id}, else: :ambiguous
+      end
+    end
+  end
+
+  # Returns a similarity score in [0.0, 1.0]. Prefix matches score 1.0
+  # (one contains the other entirely); otherwise Jaro distance.
+  defp similarity(a, b) do
+    cond do
+      String.starts_with?(a, b) or String.starts_with?(b, a) -> 1.0
+      true -> String.jaro_distance(a, b)
+    end
   end
 
   defp triage_proposed do
