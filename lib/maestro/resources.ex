@@ -5,7 +5,7 @@ defmodule Maestro.Resources do
   use Ash.Domain, extensions: [AshJsonApi.Domain]
 
   json_api do
-    authorize? false
+    authorize? true
   end
 
   resources do

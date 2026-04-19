@@ -5,7 +5,7 @@ defmodule Maestro.Agents do
   use Ash.Domain, otp_app: :maestro, extensions: [AshJsonApi.Domain]
 
   json_api do
-    authorize? false
+    authorize? true
   end
 
   resources do

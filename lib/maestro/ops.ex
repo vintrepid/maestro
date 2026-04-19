@@ -6,7 +6,7 @@ defmodule Maestro.Ops do
   """
 
   json_api do
-    authorize? false
+    authorize? true
   end
 
   resources do

@@ -9,7 +9,7 @@ defmodule Maestro.Accounts do
   end
 
   json_api do
-    authorize? false
+    authorize? true
   end
 
   resources do
