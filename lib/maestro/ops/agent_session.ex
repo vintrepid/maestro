@@ -28,6 +28,9 @@ defmodule Maestro.Ops.AgentSession do
       post :create
       patch :update
       delete :destroy
+
+      relationship :rules, :read
+      related :rules, :read
     end
   end
 

@@ -18,6 +18,9 @@ defmodule Maestro.Agents.Request do
       get :read
       post :create
       delete :destroy
+
+      related :agent, :read
+      related :session, :read
     end
   end
 

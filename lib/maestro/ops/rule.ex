@@ -19,6 +19,13 @@ defmodule Maestro.Ops.Rule do
       post :create
       patch :update
       delete :destroy
+
+      related :library, :read
+      related :rule_source, :read
+      related :source_agent_session, :read
+      related :superseded_by, :read
+      relationship :supersedes, :read
+      related :supersedes, :read
     end
   end
 

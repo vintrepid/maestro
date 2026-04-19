@@ -19,6 +19,8 @@ defmodule Maestro.Ops.RuleSource do
       post :create
       patch :update
       delete :destroy
+
+      related :library, :read
     end
   end
 

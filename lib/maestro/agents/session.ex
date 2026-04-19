@@ -19,6 +19,8 @@ defmodule Maestro.Agents.Session do
       post :create
       patch :update
       delete :destroy
+
+      related :agent, :read
     end
   end
 

@@ -22,6 +22,9 @@ defmodule Maestro.Ops.AgentSessionRule do
       get :read
       post :create
       delete :destroy
+
+      related :agent_session, :read
+      related :rule, :read
     end
   end
 
