@@ -13,7 +13,7 @@ defmodule Mix.Tasks.Maestro.Rule.Propose do
 
     * `--content` (required) - The rule text
     * `--category` (required) - One of: architecture, liveview, ash, heex, css, elixir,
-      testing, deployment, pubsub, forms, components, routing, security
+      testing, deployment, pubsub, forms, components, routing, security, agent_behavior
     * `--severity` - must, should, or prefer (default: should)
     * `--source-project` - Project slug where rule was discovered
     * `--source-commit` - Git SHA that proved this rule

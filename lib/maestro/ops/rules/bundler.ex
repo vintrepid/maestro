@@ -20,7 +20,7 @@ defmodule Maestro.Ops.Rules.Bundler do
 
   @max_lines 95
   @bundle_categories %{
-    universal: ~w(architecture security)a,
+    universal: ~w(architecture security agent_behavior)a,
     ui: ~w(liveview heex css components forms routing pubsub)a,
     model: ~w(ash elixir security testing)a,
     devops: ~w(testing deployment security)a,

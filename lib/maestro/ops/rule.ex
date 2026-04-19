@@ -245,7 +245,8 @@ defmodule Maestro.Ops.Rule do
                     :forms,
                     :components,
                     :routing,
-                    :security
+                    :security,
+                    :agent_behavior
                   ]
 
       allow_nil? false
