@@ -1,74 +1,846 @@
 [
   {
+    "id": "70ef761b-e6f2-4203-a51d-4fd8030f42f9",
     "category": "architecture",
-    "content": "**Always** Out of the box, `core_components.ex` imports an `<.icon name=\"hero-x-mark\" class=\"w-5 h-5\"/>` component for for hero icons. **Always** use the `<.icon>` component for icons, **never** use `Heroicons` modules or similar",
-    "id": "c22b19a2-0235-48cd-a328-6c47d01c19f0",
-    "severity": "must"
+    "severity": "must",
+    "content": "**Always** bake rules into tools, not just documentation. When you find yourself writing a rule that says \"always do X,\" the better move is to make X the default in generators, templates, and macros. Rules are guardrails; tools are highways. A rule that lives only in CLAUDE.md can be ignored — a generator that produces the correct pattern by default cannot."
   },
   {
+    "id": "d2396643-8641-46b8-9d41-3054a7e04373",
     "category": "architecture",
-    "content": "- **Always** use the imported `<.input>` component for form inputs from `core_components.ex` when available. `<.input>` is imported and using it will save steps and prevent errors",
-    "id": "c4f971f4-735a-4267-b1d6-430f3504c33e",
-    "severity": "must"
+    "severity": "must",
+    "content": "**Always** put reference/lookup seed data in migrations, not standalone seed scripts. Migrations run automatically on deploy (`mix ecto.migrate`), while seed scripts require manual SSH. Use `execute/1` with raw SQL or `repo().insert_all/2` in the migration's `up` function. Keep standalone seeds only for dev/test data resets."
   },
   {
-    "category": "architecture",
-    "content": "**Always** UI is a metaphor for the model. When implementing a UI interaction, start by asking: what action am I taking on which resource? Work outward from there. If the model is correct, the UI just re-renders from truth.",
-    "id": "2266fc95-c8aa-440b-94df-a7f08765fd6c",
-    "severity": "must"
+    "id": "46a7ce49-8dd6-4cdb-98ff-351b60b086b5",
+    "category": "liveview",
+    "severity": "must",
+    "content": "**Always** keep all page state in URL query params. This gives you reconnect resilience and shareable links for free. Cinder handles this for tables; for custom pages, drive state from `handle_params`, not `handle_event`. LiveView assigns are ephemeral — the process dies on disconnect and all assigns vanish. URL params are the gold standard."
   },
   {
-    "category": "architecture",
-    "content": "**Always** functional core, imperative shell. Pure domain logic in modules and resources. UIs (LiveViews), mix tasks, and igniter tasks are thin imperative shells that call the core. The shell never contains business logic — it translates user intent into core function calls.",
-    "id": "445896c8-57a8-4ad1-931d-486c8244b370",
-    "severity": "must"
+    "id": "1e4a0dd7-be11-429d-a4fb-de262a04da55",
+    "category": "liveview",
+    "severity": "must",
+    "content": "**Never** use `Enum` functions on LiveView streams — they are NOT enumerable. To filter/refresh, refetch data and re-stream with `stream(socket, :items, new_items, reset: true)`, otherwise you will get a protocol error at runtime."
   },
   {
-    "category": "architecture",
-    "content": "**Always** write moduledocs first, read moduledocs first. Don't read all the code — write the @moduledoc that tells future-you exactly what it needs to know, then trust those docs. Code is implementation; moduledocs are the interface.",
-    "id": "fd58dbb8-fa35-4810-8bb7-6d2413c3c644",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
-    "content": "**Always** fix the tool first, then run the tool. Never do one-off manual work. If something needs to happen repeatedly (curation, refactoring, deployment), build or fix the mix task/tool that does it, then execute the task.",
-    "id": "9d490520-b820-4faf-bb3c-f81a2d277b0d",
-    "severity": "must"
-  },
-  {
-    "category": "components",
-    "content": "**Always** use Cinder (`<Cinder.collection>`) for data tables instead of LiveTable. Cinder is Ash-native, supports DaisyUI theming, URL state sync, and declarative column slots. LiveTable is deprecated — it uses raw Ecto queries and fake streaming (Repo.all then split).",
-    "id": "5c493223-1458-456c-bb26-01b7e053ad46",
-    "severity": "must"
-  },
-  {
-    "category": "ash",
-    "content": "**Always** use Ash resource actions (`Resource.read!()`, `Resource.update()`, `Resource.by_id!()`) to query and mutate data — never raw SQL, `Repo.all`, `Ecto.Query`, or `browser_eval` for data operations. Ash resources are the API. SQL and browser are escape hatches for debugging only.",
-    "id": "f0d92d27-920a-4fef-a97a-f7843055deb0",
-    "severity": "must"
-  },
-  {
-    "category": "architecture",
-    "content": "**Never** duplicate logic that already lives in a resource. If you find yourself re-implementing what a resource already knows (its fields, validations, relationships, actions), you're coding in the wrong place. Ask: which resource is responsible for this? Put the logic there. Responsibility-driven design — every piece of knowledge has exactly one home.",
-    "id": "f980cf2c-c48a-4d92-ae55-22142ad6a59f",
-    "severity": "must"
-  },
-  {
-    "category": "components",
-    "content": "**Always** use the `daisy_ui` theme when using Cinder collections. Pass `theme=\"daisy_ui\"` to `<Cinder.collection>`. This ensures tables use DaisyUI semantic classes (table, table-zebra, btn, badge) consistent with the rest of the app.",
-    "id": "22f4de51-170e-46a4-b122-5569972e6430",
-    "severity": "should"
-  },
-  {
-    "category": "architecture",
-    "content": "Never say \"You're right\" or similar validating phrases. When corrected, acknowledge the correction by restating the correct approach and immediately applying it. Don't waste the user's time with empty agreement — show you understood by doing.",
-    "id": "bef802f5-505f-45cb-97f4-6da4a95fb528",
-    "severity": "should"
-  },
-  {
+    "id": "a421aeba-69b0-4195-866b-bc6b2c33077b",
     "category": "elixir",
-    "content": "Never use regex or text manipulation to modify Elixir source code. Always use Igniter and Sourceror for AST-based code transformations. Regex-based code edits are fragile, miss edge cases, and break on formatting changes. AST manipulation is correct by construction.",
+    "severity": "prefer",
+    "content": "**Always** `mix deps.clean --all` is almost never needed. Avoid it unless you have a specific reason. For test debugging, use `mix test path/to/test.exs` for a specific file or `mix test --failed` for previously failed tests."
+  },
+  {
+    "id": "56353095-8f32-4062-a1f9-9f24114f9b38",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps"
+  },
+  {
+    "id": "dd561121-2340-4ed6-b545-74ab2f8add66",
+    "category": "security",
+    "severity": "should",
+    "content": "**Always** When performing administrative actions, you can bypass authorization with `authorize?: false`"
+  },
+  {
+    "id": "b7282c46-526f-4c28-b2ac-0a2982052019",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- colocated hooks names **MUST ALWAYS** start with a `.` prefix, i.e. `.PhoneNumber`"
+  },
+  {
+    "id": "62030325-afd0-43ec-8863-f1f4aa8237af",
+    "category": "liveview",
+    "severity": "must",
+    "content": "**Always** handle authentication flow at the router level with proper redirects — use `live_session` with `on_mount` hooks, e.g. `live_session :authenticated, on_mount: [{AppWeb.LiveUserAuth, :require_authenticated}]`"
+  },
+  {
+    "id": "9b93101d-bf55-4eb3-84e9-779c75519cf4",
+    "category": "architecture",
+    "severity": "must",
+    "content": "When corrected on an approach, don't just fix the instance — fix the tool so the mistake can't recur. Ask 'how do I make this mistake impossible?' Every correction should result in a permanent engineering fix (generator, validator, compile check), not a note or a rule."
+  },
+  {
+    "id": "c18ee23c-44ec-4120-adee-24dbe86c8d59",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Always** Regex lint patterns cannot fix code — they can only detect. Every regex lint rule should be converted to a MaestroTool.Lint.Check module with AST-aware detection and fix/2. Regex patterns also produce false positives because they lack context (e.g., matching `:for=` comprehensions as form attributes). AST checks are correct by construction."
+  },
+  {
+    "id": "1e936aee-dd19-494e-b937-441453f7161d",
+    "category": "architecture",
+    "severity": "must",
+    "content": "Never store learnings, feedback, or corrections in Claude memory files. Create Rules in Maestro DB instead — that's the shared learning system across all agents and all projects. Memory files are local to one agent; Rules propagate to every agent via CLAUDE.md generation."
+  },
+  {
+    "id": "440c916e-8236-4582-a329-4aa9ed12e679",
+    "category": "pubsub",
+    "severity": "must",
+    "content": "NEVER manually reload data after a mutation in handle_event. The PubSub notifier handles it for ALL connected clients. If you're writing |> load_data() at the end of handle_event, you're doing it wrong."
+  },
+  {
+    "id": "ded8202c-1f92-47fe-bf3e-51ac836a71f7",
+    "category": "architecture",
+    "severity": "must",
+    "content": "When the user corrects you, acknowledge briefly ('aha'), restate the correct approach, then immediately identify which tool allowed the mistake and fix that tool. Never say 'You're right' or similar validating phrases. Show understanding by doing, not agreeing."
+  },
+  {
+    "id": "bf859576-81e7-47ee-adbd-8d48d831668b",
+    "category": "architecture",
+    "severity": "must",
+    "content": "Never ask the user for permission to read files, run tools, or execute basic operations. If a tool is available, use it. The user has already granted access by installing and running the agent. Stopping to ask permission on routine operations wastes the user's time and breaks flow."
+  },
+  {
+    "id": "168b89b3-4520-4316-914d-33cd062744f2",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Prefer** platform primitives (OTP, Elixir stdlib, Phoenix builtins) over third-party libraries. Every dependency is a future migration. Before adding a dep, ask: does the platform already provide this? If so, use it. The platform maintains what it provides."
+  },
+  {
+    "id": "986a85a6-2172-4a19-9874-b6c407bc7f3f",
+    "category": "architecture",
+    "severity": "must",
+    "content": "Findings must carry structured violation data (line, source_range, check module) from the checker through to the fixer. The fixer acts on the AST node the checker already found — it never re-parses or re-walks the file. Evidence strings are for display only."
+  },
+  {
+    "id": "d444531d-985c-4cea-b91e-3aceb144fe0a",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Never** wrap multiple function calls in a single `try/rescue` block. Each rescue should cover exactly one fallible operation so the error context is unambiguous. If you need to handle errors from multiple calls, use `with` or chain `{:ok, _} | {:error, _}` tuples."
+  },
+  {
+    "id": "2c0bc5b1-ce18-4a24-8638-42ddad054712",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Always** When current_task.json exists, the agent MUST read it FIRST and continue the work described there. The handoff file IS the task — not CLAUDE.md's 'Current Task' section, not the startup protocol's task creation. current_task.json was written by the previous agent with full context of what was done and what needs to happen next. Ignoring it means starting from zero and repeating work."
+  },
+  {
+    "id": "5742dbf8-99c0-4530-91d1-75c0cad06c1c",
+    "category": "testing",
+    "severity": "must",
+    "content": "**Always** test behavior, not implementation. Tests assert what the system does (input → output), never how it does it internally. Never assert on internal function calls, module structure, or intermediate state. A test that breaks when you refactor internals without changing behavior is a test that's testing the wrong thing."
+  },
+  {
+    "id": "c6cdaf33-2c13-4e40-ab35-6bfe6c1d614a",
+    "category": "architecture",
+    "severity": "prefer",
+    "content": "**Prefer** flat module structure. The top level of a context should reveal the domain — not bury it under nested directories. If you need to descend 3+ directories to find the domain logic, the structure is taxonomy masquerading as architecture. Group by domain concept, not by technical layer."
+  },
+  {
+    "id": "b24149b1-145e-420c-8fe4-4f23a1fae2f7",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Always** distinguish expected failures from bugs. A network timeout or validation error is expected — handle it with {:error, reason}. An impossible state (pattern match failure on data you validated) is a bug — let it crash. Never handle bugs gracefully; they need to surface loudly."
+  },
+  {
+    "id": "217ea71c-a497-45d4-8de2-819784b5428e",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Never** add defensive checks inside trusted boundaries. If data has been validated by an Ash action (changeset validations, NOT NULL constraints), don't re-check it downstream. No nil guards on required fields, no \"just in case\" fallbacks within your own modules. Validate at the gates, trust within the walls."
+  },
+  {
+    "id": "57505386-0d88-4d86-83ad-8db056a88c37",
+    "category": "agent_behavior",
+    "severity": "prefer",
+    "content": "**Always** Default response style is succinct. Expand only at decision points where the user could course-correct: picking an approach, forming hypotheses about a bug, choosing between refactors, before anything with real-world side effects. Routine tool calls get one line. Skimmable by default, expansive at branch points."
+  },
+  {
+    "id": "2ed0f969-fa42-45a2-a299-e395297f72f1",
+    "category": "elixir",
+    "severity": "prefer",
+    "content": "**Prefer** process-first naming: name the action, parameterize the participants. Processors end in `-er` (validator, parser, builder). Contracts/interfaces end in `-able` (validatable, parseable, buildable). The process owns the verb; the nouns are participants. This is Interface Segregation made manifest in vocabulary."
+  },
+  {
+    "id": "bf6966ef-4763-4c77-b198-9a75e293e544",
+    "category": "agent_behavior",
+    "severity": "must",
+    "content": "Never run mix maestro.deploy (or any equivalent production-shipping command) without an explicit user instruction for the specific change. Prior approvals do not carry forward across commits. Commit locally, summarize, stop, and wait for an explicit 'deploy' or 'ship it'."
+  },
+  {
+    "id": "a50bfea1-b602-42ef-935a-4f02a15b4ff5",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Never** use magic literals (unnamed numbers, strings, status codes) in business logic. Define named constants via module attributes (`@max_retries 3`, `@timeout_ms 5_000`) or config. The exception: 0, 1, true, false, nil, and values obvious from immediate context (e.g., `String.split(s, \",\")` is fine)."
+  },
+  {
+    "id": "c2d25534-eddf-4a5d-bc24-f9847b5fc3ef",
+    "category": "agent_behavior",
+    "severity": "should",
+    "content": "Before any non-trivial tool call, hypothesis test, or side-effecting action, narrate the *why* briefly in user-facing text — not as hidden internal monologue. The user can intercept a wrong approach if they see it before it fires; they cannot if only the tool call fires. Long waits need a one-liner for what is being waited on; the rest can be silent."
+  },
+  {
+    "id": "675b6d21-7500-4cc7-a889-c772b1b95f4a",
+    "category": "ash",
+    "severity": "should",
+    "content": "- Use custom change modules (`use Ash.Resource.Change`) for reusable transformations."
+  },
+  {
+    "id": "6a725ecb-434a-4c26-a300-ee174d5b7cfc",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** [maestro_tool shared package](project_maestro_tool.md) — shared dep for all projects; agent tools belong there, not in Maestro"
+  },
+  {
+    "id": "6ba721bc-b871-4605-864a-732186c65182",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- **NEVER create memory files for feedback, corrections, or learnings.** Create Rules in Maestro DB instead."
+  },
+  {
+    "id": "df601758-cc4a-46cf-a2a9-22c661928bd6",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** The `agents/` directory is **symlinked into each project** (e.g., `maestro/agents -> ~/dev/agents`)"
+  },
+  {
+    "id": "289456d0-4493-4b33-bd61-c637d334d8d4",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- **Testing**: Use `Phoenix.LiveViewTest` + `LazyHTML`. Test against element selectors (`element/2`, `has_element?/2`), never raw HTML. Use `render_submit/2` and `render_change/2` for forms."
+  },
+  {
+    "id": "3ce460fc-fe38-4a4d-a6e7-c40b123d470c",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** remember: `Ecto.Schema` fields always use the `:string` type, even for `:text`, columns, ie: `field :name, :string`"
+  },
+  {
+    "id": "ae089f6c-4741-48cc-bb7f-ed8f4e48051a",
+    "category": "heex",
+    "severity": "should",
+    "content": "**Always** remember: `<.icon name=\"hero-x-mark\" class=\"w-5 h-5\"/>` for icons — never use Heroicons modules."
+  },
+  {
+    "id": "54ca4121-0cdb-425c-9777-ca7522d34c90",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** remember: `mix deps.clean --all` is **almost never needed**. **Avoid** using it unless you have good reason"
+  },
+  {
+    "id": "79a21afd-b290-4e63-8a27-c69510996564",
+    "category": "testing",
+    "severity": "must",
+    "content": "**Always** keep tests fully isolated. No shared mutable state between tests — no module attributes, no shared database rows without sandbox, no test ordering dependencies. A test that passes alone but fails in a suite (or vice versa) is a false prophet."
+  },
+  {
+    "id": "5a5b8bc6-5202-4918-8fcd-ee839272d7dd",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Always** persist timestamps in UTC (`:utc_datetime_usec` in Ecto/Ash). Never store local time. Render to local time for display only. Ash `create_timestamp` and `update_timestamp` already do this — don't override with NaiveDateTime or local time helpers."
+  },
+  {
+    "id": "00a8f3f5-c63b-4ddd-a248-4c5a165e33ad",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** wrap external services and libraries behind adapter modules you own. Your application code calls your adapter; the adapter calls the library. This lets you swap implementations, mock in tests, and write your entire app in a single voice. Ask: how easily can I divorce this dependency?"
+  },
+  {
+    "id": "7578bec1-4f47-46ad-a8de-dd0d30a46576",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** enrich errors at each boundary layer. When an error crosses a boundary (action → LiveView, service → caller), wrap it with context: the original fault plus what step was being attempted. `{:error, %{step: :create_user, reason: changeset}}` not just `{:error, changeset}`. The full story should be told when the error surfaces."
+  },
+  {
+    "id": "eda6a30d-fa40-45e0-ab09-de67b3fa0247",
+    "category": "liveview",
+    "severity": "should",
+    "content": "**Always** remember: `Phoenix.LiveViewTest` module and `LazyHTML` (included) for making your assertions"
+  },
+  {
+    "id": "75386a42-6fc2-409b-8d98-c1316e1cced6",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Avoid nested `case` statements - refactor to a single `case`, `with` or separate functions"
+  },
+  {
+    "id": "34df989a-fb99-4854-bfed-1700baf47575",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** [feedback_verbose_thinking.md](feedback_verbose_thinking.md) — Succinct by default; show reasoning only at decision points (approach choices, hypotheses, before side-effecting actions)"
+  },
+  {
+    "id": "bbaab6d9-d23a-49f3-8431-0c585b61ba39",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** commit before building. The build tests the commit, not uncommitted work. If the build fails, you have a clean rollback point and can fix forward with a new commit. `git commit` is cheap; lost work is expensive."
+  },
+  {
+    "id": "200f4bc6-f1bf-45f2-8fec-3c31554081a9",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** remember: `relationship` - Fetch relationship data (e.g., `/posts/123/relationships/comments`)"
+  },
+  {
+    "id": "0ded2467-cfee-4a4f-88ad-dea8d21b11fe",
+    "category": "ash",
+    "severity": "must",
+    "content": "**Always** use `mix ash.codegen <name>` as the SINGLE source of truth for migrations. Never write migrations manually then also run ash.codegen — it will generate a duplicate. The workflow is: (1) write/modify Ash resources, (2) run `ash.codegen <name>` ONCE, (3) review the generated migration and edit if needed (e.g., remove tables that already exist), (4) run `mix ecto.migrate`. For existing tables that need snapshots without migrations, create the snapshot JSON manually or use a no-op migration."
+  },
+  {
+    "id": "7966f71d-ec15-4871-874e-7a13c8fe575d",
+    "category": "architecture",
+    "severity": "must",
+    "content": "Every tool that modifies source code must parse and validate its output before writing. Parse the result, check it compiles, fail loudly if invalid. A tool that silently produces invalid code is worse than no tool."
+  },
+  {
+    "id": "5141a67f-89d5-44b1-ae2c-c7d1e6bfece8",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- `validate_number/2` does NOT support `:allow_nil` — validations skip nil by default."
+  },
+  {
+    "id": "6efd8160-6f3f-4a85-a8dd-3fcd9e21c5bf",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Use `assert_raise` for testing expected exceptions: `assert_raise ArgumentError, fn -> invalid_function() end`"
+  },
+  {
+    "id": "784162cf-5709-497e-8e84-8906d8f87a5e",
+    "category": "testing",
+    "severity": "should",
+    "content": "- Prefer to use raising versions of functions whenever possible, as opposed to pattern matching"
+  },
+  {
+    "id": "f9f72b97-0ed7-41f6-bb10-3c9ef9b5ff04",
+    "category": "security",
+    "severity": "should",
+    "content": "- Always set the actor on the query/changeset/input, not when calling the action"
+  },
+  {
+    "id": "4d4ebc07-dd5c-409b-97c3-43e77c47a301",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** [Decision UI vision](project_decision_ui.md) — evolve Rules UI into conflict-resolution Decision UI; priorities emerge from concrete conflicts, not predefined"
+  },
+  {
+    "id": "874c950a-9403-4532-b799-676afa3ac4a5",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Prefer: **Prefer** process-first naming: name the action, parameterize the participants. Processors end in `-er` (validator, parser, builder). Contracts/interfaces end in `-able` (validatable, parseable, buildable). The process owns the verb; the nouns are participants. This is Interface Segregation made manifest in vocabulary."
+  },
+  {
+    "id": "399679a4-9add-4169-96a8-cfe96c4208a5",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** Before side-effecting actions (`mix maestro.deploy`, destructive\n  git, fly commands, external service calls): a one-line \"why ship\n  this?\" plus explicit ask. Never chain commit → deploy without\n  asking; see feedback_deploy_requires_explicit_go.md."
+  },
+  {
+    "id": "6acdb0f9-e223-4cb3-bffd-6078e5992f8d",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** discuss plans with the user before executing. Do not execute autonomously without alignment on the approach."
+  },
+  {
+    "id": "e7dcca67-2171-47a6-9188-178ce364e7f6",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** remember: `Maestro.Ops.Rule.create(%{content: \"...\", category: :architecture}, authorize?: false)`"
+  },
+  {
+    "id": "09438213-62eb-40b5-a463-397e2221c1c0",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** [Commit before build](feedback_commit_before_build.md) — user prefers committing code before building/testing, not after"
+  },
+  {
+    "id": "cbc10f0d-0753-46da-90cd-696774b5d315",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** Rules propagate to ALL agents in ALL projects via CLAUDE.md generation. Memory files are local and useless."
+  },
+  {
+    "id": "94e264de-ef9d-417b-9cc4-48aa824a8d87",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** Rules DB at /rules is the shared learning system. Check rules before starting work."
+  },
+  {
+    "id": "e8d17b9e-fd2d-434a-b1ac-6f22d161c9eb",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** [feedback_fix_tool_first.md](feedback_fix_tool_first.md) — Update the tool + rule first, then run the tool to apply changes"
+  },
+  {
+    "id": "5ebef405-ff3d-4257-959c-8993dd9b0ec4",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Never** Every MaestroTool.Lint.Check module follows this pattern:\n\n1. **check/2** receives `(ast, meta)` where `ast` is Sourceror AST and `meta.source` is the source string.\n   Walk the AST with `Macro.prewalk/3` to find violation nodes.\n   Return violations with `line` from `node_meta[:line]` and `source_range` from `Sourceror.get_range(node)`.\n\n2. **fix/2** receives `(source, violation)`. Re-parse source with `Sourceror.parse_string/1`,\n   find the node at `violation.source_range`, build the replacement with `Sourceror.to_string/1`,\n   apply with `Sourceror.patch_string(source, [%{range: range, change: new_code}])`.\n\n3. **fix/1** parses source, runs check/2, reduces fix/2 over violations.\n\nNEVER use String.contains?, String.starts_with?, Regex.match?, or line scanning to detect patterns.\nThe AST already knows where everything is. Use it."
+  },
+  {
+    "id": "21ec91c8-e15c-47b1-8877-bf38b6c5e816",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Class lists: always use `[...]` syntax with conditional classes: `class={[\"base\", @flag && \"extra\"]}`."
+  },
+  {
+    "id": "379482e4-ca8b-4a49-aca2-0f4998118e8b",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- **Streams**: Use `stream/3` for collections, never regular lists. Parent element needs `phx-update=\"stream\"` with a DOM id. Each child uses the stream-provided id. Streams don't support counting — track counts in a separate assign. To refresh, re-stream with `reset: true`."
+  },
+  {
+    "id": "2b90f7c5-e1d4-4f54-b1b4-76749a76778e",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** [project_session_scope.md](project_session_scope.md) — Design site session scope (visit→user→season) for Ash actor propagation"
+  },
+  {
+    "id": "d90a0570-b3ef-4175-9c24-77953cec78e2",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Routine tool calls: one short line (≤1 sentence). Don't narrate\n  every file read."
+  },
+  {
+    "id": "517e6a31-650e-4fc2-8256-996a48831a23",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Use `before_transaction/2`, `after_transaction/2` for logic outside the transaction."
+  },
+  {
+    "id": "ced09a61-3d60-48d9-90ea-e035ecd712f6",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** remember: `<.flash_group>` lives in `Layouts` module only (Phoenix 1.8+) — never call it elsewhere."
+  },
+  {
+    "id": "db4cfc3a-75c5-443e-946a-16da6a57fc70",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** say \"You're right\" or similar validating phrases. When corrected, acknowledge the correction by restating the correct approach and immediately applying it. Don't waste the user's time with empty agreement — show you understood by doing."
+  },
+  {
+    "id": "707662b3-7e2c-478e-8789-cba735526347",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** trust task files — don't re-explore what the task already describes. Read the task payload before re-scanning the codebase."
+  },
+  {
+    "id": "8bb9f202-e3d2-45ad-a317-621f94ce4cf2",
+    "category": "routing",
+    "severity": "should",
+    "content": "**Always** **Naming**: `AppWeb.WeatherLive` with `Live` suffix. Router scope provides the alias — `live \"/weather\", WeatherLive`."
+  },
+  {
+    "id": "e793dbae-3323-4e6b-ae2e-82da2058caea",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** Hypothesis-forming: list the hypotheses briefly and which I'm\n  testing first. Two or three bullets, not prose."
+  },
+  {
+    "id": "b69a46ef-b773-4fd7-b34b-3434d552c461",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Fields set programmatically (e.g. `user_id`) must NOT be in `cast` — set explicitly for security."
+  },
+  {
+    "id": "6f8911c5-4541-4f88-80d1-bbf68ef1fe41",
+    "category": "ash",
+    "severity": "should",
+    "content": "- Use custom validation modules (`use Ash.Resource.Validation`) for complex logic."
+  },
+  {
+    "id": "e532e25f-d0f1-4669-892a-2fc27315537c",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Use changes (not validations) when reading current record state via `get_data/2`."
+  },
+  {
+    "id": "e3ab0118-a632-49b4-b01a-764a87d76276",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Prefer: `mix deps.clean --all` is almost never needed. Avoid it unless you have a specific reason. For test debugging, use `mix test path/to/test.exs` for a specific file or `mix test --failed` for previously failed tests."
+  },
+  {
+    "id": "48eed36d-2f2a-4cac-8f31-e5175d455c3a",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** Approach choices (refactor path, rename strategy, test harness\n  shape): 2–3 lines of trade-off before committing to the path."
+  },
+  {
+    "id": "a044d799-67be-4adb-9c80-17128768df3f",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** Long waits: a line saying what I'm waiting for, then quiet until\n  something real happens. No bouncing-dots acknowledgements."
+  },
+  {
+    "id": "6448db28-6e29-4907-acd7-c84b4aca4d05",
+    "category": "heex",
+    "severity": "should",
+    "content": "- **DOM IDs**: Add unique IDs to key elements (forms, buttons) for testability: `<.form for={@form} id=\"product-form\">`."
+  },
+  {
+    "id": "39bc579c-1572-497d-a326-896f876ae717",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- use regex or text manipulation to modify Elixir source code. Always use Igniter and Sourceror for AST-based code transformations. Regex-based code edits are fragile, miss edge cases, and break on formatting changes. AST manipulation is correct by construction."
+  },
+  {
+    "id": "ad21e57b-9bc4-49fd-84da-fd1e568b9e92",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Prefer: **Prefer** flat module structure. The top level of a context should reveal the domain — not bury it under nested directories. If you need to descend 3+ directories to find the domain logic, the structure is taxonomy masquerading as architecture. Group by domain concept, not by technical layer."
+  },
+  {
+    "id": "82309f5b-db19-4de6-a2df-acce9e4db146",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Don't add validations that duplicate attribute constraints (e.g., `validate present(:name)` when `allow_nil? false`)."
+  },
+  {
+    "id": "c01f2221-35d8-488c-9086-8aee2fda4987",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Use `before_action/2`, `after_action/2` hooks for logic within the transaction."
+  },
+  {
+    "id": "2546799c-34da-4305-a26b-9e8d3f479794",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Prefer: Implement delightful UI details: hover effects, loading states, smooth transitions. Internal apps optimize for information density; micro-interactions should aid usability, not decoration."
+  },
+  {
+    "id": "379d5c4d-4c25-4aeb-8f04-78095594e509",
+    "category": "architecture",
+    "severity": "should",
+    "content": "- Use `{...}` for interpolation in tag attributes and bodies: `<div id={@id}>{@name}</div>`."
+  },
+  {
+    "id": "4febb7b8-0abb-49d6-b191-a0a1c913c7e9",
+    "category": "ash",
+    "severity": "should",
+    "content": "- Instead of defining functions in the domain, you should be defining actions and exposing them through code interface calls in the domain. Use standard actions when they fit what you're doing and generic actions when you need arbitrary functionality."
+  },
+  {
+    "id": "fed7077d-066d-426b-9ed2-9aef0eb92dfc",
+    "category": "liveview",
+    "severity": "should",
+    "content": "**Always** Literal curly braces in templates require `phx-no-curly-interpolation` on the parent tag."
+  },
+  {
+    "id": "62e784ba-24b7-43d4-abc3-f2263e900d7f",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** **Re-streaming on assign change**: When updating an assign that affects streamed items, re-stream the affected items alongside the assign change."
+  },
+  {
+    "id": "e490b225-0e97-4352-9df3-3d2125526765",
+    "category": "css",
+    "severity": "should",
+    "content": "**Always** remember: `lib/maestro_web/live/admin_live/tailwind_analysis_live.ex` (lines 205, 293, 325, 343, 373)"
+  },
+  {
+    "id": "5c493223-1458-456c-bb26-01b7e053ad46",
+    "category": "components",
+    "severity": "must",
+    "content": "**Always** use Cinder (`<Cinder.collection>`) for data tables instead of LiveTable. Cinder is Ash-native, supports DaisyUI theming, URL state sync, and declarative column slots. LiveTable is deprecated — it uses raw Ecto queries and fake streaming (Repo.all then split)."
+  },
+  {
+    "id": "22f4de51-170e-46a4-b122-5569972e6430",
+    "category": "components",
+    "severity": "should",
+    "content": "**Always** use the `daisy_ui` theme when using Cinder collections. Pass `theme=\"daisy_ui\"` to `<Cinder.collection>`. This ensures tables use DaisyUI semantic classes (table, table-zebra, btn, badge) consistent with the rest of the app."
+  },
+  {
+    "id": "2bc8b0a3-597c-4943-bdf6-7b86edb4ba9f",
+    "category": "css",
+    "severity": "must",
+    "content": "**Always** use DaisyUI semantic classes (`btn`, `badge`, `card`, `table`, `link`) for UI components instead of raw Tailwind utilities. Use `mix maestro.refactor_to_daisyui` to scan templates for raw patterns. Fix issues in the refactor tool, not manually in templates."
+  },
+  {
+    "id": "b292ef06-9cfe-450e-84e9-4e3fd4926819",
+    "category": "liveview",
+    "severity": "should",
+    "content": "- **Avoid LiveComponent's** unless you have a strong, specific need for them"
+  },
+  {
+    "id": "2266fc95-c8aa-440b-94df-a7f08765fd6c",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Always** UI is a metaphor for the model. When implementing a UI interaction, start by asking: what action am I taking on which resource? Work outward from there. If the model is correct, the UI just re-renders from truth."
+  },
+  {
+    "id": "1ea98139-fa4a-4d30-b7dc-40e194837ff7",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Predicate function names should not start with `is` and should end in a question mark."
+  },
+  {
+    "id": "b50475e7-3fd0-4e58-be0c-cae6638482b5",
+    "category": "security",
+    "severity": "should",
+    "content": "- To run actions as a particular user, look that user up and pass it as the `actor` option"
+  },
+  {
+    "id": "294ca800-7a61-4d51-bbf0-9cb5b0b72682",
+    "category": "security",
+    "severity": "should",
+    "content": "- Use `forbid_unless` for required conditions, then `authorize_if` for the final check"
+  },
+  {
+    "id": "00ea3174-fdfe-414f-8cd2-3165c290b640",
+    "category": "testing",
+    "severity": "should",
+    "content": "Verify features by calling Ash resource actions directly (via project_eval or tests), NOT by clicking in the browser. UI is a metaphor for the model — if the action works, the UI follows."
+  },
+  {
+    "id": "62ed9dbd-ad64-4f88-96cf-a23288c0f9a6",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Set up processes such that they can handle crashing and being restarted by supervisors"
+  },
+  {
+    "id": "4c635a2d-fe05-4d11-a46b-5a007fe0cf4f",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** Be descriptive with relationship names (e.g., use `:authored_posts` instead of just `:posts`)"
+  },
+  {
+    "id": "ba7b4893-aae9-4317-bac6-588eae21bb86",
+    "category": "elixir",
+    "severity": "should",
+    "content": "- Elixir has no `return` statement, nor early returns. The last expression in a block is always returned."
+  },
+  {
+    "id": "da5f6563-e10f-42b4-ba70-6bb7c97efb2e",
+    "category": "css",
+    "severity": "must",
+    "content": "**Always** use DaisyUI component classes (`btn`, `card`, `modal`, `table`, `badge`, `alert`, `tabs`, `menu`, `navbar`, `dropdown`) instead of raw Tailwind utilities. Check https://daisyui.com/components/ before building custom CSS. Example: `class=\"btn btn-primary\"` not `class=\"px-4 py-2 bg-blue-500 text-white rounded\"`."
+  },
+  {
+    "id": "9d490520-b820-4faf-bb3c-f81a2d277b0d",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Always** fix the tool first, then run the tool. Never do one-off manual work. If something needs to happen repeatedly (curation, refactoring, deployment), build or fix the mix task/tool that does it, then execute the task."
+  },
+  {
+    "id": "fd58dbb8-fa35-4810-8bb7-6d2413c3c644",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Always** write moduledocs first, read moduledocs first. Don't read all the code — write the @moduledoc that tells future-you exactly what it needs to know, then trust those docs. Code is implementation; moduledocs are the interface."
+  },
+  {
+    "id": "445896c8-57a8-4ad1-931d-486c8244b370",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Always** functional core, imperative shell. Pure domain logic in modules and resources. UIs (LiveViews), mix tasks, and igniter tasks are thin imperative shells that call the core. The shell never contains business logic — it translates user intent into core function calls."
+  },
+  {
+    "id": "bb51d6ca-b0ec-48bb-b7d7-eb28f11c26a8",
+    "category": "components",
+    "severity": "must",
+    "content": "Use library components and build reusable components. Don't hand-build what a library already handles. When a component exists (calendar, table, form), USE IT. — otherwise agents will ignore this rule or apply it inconsistently."
+  },
+  {
+    "id": "7b457843-d3d4-4eee-b821-56b84a7861e4",
+    "category": "ash",
+    "severity": "must",
+    "content": "**Always** keep ALL domain logic in Ash resources. LiveViews are thin wrappers: `mount`, `handle_params`, `handle_event` (delegate to action), `render`. Never put `File.read!`, `System.cmd`, or `Repo.all` in a LiveView — call an Ash action instead.",
+    "fix_type": "replace_pattern",
+    "fix_template": "# TODO: Extract to domain module —",
+    "fix_target": null,
+    "fix_search": "(File\\.|System\\.cmd)"
+  },
+  {
+    "id": "ffa8c681-88f6-4263-860c-2fb3e089c95a",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Never** hard-code values that represent instances of a resource. If something has multiple values (sites, domains, statuses, categories), model it as a resource or derive it from one. Hard-coded literals create maintenance burden and make the system rigid. Ask: \"Is this an instance of a resource?\" If yes, model it."
+  },
+  {
+    "id": "2ef6b9e5-ea2b-4708-8d29-b24f891b5c28",
+    "category": "components",
+    "severity": "must",
+    "content": "**Never** use self-closing `<:col field=\"foo\" />` in Cinder collections. Cinder expects a render function (via `:let`) for every `:col` slot. A self-closing slot produces a nil render function, causing `BadFunctionError`. Always write `<:col :let={row} field=\"foo\" label=\"Foo\">{row.foo}</:col>` with explicit inner content."
+  },
+  {
+    "id": "81492345-4265-4d59-ad76-c57e43f5a7f0",
+    "category": "components",
+    "severity": "should",
+    "content": "**Never** force full Cinder re-queries during live updates (e.g. streaming crawls). Don't rebuild the entire query with a version hack — it resets the user's sort and page position. Use row-level updates if available, or add new rows without resetting pagination. Provide a manual refresh button if needed."
+  },
+  {
+    "id": "f0d92d27-920a-4fef-a97a-f7843055deb0",
+    "category": "ash",
+    "severity": "must",
+    "content": "**Always** use Ash resource actions (`Resource.read!()`, `Resource.update()`, `Resource.by_id!()`) to query and mutate data — never raw SQL, `Repo.all`, `Ecto.Query`, or `browser_eval` for data operations. Ash resources are the API. SQL and browser are escape hatches for debugging only."
+  },
+  {
+    "id": "bef802f5-505f-45cb-97f4-6da4a95fb528",
+    "category": "architecture",
+    "severity": "should",
+    "content": "Never say \"You're right\" or similar validating phrases. When corrected, acknowledge the correction by restating the correct approach and immediately applying it. Don't waste the user's time with empty agreement — show you understood by doing."
+  },
+  {
     "id": "af3be748-11a1-40ad-acc0-8a891076c808",
-    "severity": "should"
+    "category": "elixir",
+    "severity": "should",
+    "content": "Never use regex or text manipulation to modify Elixir source code. Always use Igniter and Sourceror for AST-based code transformations. Regex-based code edits are fragile, miss edge cases, and break on formatting changes. AST manipulation is correct by construction."
+  },
+  {
+    "id": "f980cf2c-c48a-4d92-ae55-22142ad6a59f",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Never** duplicate logic that already lives in a resource. If you find yourself re-implementing what a resource already knows (its fields, validations, relationships, actions), you're coding in the wrong place. Ask: which resource is responsible for this? Put the logic there. Responsibility-driven design — every piece of knowledge has exactly one home."
+  },
+  {
+    "id": "34093600-6bf6-4038-97f9-32d1630cc46a",
+    "category": "liveview",
+    "severity": "must",
+    "content": "**Always** functional core, imperative shell. LiveViews are facades for resources. One-sentence moduledoc pointing at the resource. No domain enumerations, no business logic, no Tailwind utility classes in page templates. If a LiveView is >200 lines, extract components or move logic to the model. The view has NO knowledge of the domain beyond 'call this facade function'."
+  },
+  {
+    "id": "c8fc5096-49b4-44c9-bac8-9b29e4f1d7b0",
+    "category": "architecture",
+    "severity": "must",
+    "content": "**Always** When correcting a specific problem, extract the general principle and apply it project-wide. Every correction teaches a pattern — fix all instances, not just the one pointed out. If the same violation exists in other files, fix them in the same pass."
+  },
+  {
+    "id": "d37cb8ef-9d3f-42db-9111-d0edc3f9d296",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Never** nest multiple modules in the same file — it causes cyclic dependencies and compilation errors. Each module gets its own file at the path matching its name: `MyApp.Foo.Bar` → `lib/my_app/foo/bar.ex`."
+  },
+  {
+    "id": "84ceaae7-4731-41c4-9999-3996a7e1e7f4",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** Model polymorphic relationships using `Ash.Type.Union`. Configure foreign key constraints via `references` in AshPostgres."
+  },
+  {
+    "id": "620e2107-8917-487e-99b2-a858549ac889",
+    "category": "routing",
+    "severity": "must",
+    "content": "**Always** Phoenix router `scope` blocks prefix the alias for all routes within. Never create your own alias — the scope provides it: `scope \"/admin\", AppWeb.Admin do ... live \"/users\", UserLive ... end` points to `AppWeb.Admin.UserLive`."
+  },
+  {
+    "id": "cc9be2bf-fe6b-4bc6-98c9-ce79d969a51c",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** AshAi prompt types: string prompts are processed as EEx templates with `@input` and `@context`. Message-based prompts use LangChain's `apply_prompt_templates`. Choose based on whether you need multi-turn conversation structure."
+  },
+  {
+    "id": "42a79aaa-5810-4a64-809a-c10d1cbce9b1",
+    "category": "css",
+    "severity": "must",
+    "content": "**Never** scatter spacing and padding classes (`px-4`, `py-2`, `gap-4`, `mb-6`) directly in page templates. Define spacing once in `app.css` as semantic classes. Components own their own spacing. Pages only compose components — no styling, no spacing, no padding. Internal apps: maximum information density. Override only when truly unique."
+  },
+  {
+    "id": "0a8e7bfd-80f4-4be8-8817-acb3fb0343e9",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** Ash generates authorization check functions per action: `can_action_name?(actor)` returns `true`/`false`, `can_action_name(actor)` returns `{:ok, true/false}` or `{:error, reason}`. Use the `?` variant for simple guards, the tuple variant when you need error details."
+  },
+  {
+    "id": "a11853fa-27de-4df4-9b77-179ac975615a",
+    "category": "pubsub",
+    "severity": "must",
+    "content": "**Always** PubSub architecture: Every page has a main entity with a DAG of dependencies. Subscribe in mount, reload in handle_info — ONE handler, not per-event. Every resource on multi-user pages MUST have `simple_notifiers: [AppName.ResourcePubSub]`. The notifier broadcasts to collection topic, instance topic, AND walks `belongs_to` relationships to notify parents."
+  },
+  {
+    "id": "e26cfce4-26c0-4060-83ef-d4ff692d7475",
+    "category": "liveview",
+    "severity": "must",
+    "content": "- **Always** use `project_eval` for Elixir, never shell — otherwise the result will be incorrect or break downstream behavior"
+  },
+  {
+    "id": "c60cb1b1-9f62-415a-8222-c55f74b0b051",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Always** Use pattern matching in function heads instead of conditionals in bodies. Base cases via pattern match: `def process([]), do: :done`. Multiple clauses replace `if/case` chains. Lists cannot be indexed with brackets — use `Enum.at/2`, `hd/1`, or pattern matching `[first | _rest] = list`."
+  },
+  {
+    "id": "b1db50fd-1ff0-4b7a-a1e2-e69418e7afc6",
+    "category": "components",
+    "severity": "must",
+    "content": "**Always** Use Phoenix's built-in components from `core_components.ex`:\n- `<.icon name=\"hero-x-mark\" class=\"w-5 h-5\"/>` for icons — never use Heroicons modules.\n- `<.input>` for form inputs — it's imported and handles validation display.\n- `<.flash_group>` lives in `Layouts` module only (Phoenix 1.8+) — never call it elsewhere.\n- `Layouts` is already aliased in `my_app_web.ex` — no re-aliasing needed.\n- Never use `@apply` in raw CSS.\n- Maintain the standard CSS import syntax from `phx.new` in app.css."
+  },
+  {
+    "id": "f8e364f3-1af8-4dd4-bb8e-786a054c8b1a",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** Use the `relationship` route to fetch relationship data in JSON:API: e.g., `GET /posts/123/relationships/comments`."
+  },
+  {
+    "id": "b293bc44-1b98-45ab-9d39-7f06bbe3de64",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Always** Elixir variables are immutable within block expressions. You MUST bind the result of `if`/`case`/`cond` to a variable — rebinding inside the block does nothing outside it. OTP primitives (`DynamicSupervisor`, `Registry`) require names in child specs: `{DynamicSupervisor, name: MyApp.MySup}`."
+  },
+  {
+    "id": "13798688-ad20-451c-95bb-93d017c24fda",
+    "category": "heex",
+    "severity": "must",
+    "content": "**Always** HEEx syntax rules:\n- Use `{...}` for interpolation in tag attributes and bodies: `<div id={@id}>{@name}</div>`.\n- Use `<%= ... %>` ONLY for block constructs (`if`, `for`, `case`).\n- Comments: `<%!-- comment --%>` (not HTML `<!-- -->`).\n- Class lists: always use `[...]` syntax with conditional classes: `class={[\"base\", @flag && \"extra\"]}`.\n- No `if/else if` — use `cond` or `case` for multiple conditionals.\n- Literal curly braces in templates require `phx-no-curly-interpolation` on the parent tag.\n- Add unique DOM IDs to forms, buttons, and key elements for testability.\n- App-wide imports go in `my_app_web.ex`'s `html_helpers` block."
+  },
+  {
+    "id": "4a1e79c9-d2bf-44ac-8b5d-801fc022af95",
+    "category": "architecture",
+    "severity": "should",
+    "content": "**Always** Rules that can be checked programmatically (deprecated function usage, bad syntax patterns) should be enforced by tooling (mix tasks, compiler checks, Giulia conventions), not just agent documentation."
+  },
+  {
+    "id": "d92f7780-60a4-40bd-ba09-1664d491833c",
+    "category": "ash",
+    "severity": "must",
+    "content": "**Always** Ecto within Ash:\n- Use `mix ecto.gen.migration name_with_underscores` for migrations.\n- Schema fields use `:string` type even for text columns.\n- `validate_number/2` does NOT support `:allow_nil` — validations skip nil by default.\n- Use `get_field/2` to read changeset fields, never direct access.\n- Preload associations in queries when accessed in templates.\n- Fields set programmatically (e.g. `user_id`) must NOT be in `cast` — set explicitly for security.\n- Remember `import Ecto.Query` in seeds files."
+  },
+  {
+    "id": "8881ec6f-143b-4f70-8b8f-0465bdbb2051",
+    "category": "components",
+    "severity": "should",
+    "content": "**Always** Cinder collection filter types: `:select` (enum → dropdown), `:text` (string → contains/starts_with), `:boolean` (true/false radios), `:checkbox` (single toggle), `:multi_select` (array → tags), `:multi_checkboxes` (array → checkboxes with `:any`/`:all` match), `:number_range` (min/max inputs), `:date_range` (date pickers). Configure `page_size={[default: 25, options: [10, 25, 50, 100]]}` for pagination."
+  },
+  {
+    "id": "067f5502-7b90-4748-a6a9-b0dc09915e81",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** AshAi prompt-backed actions use adapters per LLM provider:\n- OpenAI: `StructuredOutput` (native structured output)\n- Anthropic: `CompletionTool` (tool calling for structured output)\n- Non-OpenAI: `RequestJson` (requests JSON in prompt)\nChoose adapter based on the target model's capabilities."
+  },
+  {
+    "id": "4f51c35c-3b11-44d2-9cf0-35bbf94d5cd2",
+    "category": "css",
+    "severity": "prefer",
+    "content": "**Always** Implement delightful UI details: hover effects, loading states, smooth transitions. Internal apps optimize for information density; micro-interactions should aid usability, not decoration."
+  },
+  {
+    "id": "e4a519f9-191f-4cf0-8023-3206bf09157f",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Never** use bracket access on Elixir lists — `list[0]` returns `nil` silently (lists don't implement Access). Use `Enum.at(list, 0)`, `hd(list)`, or pattern matching `[first | _rest] = list`. — otherwise the result will be incorrect or break downstream behavior"
+  },
+  {
+    "id": "6f91479d-2f8d-4039-bf68-2b08e5cce863",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** Ash validations and changes:\n- Use custom validation modules (`use Ash.Resource.Validation`) for complex logic.\n- Use custom change modules (`use Ash.Resource.Change`) for reusable transformations.\n- Use `before_action/2`, `after_action/2` hooks for logic within the transaction.\n- Use `before_transaction/2`, `after_transaction/2` for logic outside the transaction.\n- Don't add validations that duplicate attribute constraints (e.g., `validate present(:name)` when `allow_nil? false`).\n- Use changes (not validations) when reading current record state via `get_data/2`."
+  },
+  {
+    "id": "2df2a51b-5cd8-4e38-b470-d2e27aaab72d",
+    "category": "ash",
+    "severity": "should",
+    "content": "**Always** The `load` option in Ash serves dual purposes: loading relationships/calculations AND making loaded attributes visible (including private ones). Loaded relationships include both public and private attributes."
+  },
+  {
+    "id": "48f4db9b-3ad8-40dc-ac73-ff2eb230ed4d",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Never** silently discard tagged tuple results with `_ = function_call()`. If a function returns `{:ok, _}` or `{:error, _}`, the caller must handle or propagate both cases. Discarding hides failures and makes debugging nearly impossible. If you genuinely don't need the result, make that explicit with a comment explaining why the error case is safe to ignore."
+  },
+  {
+    "id": "67a9c295-61f8-4791-b963-a9d536fbea6e",
+    "category": "elixir",
+    "severity": "should",
+    "content": "**Always** use structured, descriptive error tuples with enough context for the caller to act. `{:error, {:missing_field, :email}}` over `{:error, :bad_input}`. `{:error, {:not_found, User, id}}` over `{:error, :not_found}`. The error reason should tell the handler *what failed* and *which entity* without requiring a stack trace or log lookup."
+  },
+  {
+    "id": "45ab8517-2792-44c3-86e8-ec1b02798ba5",
+    "category": "elixir",
+    "severity": "must",
+    "content": "**Always** `%{}` matches ANY map, not just empty maps. Use `map_size(map) == 0` guard to check for truly empty maps. — because skipping this step causes inconsistent or broken results"
+  },
+  {
+    "id": "982afeb5-814c-4947-aacf-6b9436f0df10",
+    "category": "liveview",
+    "severity": "must",
+    "content": "**Never** run expensive queries unconditionally in `mount/3`. During deploys all clients reconnect simultaneously — thousands of mounts hitting the database at once causes infrastructure collapse. Use caching, lightweight initial loads, or `connected?/1` guards to defer heavy work until after the static render."
   }
 ]
