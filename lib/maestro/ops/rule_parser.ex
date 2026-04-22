@@ -259,6 +259,18 @@ defmodule Maestro.Ops.RuleParser do
     end
   end
 
+  @doc """
+  Content-aware categorization. Used by `re_categorize` to reclassify
+  existing rules through the current heuristics — the ingest-time
+  `categorize/2` only knows source metadata, so a rule about agent
+  behavior parsed from a generic file lands in `:architecture` until
+  this runs over it.
+  """
+  @spec categorize_by_content(String.t(), String.t() | nil) :: atom()
+  def categorize_by_content(content, sub \\ nil) do
+    agents_categorize(sub || "", content)
+  end
+
   # Category from section heading — with content-based fallback
   defp agents_categorize(sub, _content) when sub in ["js-and-css", "ui-ux", "ui-ux-design"],
     do: :css
@@ -280,11 +292,18 @@ defmodule Maestro.Ops.RuleParser do
   defp agents_categorize("liveview-javascript" <> _, _content), do: :liveview
   defp agents_categorize("phoenix", _content), do: :routing
 
-  # Fallback: classify by content keywords
+  # Fallback: classify by content keywords.
+  # Order matters — agent_behavior is checked first so rules about how
+  # agents should behave (user interaction, response style, deploy
+  # discipline, tool usage) don't get swept into `:architecture` by
+  # later, broader buckets.
   defp agents_categorize(_sub, content) do
     content_lower = String.downcase(content)
 
     cond do
+      agent_behavior?(content_lower) ->
+        :agent_behavior
+
       String.contains?(content_lower, ["ash.", "ash_", "changeset", "resource "]) ->
         :ash
 
@@ -315,6 +334,51 @@ defmodule Maestro.Ops.RuleParser do
       true ->
         :architecture
     end
+  end
+
+  # Signals a rule is about agent behavior — how the agent should
+  # interact with the user, manage tool calls, handle corrections,
+  # pace its responses, approach deploys, etc. These rules belong in
+  # `:agent_behavior`, not `:architecture`.
+  defp agent_behavior?(content_lower) do
+    String.contains?(content_lower, [
+      # Addressing the agent directly
+      "the agent ",
+      "agents should",
+      "agents must",
+      "you should",
+      "you must",
+      "you are",
+      # User interaction
+      "the user ",
+      "when corrected",
+      "when the user",
+      "ask the user",
+      "with the user",
+      # Response style / pacing
+      "response style",
+      "succinct",
+      "narrate",
+      "think out loud",
+      # Deploy / production safety
+      "mix maestro.deploy",
+      "without an explicit user",
+      "explicit instruction",
+      "production-shipping",
+      # Aha / correction reflex
+      "aha",
+      "you're right",
+      "you are right",
+      # Tool-first reflex
+      "fix the tool",
+      "bake rules into tools",
+      "one-off manual",
+      # Planning / alignment
+      "discuss plans",
+      "before executing",
+      "pausing for approval",
+      "handoff context"
+    ])
   end
 
   @doc """

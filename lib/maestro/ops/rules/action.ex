@@ -72,6 +72,33 @@ defmodule Maestro.Ops.Rules.Action do
     end
   end
 
+  @doc """
+  Re-run content-aware categorization on the rule and persist any change.
+  The ingest-time categorizer only sees source metadata; this runs the
+  current content-keyword heuristics over the actual rule text and updates
+  the category if it differs.
+  """
+  @spec re_categorize(String.t() | map()) :: result()
+  def re_categorize(id_or_rule) do
+    id = if is_binary(id_or_rule), do: id_or_rule, else: id_or_rule.id
+
+    case Rule.by_id(id) do
+      {:ok, rule} ->
+        new_category = Maestro.Ops.RuleParser.categorize_by_content(rule.content, nil)
+        current = atomize(rule.category)
+
+        if new_category == current do
+          {:ok, %{id: rule.id, category: current, changed: false}}
+        else
+          {:ok, _} = Rule.update(rule, %{category: new_category})
+          {:ok, %{id: rule.id, from: current, to: new_category, changed: true}}
+        end
+
+      {:error, e} ->
+        {:error, e}
+    end
+  end
+
   # --- Helpers ---
 
   defp fetch(%{id: _} = rule), do: {:ok, rule}
