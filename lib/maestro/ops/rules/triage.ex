@@ -13,8 +13,14 @@ defmodule Maestro.Ops.Rules.Triage do
         }
 
   @doc """
-  Classify a rule as :approved, :linter, or :retired based on its content.
-  Returns a decision map.
+  Classify a rule as :linter, :retired, :approved, or :proposed based on its
+  content. Returns a decision map.
+
+  Default verdict is `:proposed`, not `:approved` — a rule must *earn* its
+  way into CLAUDE.md by explicitly carrying a severity marker (Always/Must,
+  Never/FORBIDDEN, Avoid) or coming from a trusted dep source. Everything
+  else sits in the proposed queue waiting for human curation. Length alone
+  is not a reason to retire or approve anything.
   """
   @spec decide(String.t(), String.t() | nil) :: decision()
   def decide(content, source \\ nil) do
@@ -31,11 +37,8 @@ defmodule Maestro.Ops.Rules.Triage do
       approve?(content, len, source) ->
         %{status: :approved}
 
-      len < 80 ->
-        %{status: :retired, reason: "Too short to be actionable"}
-
       true ->
-        %{status: :approved}
+        %{status: :proposed}
     end
   end
 
@@ -85,11 +88,24 @@ defmodule Maestro.Ops.Rules.Triage do
   end
 
   # --- Approve checks ---
+  # A rule auto-approves only if it carries an explicit severity marker or
+  # comes from a trusted upstream source with enough substance.
+  #
+  # Severity markers collapse into two pairs:
+  #   - REQUIRE: `**Always**` or `**Must**` — same intent, different wording.
+  #   - FORBID:  `**Never**`  or `**FORBIDDEN**` — ditto.
+  # `**Avoid**` is a softer FORBID variant; kept as a third, weaker signal.
+  #
+  # All three are treated as approve triggers — the goal is to auto-approve
+  # reflex-shaped content, not to discriminate between synonyms.
+
+  @require_marker ~r/\*\*(Always|ALWAYS|Must|MUST)\*\*/i
+  @forbid_marker ~r/\*\*(Never|NEVER|FORBIDDEN|Avoid|AVOID)\*\*/i
 
   defp approve?(content, len, source) do
-    Regex.match?(~r/\*\*(Always|ALWAYS|Never|NEVER|FORBIDDEN)\*\*/i, content) or
+    Regex.match?(@require_marker, content) or
+      Regex.match?(@forbid_marker, content) or
       (String.contains?(content, "```") and len > 150) or
-      Regex.match?(~r/\*\*(must|Avoid)\*\*/i, content) or
       (String.starts_with?(source, "ash") and len > 200) or
       (source in ["phoenix", "usage_rules"] and len > 150)
   end

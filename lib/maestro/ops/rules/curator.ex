@@ -532,6 +532,11 @@ defmodule Maestro.Ops.Rules.Curator do
   # ── Phase 5: Quality gate ──────────────────────────────────────────
 
   defp quality_gate do
+    # Only demote here — never auto-promote :proposed → :approved. The
+    # proposed queue is the human-curation queue; draining it automatically
+    # defeats the queue's purpose. Rules enter :approved one of two ways:
+    # (1) Triage auto-approves on a clear severity marker or trusted source,
+    # (2) a human promotes them via the /rules UI. Nothing else.
     approved = Rule.approved!()
     approved_results = Quality.audit_rules(approved)
 
@@ -554,41 +559,6 @@ defmodule Maestro.Ops.Rules.Curator do
       summary = Quality.summarize(approved_results)
       for ic <- summary.issues_by_check, do: log("    #{ic.check}: #{ic.count}")
     end
-
-    proposed = Enum.filter(Rule.read!(), &(&1.status == :proposed))
-    proposed_results = Quality.audit_rules(proposed)
-    proposed_failing = Enum.reject(proposed_results, & &1.pass?)
-
-    already_passing =
-      proposed_results
-      |> Enum.filter(& &1.pass?)
-      |> Enum.each(fn result ->
-        rule = Rule.by_id!(result.id)
-        Rule.approve(rule)
-      end)
-      |> then(fn _ -> Enum.count(proposed_results, & &1.pass?) end)
-
-    if already_passing > 0,
-      do: log("  #{already_passing} proposed rules passed quality — approved")
-
-    {auto_fixed, unfixable} =
-      Enum.reduce(proposed_failing, {0, 0}, fn result, {fixed, skipped} ->
-        rule = Rule.by_id!(result.id)
-
-        case Quality.fix_content(rule.content, rule) do
-          {:ok, new_content} ->
-            new_hash = RuleParser.content_hash(new_content)
-            {:ok, updated} = Rule.update(rule, %{content: new_content, content_hash: new_hash})
-            Rule.approve(updated)
-            {fixed + 1, skipped}
-
-          :skip ->
-            {fixed, skipped + 1}
-        end
-      end)
-
-    if auto_fixed > 0, do: log("  #{auto_fixed} proposed rules auto-fixed and approved")
-    if unfixable > 0, do: log("  #{unfixable} proposed rules need manual quality fixes")
   end
 
   # ── Phase 6: Write outputs ─────────────────────────────────────────

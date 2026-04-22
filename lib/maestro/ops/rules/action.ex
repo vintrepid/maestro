@@ -105,6 +105,12 @@ defmodule Maestro.Ops.Rules.Action do
   defp apply_decision(rule, %{status: :linter} = d),
     do: call(Rule, :mark_linter, rule, Map.get(d, :lint, %{}))
 
+  # The Triage fall-through is :proposed — treat it as an explicit
+  # "send to human-curation queue." Silently no-op'ing here (as an earlier
+  # version did) makes re_triage a lie: the runner reports a transition
+  # that never lands in the DB.
+  defp apply_decision(rule, %{status: :proposed}), do: call(Rule, :reset_to_proposed, rule)
+
   defp apply_decision(_rule, _), do: :ok
 
   defp call(mod, fun, rule), do: call(mod, fun, rule, %{})
