@@ -2,34 +2,40 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
   @moduledoc """
   Generate a CLAUDE.md file from approved rules.
 
+  The generator emits the **general rules** every agent in the ecosystem
+  should follow. No role bundling, no per-task inlining — the file is
+  the durable guardrail layer, not a task briefing.
+
   ## Usage
 
-      # Generate for Maestro itself (all rules, full startup protocol)
+      # Generate for Maestro itself (includes the :maestro bundle too)
       mix maestro.gen.claude_md --output CLAUDE.md
 
-      # Generate for a project agent with bundle-scoped rules
-      mix maestro.gen.claude_md --bundle model --project calvin --task 130 --output /path/to/calvin/CLAUDE.md
+      # Generate for a project app (drops the :maestro bundle)
+      mix maestro.gen.claude_md --project calvin --output /path/to/calvin/CLAUDE.md
 
       # Preview what would be generated (stdout)
-      mix maestro.gen.claude_md --bundle model --project calvin
+      mix maestro.gen.claude_md --project ready
 
   ## Options
 
-    * `--bundle` - Rule bundle: model, ui, universal, devops (default: all approved)
-    * `--project` - Project name for the CLAUDE.md header (default: maestro)
-    * `--task` - Maestro task ID to inline as the current task
+    * `--project` - Project name for the CLAUDE.md header (default: maestro).
+      Anything other than "maestro" drops the `:maestro` bundle from the output.
     * `--output` - Write to file path instead of stdout
-    * `--include-proposed` - Include proposed rules (marked as such)
+    * `--include-proposed` - Include proposed rules (marked as such) for curation review
+
+  ## Why no `--bundle` or `--task`?
+
+  Earlier versions filtered rules by "role" (model/ui/devops) and inlined a
+  current task. Both were subtly wrong: a project app saving a resource
+  still needs UI rules when building the form that edits it, and pinning a
+  task into CLAUDE.md meant the file had to be regenerated every time work
+  shifted. The guardrails belong in CLAUDE.md; the task belongs in
+  conversation.
   """
 
   use Mix.Task
   @shortdoc "Generate CLAUDE.md from approved rules"
-
-  @bundle_categories %{
-    "model" => ~w(architecture ash elixir security testing)a,
-    "ui" => ~w(architecture liveview heex css components forms routing pubsub)a,
-    "devops" => ~w(architecture elixir deployment security)a
-  }
 
   @spec run([String.t()]) :: :ok
   def run(args) do
@@ -38,21 +44,17 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
     {opts, _, _} =
       OptionParser.parse(args,
         strict: [
-          bundle: :string,
           project: :string,
-          task: :integer,
           output: :string,
           include_proposed: :boolean
         ]
       )
 
-    bundle = opts[:bundle]
     project = opts[:project] || "maestro"
-    task_id = opts[:task]
     include_proposed = opts[:include_proposed] || false
 
-    rules = load_rules(bundle, include_proposed)
-    content = render_claude_md(rules, project, bundle, task_id)
+    rules = load_rules(project, include_proposed)
+    content = render_claude_md(rules, project)
 
     case opts[:output] do
       nil ->
@@ -64,39 +66,29 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
     end
   end
 
-  defp load_rules(bundle, include_proposed) do
+  # Maestro itself wants every rule, including the :maestro-bundle rules about
+  # curating other apps. Project apps don't — those rules would misfire in
+  # Calvin, Ready, KJ, etc.
+  defp load_rules(project, include_proposed) do
     approved = Maestro.Ops.Rule.approved!(authorize?: false)
     proposed = if include_proposed, do: Maestro.Ops.Rule.proposed!(authorize?: false), else: []
 
-    all = approved ++ proposed
-
-    filtered =
-      case bundle do
-        nil ->
-          # No bundle filter — all approved rules (for Maestro itself)
-          all
-
-        bundle_name ->
-          # Filter to universal + bundle-specific categories
-          categories = Map.get(@bundle_categories, bundle_name, [])
-          bundles = [:universal, String.to_existing_atom(bundle_name)]
-
-          Enum.filter(all, fn rule ->
-            rule.bundle in bundles and
-              (categories == [] or rule.category in categories)
-          end)
-      end
-
-    Enum.sort_by(filtered, fn rule ->
+    (approved ++ proposed)
+    |> drop_maestro_bundle_for_projects(project)
+    |> Enum.sort_by(fn rule ->
       {-rule.priority, severity_order(rule.severity), to_string(rule.category)}
     end)
   end
+
+  defp drop_maestro_bundle_for_projects(rules, "maestro"), do: rules
+  defp drop_maestro_bundle_for_projects(rules, _project),
+    do: Enum.reject(rules, &(&1.bundle == :maestro))
 
   defp severity_order(:must), do: 0
   defp severity_order(:should), do: 1
   defp severity_order(:prefer), do: 2
 
-  defp render_claude_md(rules, project, bundle, task_id) do
+  defp render_claude_md(rules, project) do
     by_category = Enum.group_by(rules, & &1.category)
 
     rule_sections =
@@ -117,24 +109,19 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
       end)
       |> Enum.join("\n\n")
 
-    task_section = render_task_section(task_id)
-    bundle_label = if bundle, do: " (#{bundle} bundle)", else: ""
-
-    project_id = resolve_project_id(project)
-
     if project == "maestro" do
-      render_maestro_template(rules, rule_sections, task_section, bundle_label, project_id)
+      render_maestro_template(rules, rule_sections)
     else
-      render_project_template(rules, rule_sections, task_section, project, bundle_label, project_id)
+      render_project_template(rules, rule_sections, project)
     end
     |> String.trim()
     |> Kernel.<>("\n")
   end
 
-  defp render_maestro_template(rules, rule_sections, task_section, bundle_label, project_id) do
+  defp render_maestro_template(rules, rule_sections) do
     """
     # Maestro — Agent Guidelines
-    # Generated by Maestro · #{Date.utc_today()} · #{length(rules)} approved rules#{bundle_label}
+    # Generated by Maestro · #{Date.utc_today()} · #{length(rules)} rules
     # Review and curate rules at http://localhost:4004/rules
 
     **Please read, acknowledge, and follow these guidelines.**
@@ -144,71 +131,8 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
 
     # Startup
 
-    Read this file. Read the Current Task section. That is your work. Start doing it.
-    Do not greet. Do not create tasks. Do not ask what to work on. Just do the work.
-
-    ---
-
-    # Current Task
-    #{task_section}
-
-    ---
-
-    # Rules
-
-    #{rule_sections}
-
-    ---
-
-    # Workflow
-
-    ## Fix the Tool, Not the Problem
-    NEVER do one-off manual work. If something needs to happen repeatedly, build or fix
-    the mix task/tool that does it, then run the tool. The tool lives forever; your manual
-    fix dies with this session.
-    """
-  end
-
-  defp render_project_template(rules, rule_sections, task_section, project, bundle_label, _project_id) do
-    cap_project = String.capitalize(project)
-
-    """
-    # #{cap_project} — Agent Guidelines
-    # Generated by Maestro · #{Date.utc_today()} · #{length(rules)} rules#{bundle_label}
-
-    **Please read, acknowledge, and follow these guidelines.**
-    Your first message must confirm you have read and will follow them.
-
-    ---
-
-    # Startup Protocol
-
-    You MUST complete these steps BEFORE your first response. Do NOT greet the user.
-
-    ## Step 1: Read this file completely
-    Read every section. Do not skim.
-
-    ## Step 2: Check your current task
-    Read the Current Task section below. If a task is specified, that is your focus.
-    If no task is specified, derive your task from the user's first message.
-
-    ## Step 3: First response format
-    Your first message MUST use this exact format:
-
-    ```
-    **#{cap_project}** — [one-line summary of what you'll work on]
-
-    - Guidelines: read and acknowledged (#{length(rules)} rules)
-
-    Starting: [what you will do first]
-    ```
-
-    If your first message does not follow this format, you failed startup.
-
-    ---
-
-    # Current Task
-    #{task_section}
+    Read this file. Do the work the user asks for. Do not greet. Do not ask
+    what to work on — the user's first message is the task.
 
     ---
 
@@ -235,56 +159,61 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
     """
   end
 
-  defp render_task_section(nil) do
-    # Include handoff context from current_task.json if it exists
-    handoff = read_handoff()
+  defp render_project_template(rules, rule_sections, project) do
+    cap_project = String.capitalize(project)
 
-    approved = length(Maestro.Ops.Rule.approved!(authorize?: false))
-    proposed = length(Maestro.Ops.Rule.proposed!(authorize?: false))
+    """
+    # #{cap_project} — Agent Guidelines
+    # Generated by Maestro · #{Date.utc_today()} · #{length(rules)} rules
 
-    context = "#{approved} approved rules, #{proposed} proposed rules pending curation at /rules."
+    **Please read, acknowledge, and follow these guidelines.**
+    Your first message must confirm you have read and will follow them.
 
-    if handoff do
-      "**Continue this work (from previous session):**\n\n#{handoff}\n\n**Domain context:** #{context}"
-    else
-      "**Task:** Check user's first message.\n\n**Domain context:** #{context}"
-    end
-  end
+    ---
 
-  defp read_handoff do
-    path = Path.join(File.cwd!(), "current_task.json")
+    # Startup Protocol
 
-    if File.exists?(path) do
-      case Jason.decode(File.read!(path)) do
-        {:ok, data} ->
-          summary = data["summary"] || data["title"] || ""
-          notes = data["notes"] || ""
-          next = data["next_steps"] || ""
+    You MUST complete these steps BEFORE your first response. Do NOT greet the user.
 
-          parts = [summary, notes, next] |> Enum.reject(&(&1 == "")) |> Enum.join("\n\n")
-          if parts == "", do: nil, else: parts
+    ## Step 1: Read this file completely
+    Read every section. Do not skim.
 
-        _ -> nil
-      end
-    end
-  end
+    ## Step 2: First response format
+    Your first message MUST use this exact format:
 
-  defp render_task_section(task_id) do
-    case Maestro.Ops.Task.by_id(task_id, authorize?: false) do
-      {:ok, task} ->
-        notes = if task.notes, do: "\n\n#{task.notes}", else: ""
-        "**Task ##{task.id}: #{task.title}**#{notes}"
+    ```
+    **#{cap_project}** — [one-line summary of what you'll work on]
 
-      {:error, _} ->
-        "**Task ##{task_id}** (not found — check task ID)"
-    end
-  end
+    - Guidelines: read and acknowledged (#{length(rules)} rules)
 
-  defp resolve_project_id(slug) do
-    case Maestro.Ops.get_project_by_slug(slug) do
-      nil -> slug
-      project -> to_string(project.id)
-    end
+    Starting: [what you will do first]
+    ```
+
+    If your first message does not follow this format, you failed startup.
+
+    ---
+
+    # Rules
+
+    #{rule_sections}
+
+    ---
+
+    # Workflow
+
+    ## Read the Guidelines
+    You acknowledged these rules. Follow them. When in doubt, re-read the relevant rule
+    before proceeding. If a rule conflicts with your instinct, the rule wins.
+
+    ## Discuss Before Executing
+    Discuss plans with the user before executing. Do not execute autonomously without
+    alignment on the approach.
+
+    ## Fix the Tool, Not the Problem
+    NEVER do one-off manual work. If something needs to happen repeatedly, build or fix
+    the mix task/tool that does it, then run the tool. The tool lives forever; your manual
+    fix dies with this session.
+    """
   end
 
   # Strip leading severity markers from rule content — the prefix provides them
