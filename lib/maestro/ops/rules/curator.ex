@@ -185,7 +185,7 @@ defmodule Maestro.Ops.Rules.Curator do
     triage_proposed()
     retriage_approved()
     backfill_lint_metadata()
-    link_superseded_retired()
+    link_superseded_rules()
 
     log(
       "  #{stats.sources} sources, #{stats.new} new, #{stats.exact} exact dupes, #{stats.near} near dupes"
@@ -330,13 +330,18 @@ defmodule Maestro.Ops.Rules.Curator do
   # How much better the best match must be than runner-up to count as unambiguous.
   @supersede_margin 0.05
 
-  # For every retired rule without a superseded_by_id, search the approved
-  # rules for the closest content match. If one approved rule is a clear
-  # winner (above @supersede_threshold AND beats runner-up by
+  # For every non-approved rule without a superseded_by_id, search the
+  # approved rules for the closest content match. If one approved rule is a
+  # clear winner (above @supersede_threshold AND beats runner-up by
   # @supersede_margin), set superseded_by_id. Otherwise log as ambiguous /
-  # unmatched. Approved set is small (~dozens) so O(retired × approved) is
-  # fine.
-  defp link_superseded_retired do
+  # unmatched. Approved set is small (~dozens) so O(non_approved × approved)
+  # is fine.
+  #
+  # Model: a superseded rule stays in the corpus as a non-canonical variant.
+  # Its status (:proposed, :retired, :linter) isn't changed here — linking
+  # just marks "there's a canonical version of this; CLAUDE.md should use
+  # that one." Retiring and superseding are independent decisions.
+  defp link_superseded_rules do
     approved = Rule.approved!()
 
     approved_prepared =
@@ -344,12 +349,12 @@ defmodule Maestro.Ops.Rules.Curator do
         {rule.id, RuleParser.normalize(rule.content)}
       end)
 
-    retired_unlinked =
+    unlinked_non_approved =
       Rule.read!()
-      |> Enum.filter(&(&1.status == :retired and is_nil(&1.superseded_by_id)))
+      |> Enum.filter(&(&1.status != :approved and is_nil(&1.superseded_by_id)))
 
     {linked, ambiguous} =
-      Enum.reduce(retired_unlinked, {0, 0}, fn rule, {l, a} ->
+      Enum.reduce(unlinked_non_approved, {0, 0}, fn rule, {l, a} ->
         case best_approved_match(rule.content, approved_prepared) do
           {:match, approved_id} ->
             Rule.update(rule, %{superseded_by_id: approved_id})
@@ -363,16 +368,10 @@ defmodule Maestro.Ops.Rules.Curator do
         end
       end)
 
-    cond do
-      linked > 0 ->
-        log("  Linked #{linked} retired rules to canonical approved rules")
-
-      true ->
-        :ok
-    end
+    if linked > 0, do: log("  Linked #{linked} non-canonical rules to their canonical")
 
     if ambiguous > 0 do
-      log("  #{ambiguous} retired rules had multiple strong matches (manual review in /rules)")
+      log("  #{ambiguous} rules had multiple strong matches (manual review in /rules)")
     end
   end
 

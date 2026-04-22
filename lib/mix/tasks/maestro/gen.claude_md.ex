@@ -69,11 +69,16 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
   # Maestro itself wants every rule, including the :maestro-bundle rules about
   # curating other apps. Project apps don't — those rules would misfire in
   # Calvin, Ready, KJ, etc.
+  #
+  # Superseded rules (those with a non-nil `superseded_by_id`) are variants
+  # of a canonical rule — kept in the corpus as alternative phrasings / search
+  # paths, but dropped from CLAUDE.md so we only emit one version per idea.
   defp load_rules(project, include_proposed) do
     approved = Maestro.Ops.Rule.approved!(authorize?: false)
     proposed = if include_proposed, do: Maestro.Ops.Rule.proposed!(authorize?: false), else: []
 
     (approved ++ proposed)
+    |> Enum.reject(& &1.superseded_by_id)
     |> drop_maestro_bundle_for_projects(project)
     |> Enum.sort_by(fn rule ->
       {-rule.priority, severity_order(rule.severity), to_string(rule.category)}
