@@ -190,7 +190,10 @@ defmodule MaestroWeb.RuleDetailLive do
         <h4 class="font-bold text-sm">Supersession</h4>
         <div :if={@related.superseded_by} class="mb-2">
           <span class="badge badge-sm badge-ghost">superseded by</span>
-          <a href={~p"/rules/#{@related.superseded_by.id}"} class="link link-primary text-xs block mt-1">
+          <a
+            href={~p"/rules/#{@related.superseded_by.id}"}
+            class="link link-primary text-xs block mt-1"
+          >
             {String.slice(@related.superseded_by.content, 0, 80)}…
           </a>
         </div>
@@ -245,4 +248,11 @@ defmodule MaestroWeb.RuleDetailLive do
   defp status_class(:linter), do: "badge-info"
   defp status_class(:anti_pattern), do: "badge-error"
   defp status_class(_), do: ""
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_params(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_params(socket, _action, _params),
+    do: socket
 end
