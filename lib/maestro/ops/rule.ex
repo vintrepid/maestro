@@ -20,6 +20,16 @@ defmodule Maestro.Ops.Rule do
       patch :update
       delete :destroy
 
+      # Lifecycle actions — promote a proposed rule, set linter config,
+      # retire, supersede, etc. Each is a PATCH on the rule by id with
+      # the action's accepted fields in the request body.
+      patch :approve, route: "/:id/approve"
+      patch :retire, route: "/:id/retire"
+      patch :mark_linter, route: "/:id/mark_linter"
+      patch :mark_anti_pattern, route: "/:id/mark_anti_pattern"
+      patch :reset_to_proposed, route: "/:id/reset_to_proposed"
+      patch :supersede, route: "/:id/supersede"
+
       related :library, :read
       related :rule_source, :read
       related :source_agent_session, :read
