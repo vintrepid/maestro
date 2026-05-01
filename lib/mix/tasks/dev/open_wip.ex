@@ -125,15 +125,26 @@ defmodule Mix.Tasks.Dev.OpenWip do
     end
   end
 
+  # Opens files in the user's editor, taken from $EDITOR (e.g. "subl",
+  # "code -w", "nvim"). Strips wait-flags like `-w`/`--wait` since
+  # `wip` is fire-and-forget. Falls back to `open -a VSCodium` if
+  # $EDITOR is unset.
   defp open_in_vscodium(files) do
-    args = ["-a", "VSCodium" | files]
+    case System.get_env("EDITOR") do
+      nil ->
+        case System.cmd("open", ["-a", "VSCodium" | files], stderr_to_stdout: true) do
+          {_, 0} -> :ok
+          {error, _} -> IO.warn("Failed to open files: #{error}")
+        end
 
-    case System.cmd("open", args, stderr_to_stdout: true) do
-      {_output, 0} ->
-        :ok
+      editor ->
+        [binary | rest] = String.split(editor, " ", trim: true)
+        args = Enum.reject(rest, &(&1 in ["-w", "--wait"]))
 
-      {error, _} ->
-        IO.warn("Failed to open files: #{error}")
+        case System.cmd(binary, args ++ files, stderr_to_stdout: true) do
+          {_, 0} -> :ok
+          {error, _} -> IO.warn("Failed to open files via #{binary}: #{error}")
+        end
     end
   end
 end
