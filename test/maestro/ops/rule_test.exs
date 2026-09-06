@@ -7,6 +7,7 @@ defmodule Maestro.Ops.RuleTest do
   use Maestro.DataCase, async: true
 
   alias Maestro.Ops.Rule
+  alias Maestro.Ops.RuleParser
 
   test "create infers a missing directive from explicit legacy wording" do
     rule =
@@ -44,5 +45,20 @@ defmodule Maestro.Ops.RuleTest do
       Rule.update!(rule, %{content: "Never write invalid generated code"}, authorize?: false)
 
     assert updated.directive == :require
+    assert updated.content_hash == RuleParser.content_hash(updated.content, :require)
+    refute updated.content_hash == rule.content_hash
+  end
+
+  test "changing direction updates the rule's semantic identity" do
+    rule =
+      Rule.create!(
+        %{content: "Deploy after review", category: :deployment, severity: :should},
+        authorize?: false
+      )
+
+    updated = Rule.update!(rule, %{directive: :forbid}, authorize?: false)
+
+    assert updated.content_hash == RuleParser.content_hash(updated.content, :forbid)
+    refute updated.content_hash == rule.content_hash
   end
 end

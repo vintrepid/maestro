@@ -118,6 +118,10 @@ defmodule Maestro.Ops.Rule do
 
     update :update do
       primary? true
+      # Recompute the semantic content hash from the loaded record and incoming
+      # prose/direction in one changeset. The normalization is Elixir code, not
+      # a portable Ash expression, so this record-scoped action is non-atomic.
+      require_atomic? false
 
       accept [
         :content,
@@ -143,6 +147,8 @@ defmodule Maestro.Ops.Rule do
         :bundle,
         :superseded_by_id
       ]
+
+      change Maestro.Ops.Rule.Changes.ComputeContentHash
     end
 
     update :supersede do
