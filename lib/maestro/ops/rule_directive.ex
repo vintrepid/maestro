@@ -58,14 +58,16 @@ defmodule Maestro.Ops.RuleDirective do
   @doc "Returns the direction-aware enforcement label used by compact exports."
   @spec label(t(), severity()) :: String.t()
   def label(:forbid, :must), do: "MUST NOT"
-  def label(:forbid, _severity), do: "SHOULD NOT"
+  def label(:forbid, :should), do: "SHOULD NOT"
+  def label(:forbid, :prefer), do: "PREFER NOT"
   def label(:prefer, _severity), do: "PREFER"
   def label(:require, :must), do: "MUST"
   def label(:require, :should), do: "SHOULD"
   def label(:require, :prefer), do: "PREFER"
 
   defp markdown_prefix(:forbid, :must), do: "**NEVER**"
-  defp markdown_prefix(:forbid, _severity), do: "- Avoid:"
+  defp markdown_prefix(:forbid, :should), do: "- Avoid:"
+  defp markdown_prefix(:forbid, :prefer), do: "- Prefer not:"
   defp markdown_prefix(:prefer, _severity), do: "- Prefer:"
   defp markdown_prefix(:require, :must), do: "**ALWAYS**"
   defp markdown_prefix(:require, :should), do: "-"

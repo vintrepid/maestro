@@ -59,6 +59,9 @@ defmodule Maestro.Ops.RuleDirectiveTest do
     test "compact exports retain prohibition semantics" do
       assert RuleDirective.compact_line("Never deploy", :forbid, :must) ==
                "MUST NOT: deploy"
+
+      assert RuleDirective.compact_line("Avoid page-specific styles", :forbid, :prefer) ==
+               "PREFER NOT: page-specific styles"
     end
   end
 end

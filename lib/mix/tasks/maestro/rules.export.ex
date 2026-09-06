@@ -133,7 +133,10 @@ defmodule Mix.Tasks.Maestro.Rules.Export do
       |> Enum.map(fn content ->
         lines = String.split(content, "\n")
 
-        Enum.count(lines, &Regex.match?(~r/^(?:MUST|MUST NOT|SHOULD|SHOULD NOT|PREFER):/, &1))
+        Enum.count(
+          lines,
+          &Regex.match?(~r/^(?:MUST|MUST NOT|SHOULD|SHOULD NOT|PREFER|PREFER NOT):/, &1)
+        )
       end)
       |> Enum.sum()
 
