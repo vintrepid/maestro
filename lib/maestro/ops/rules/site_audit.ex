@@ -10,6 +10,8 @@ defmodule Maestro.Ops.Rules.SiteAudit do
   returns per-page audit results.
   """
 
+  alias Maestro.Ops.RuleDirective
+
   @doc """
   Discovers all .ex modules in the project.
   Returns a list of page maps: %{path, module, source_file, source, ast, heex_blocks}.
@@ -240,7 +242,7 @@ defmodule Maestro.Ops.Rules.SiteAudit do
 
       # Content-derived structural checks
       true ->
-        derive_ast_check(base, content)
+        derive_ast_check(base, rule, content)
     end
   end
 
@@ -270,36 +272,20 @@ defmodule Maestro.Ops.Rules.SiteAudit do
   end
 
   # Derive an AST check from rule content when no explicit categorization matches.
-  # Only "Never" rules produce checks — "Always" rules with code examples are
+  # Only forbidden rules produce checks — required rules with code examples are
   # guidance, not structural requirements checkable per-page.
-  defp derive_ast_check(base, content) do
-    directive = extract_directive(content)
+  defp derive_ast_check(base, rule, content) do
+    directive = Map.get(rule, :directive) || RuleDirective.infer(content)
     code_patterns = extract_code_patterns(content)
 
     case {directive, code_patterns} do
-      # "Never X" with a code pattern — check AST for the pattern's absence
-      {:never, [pattern | _]} when byte_size(pattern) >= 4 ->
+      # A forbidden code pattern must be absent from every audited page.
+      {:forbid, [pattern | _]} when byte_size(pattern) >= 4 ->
         %{base | type: :ast_absent, pattern: pattern}
 
-      # "Always" rules are guidance — skip per-page structural checks
+      # Required rules are guidance — skip per-page structural checks.
       _ ->
         base
-    end
-  end
-
-  defp extract_directive(content) do
-    has_never =
-      String.contains?(content, "**Never**") or String.contains?(content, "NEVER") or
-        String.contains?(content, "don't") or String.contains?(content, "do NOT")
-
-    has_always =
-      String.contains?(content, "**Always**") or String.contains?(content, "ALWAYS") or
-        String.contains?(content, "MUST")
-
-    cond do
-      has_never and not has_always -> :never
-      has_always and not has_never -> :always
-      true -> nil
     end
   end
 
