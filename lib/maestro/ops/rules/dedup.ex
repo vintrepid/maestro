@@ -35,6 +35,7 @@ defmodule Maestro.Ops.Rules.Dedup do
       existing_len = String.length(existing)
 
       cond do
+        directive(normalized) != directive(existing) -> false
         # Prefix match: one is the start of the other (quality gate appends "why" clauses)
         norm_len > 20 and String.starts_with?(existing, normalized) -> true
         existing_len > 20 and String.starts_with?(normalized, existing) -> true
@@ -44,4 +45,6 @@ defmodule Maestro.Ops.Rules.Dedup do
       end
     end)
   end
+
+  defp directive(normalized), do: normalized |> String.split(":", parts: 2) |> hd()
 end

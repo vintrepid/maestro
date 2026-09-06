@@ -346,7 +346,7 @@ defmodule Maestro.Ops.Rules.Curator do
 
     approved_prepared =
       Enum.map(approved, fn rule ->
-        {rule.id, RuleParser.normalize(rule.content)}
+        {rule.id, RuleParser.normalize(rule.content, rule.directive)}
       end)
 
     unlinked_non_approved =
@@ -355,7 +355,7 @@ defmodule Maestro.Ops.Rules.Curator do
 
     {linked, ambiguous} =
       Enum.reduce(unlinked_non_approved, {0, 0}, fn rule, {l, a} ->
-        case best_approved_match(rule.content, approved_prepared) do
+        case best_approved_match(rule, approved_prepared) do
           {:match, approved_id} ->
             Rule.update(rule, %{superseded_by_id: approved_id})
             {l + 1, a}
@@ -375,8 +375,8 @@ defmodule Maestro.Ops.Rules.Curator do
     end
   end
 
-  defp best_approved_match(content, approved_prepared) do
-    normalized = RuleParser.normalize(content)
+  defp best_approved_match(rule, approved_prepared) do
+    normalized = RuleParser.normalize(rule.content, rule.directive)
     norm_len = String.length(normalized)
 
     # Only meaningful-length content is comparable.
@@ -453,7 +453,7 @@ defmodule Maestro.Ops.Rules.Curator do
 
     rehashed =
       Enum.reduce(all_rules, 0, fn rule, count ->
-        new_hash = RuleParser.content_hash(rule.content)
+        new_hash = RuleParser.content_hash(rule.content, rule.directive)
 
         if new_hash != rule.content_hash do
           Rule.update(rule, %{content_hash: new_hash})
@@ -509,7 +509,7 @@ defmodule Maestro.Ops.Rules.Curator do
   end
 
   defp load_existing_normalized do
-    Enum.map(Rule.read!(), &RuleParser.normalize(&1.content))
+    Enum.map(Rule.read!(), &RuleParser.normalize(&1.content, &1.directive))
   end
 
   # ── Phase 4 ─────────────────────────────────────────────────────────

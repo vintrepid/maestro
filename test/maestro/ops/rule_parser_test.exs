@@ -9,6 +9,36 @@ defmodule Maestro.Ops.RuleParserTest do
   use ExUnit.Case, async: true
 
   alias Maestro.Ops.RuleParser
+  alias Maestro.Ops.Rules.Dedup
+
+  describe "semantic identity" do
+    test "equivalent legacy and generated markers have one identity" do
+      assert RuleParser.content_hash("Never deploy without approval") ==
+               RuleParser.content_hash("**NEVER** deploy without approval")
+    end
+
+    test "opposite instructions never deduplicate" do
+      refute RuleParser.content_hash("Never deploy without approval") ==
+               RuleParser.content_hash("Always deploy without approval")
+    end
+
+    test "an explicit directive controls identity when prose is unmarked" do
+      refute RuleParser.content_hash("Deploy after review", :require) ==
+               RuleParser.content_hash("Deploy after review", :forbid)
+    end
+
+    test "opposite long instructions are not treated as near duplicates" do
+      required =
+        RuleParser.normalize(
+          "Always deploy the application after review because the published fix must reach users"
+        )
+
+      refute Dedup.near_duplicate?(
+               "Never deploy the application after review because the published fix must reach users",
+               [required]
+             )
+    end
+  end
 
   describe "categorize_by_content/2 — agent_behavior" do
     test "rules about correction reflex land in :agent_behavior, not :architecture" do

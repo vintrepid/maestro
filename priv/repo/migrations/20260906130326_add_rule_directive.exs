@@ -26,12 +26,91 @@ defmodule Maestro.Repo.Migrations.AddRuleDirective do
     WHERE directive IS NULL
     """
 
+    # Direction is part of a rule's identity. Canonicalize legacy display
+    # markers before hashing so generated and re-ingested rules round-trip to
+    # the same identity, while opposite instructions remain distinct.
+    execute """
+    WITH source AS (
+      SELECT
+        id,
+        directive,
+        regexp_replace(content, '^[[:space:]]*-[[:space:]]*', '') AS without_bullet
+      FROM rules
+    ), marker_free AS (
+      SELECT
+        id,
+        directive,
+        without_bullet,
+        regexp_replace(
+          without_bullet,
+          '^(\\*\\*)?(you[[:space:]]+are[[:space:]]+forbidden[[:space:]]+(from|to)|must[[:space:]]+not|should[[:space:]]+not|do[[:space:]]+not|don''t|always|never|must|should|prefer|avoid|forbidden)(\\*\\*)?([[:space:]]*:[[:space:]]*|[[:space:]]+)',
+          '',
+          'i'
+        ) AS normalized_content,
+        without_bullet ~* '^\\*\\*(you[[:space:]]+are[[:space:]]+forbidden[[:space:]]+(from|to)|must[[:space:]]+not|should[[:space:]]+not|do[[:space:]]+not|don''t|always|never|must|should|prefer|avoid|forbidden)([[:space:]]*:|[[:space:]])' AS whole_bold_marker
+      FROM source
+    ), normalized AS (
+      SELECT
+        id,
+        directive || ':' || lower(
+          regexp_replace(
+            btrim(
+              CASE
+                WHEN whole_bold_marker
+                  THEN regexp_replace(normalized_content, '\\*\\*[[:space:]]*$', '')
+                ELSE normalized_content
+              END
+            ),
+            '[[:space:]]+',
+            ' ',
+            'g'
+          )
+        ) AS semantic_content
+      FROM marker_free
+    )
+    UPDATE rules
+    SET content_hash = encode(sha256(convert_to(normalized.semantic_content, 'UTF8')), 'hex')
+    FROM normalized
+    WHERE rules.id = normalized.id
+    """
+
     alter table(:rules) do
       modify :directive, :text, null: false
     end
   end
 
   def down do
+    # Restore the legacy content-only hash so a rolled-back application retains
+    # its original deduplication behavior.
+    execute """
+    WITH normalized AS (
+      SELECT
+        id,
+        lower(
+          regexp_replace(
+            regexp_replace(
+              regexp_replace(
+                btrim(content),
+                '^(\\*\\*(Always|Never|Must|Avoid)\\*\\*[[:space:]]*)+',
+                '',
+                'i'
+              ),
+              '^(- )+',
+              ''
+            ),
+            '[[:space:]]+',
+            ' ',
+            'g'
+          )
+        ) AS legacy_content
+      FROM rules
+    )
+    UPDATE rules
+    SET content_hash = encode(sha256(convert_to(normalized.legacy_content, 'UTF8')), 'hex')
+    FROM normalized
+    WHERE rules.id = normalized.id
+    """
+
     alter table(:rules) do
       remove :directive
     end

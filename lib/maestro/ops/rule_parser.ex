@@ -34,24 +34,27 @@ defmodule Maestro.Ops.RuleParser do
     end)
   end
 
-  @doc "SHA256 hash of normalized content for deduplication."
-  @spec content_hash(any()) :: term()
-  def content_hash(text) do
+  @doc "SHA256 hash of normalized content and its semantic direction."
+  @spec content_hash(String.t(), RuleDirective.t() | nil) :: String.t()
+  def content_hash(text, directive \\ nil) do
     text
-    |> normalize()
+    |> normalize(directive)
     |> then(&:crypto.hash(:sha256, &1))
     |> Base.encode16(case: :lower)
   end
 
-  @doc "Normalize content for comparison: trim, collapse whitespace, downcase."
-  @spec normalize(any()) :: term()
-  def normalize(content) do
-    content
-    |> String.trim()
-    |> String.replace(~r/^(\*\*(Always|Never|ALWAYS|NEVER|Must|Avoid)\*\*\s*)+/i, "")
-    |> String.replace(~r/^(- )+/, "")
-    |> String.replace(~r/\s+/, " ")
-    |> String.downcase()
+  @doc "Normalize direction and marker-free content for semantic comparison."
+  @spec normalize(String.t(), RuleDirective.t() | nil) :: String.t()
+  def normalize(content, directive \\ nil) do
+    parsed = RuleDirective.parse(content)
+    directive = directive || parsed.directive
+
+    normalized_content =
+      parsed.content
+      |> String.replace(~r/\s+/, " ")
+      |> String.downcase()
+
+    "#{directive}:#{normalized_content}"
   end
 
   @doc "SHA256 hash of raw file content (for RuleSource change detection)."
