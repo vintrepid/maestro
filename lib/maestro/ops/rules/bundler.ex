@@ -16,6 +16,7 @@ defmodule Maestro.Ops.Rules.Bundler do
   """
 
   import Ecto.Query
+  alias Maestro.Ops.RuleDirective
   alias Maestro.Repo
 
   @max_lines 95
@@ -90,6 +91,7 @@ defmodule Maestro.Ops.Rules.Bundler do
         base = %{
           "id" => r.id,
           "category" => r.category,
+          "directive" => r.directive,
           "severity" => r.severity,
           "content" => r.content
         }
@@ -116,6 +118,7 @@ defmodule Maestro.Ops.Rules.Bundler do
             id: type(r.id, :string),
             content: r.content,
             category: r.category,
+            directive: r.directive,
             severity: r.severity,
             priority: r.priority,
             bundle: r.bundle,
@@ -130,6 +133,7 @@ defmodule Maestro.Ops.Rules.Bundler do
         %{
           r
           | category: safe_to_atom(r.category),
+            directive: safe_to_atom(r.directive),
             severity: safe_to_atom(r.severity),
             bundle: safe_to_atom(r.bundle || "universal")
         }
@@ -174,14 +178,9 @@ defmodule Maestro.Ops.Rules.Bundler do
   end
 
   defp format_rule(rule) do
-    severity_tag = severity_tag(rule.severity)
     content = rule.content |> String.replace(~r/\n+/, " ") |> String.trim()
-    "#{severity_tag} #{content}"
+    RuleDirective.compact_line(content, rule.directive, rule.severity)
   end
-
-  defp severity_tag(:must), do: "MUST:"
-  defp severity_tag(:should), do: "SHOULD:"
-  defp severity_tag(_), do: "PREFER:"
 
   defp severity_rank(:must), do: 0
   defp severity_rank(:should), do: 1

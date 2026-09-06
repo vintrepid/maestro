@@ -22,6 +22,7 @@ defmodule MaestroWeb.Components.RuleEditor do
   """
   use MaestroWeb, :html
 
+  @directive_options [{"Require", "require"}, {"Forbid", "forbid"}, {"Prefer", "prefer"}]
   @severity_options [{"MUST", "must"}, {"SHOULD", "should"}, {"PREFER", "prefer"}]
   @bundle_options [
     {"Universal", "universal"},
@@ -39,6 +40,7 @@ defmodule MaestroWeb.Components.RuleEditor do
   def rule_editor(assigns) do
     assigns =
       assigns
+      |> assign_new(:directive_options, fn -> @directive_options end)
       |> assign_new(:severity_options, fn -> @severity_options end)
       |> assign_new(:bundle_options, fn -> @bundle_options end)
 
@@ -64,6 +66,13 @@ defmodule MaestroWeb.Components.RuleEditor do
             prompt="Select..."
             options={@category_options}
             required
+          />
+          <.input
+            field={@form[:directive]}
+            type="select"
+            label="Directive"
+            prompt="Infer from content"
+            options={@directive_options}
           />
           <.input field={@form[:severity]} type="select" label="Severity" options={@severity_options} />
           <.input

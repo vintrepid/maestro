@@ -18,6 +18,8 @@ defmodule Mix.Tasks.Maestro.Gen.Skills do
   """
 
   use Mix.Task
+
+  alias Maestro.Ops.RuleDirective
   @shortdoc "Generate Claude Code skills from approved rule clusters"
 
   @default_output Path.expand("~/.claude/commands")
@@ -83,9 +85,10 @@ defmodule Mix.Tasks.Maestro.Gen.Skills do
       rules
       |> Enum.sort_by(fn r -> severity_order(r.severity) end)
       |> Enum.map(fn rule ->
-        severity = String.upcase(to_string(rule.severity))
+        label = RuleDirective.label(rule.directive, rule.severity)
+        content = RuleDirective.parse(rule.content).content
         source = if rule.source_project_slug, do: " (from #{rule.source_project_slug})", else: ""
-        "- [#{severity}] #{rule.content}#{source}"
+        "- [#{label}] #{content}#{source}"
       end)
       |> Enum.join("\n\n")
 

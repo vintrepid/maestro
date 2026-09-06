@@ -6,6 +6,8 @@ defmodule Maestro.Ops.RuleParser do
 
   @min_rule_length 30
 
+  alias Maestro.Ops.RuleDirective
+
   @doc "Parse a usage-rules markdown file into rule attribute maps."
   @spec parse_rules_from_file(String.t(), any(), any()) :: term()
   def parse_rules_from_file(path, dep, sub_rule_name) do
@@ -20,6 +22,7 @@ defmodule Maestro.Ops.RuleParser do
         content: rule_text,
         content_hash: content_hash(rule_text),
         category: categorize(dep, sub_rule_name),
+        directive: RuleDirective.infer(rule_text),
         severity: detect_severity(rule_text),
         source_type: :library_file,
         source_project_slug: dep,
@@ -209,6 +212,7 @@ defmodule Maestro.Ops.RuleParser do
           content: rule_text,
           content_hash: content_hash(rule_text),
           category: agents_categorize(sub, rule_text),
+          directive: RuleDirective.infer(rule_text),
           severity: detect_severity(rule_text),
           source_project_slug: library_name,
           source_commit: nil,
@@ -408,6 +412,7 @@ defmodule Maestro.Ops.RuleParser do
         content: rule_text,
         content_hash: content_hash(rule_text),
         category: startup_categorize(basename),
+        directive: RuleDirective.infer(rule_text),
         severity: detect_severity(rule_text),
         source_project_slug: library_name,
         source_commit: nil,
@@ -458,6 +463,7 @@ defmodule Maestro.Ops.RuleParser do
             content: body,
             content_hash: content_hash(body),
             category: memory_categorize(type),
+            directive: RuleDirective.infer(body),
             severity: memory_severity(type),
             source_project_slug: library_name,
             source_commit: nil,

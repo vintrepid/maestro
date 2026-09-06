@@ -16,7 +16,7 @@ defmodule Maestro.Ops.Rules.Curator do
   The mix task `mix maestro.rules.curate` is a thin shell that calls `run/1`.
   """
 
-  alias Maestro.Ops.{Rule, Library, RuleSource, RuleParser, Skill}
+  alias Maestro.Ops.{Rule, Library, RuleDirective, RuleSource, RuleParser, Skill}
   alias Maestro.Ops.Rules.{Triage, LintExtractor, SkillParser, Dedup, Coverage, Quality}
 
   @curate_outputs ~w(RULES.md rules.json)
@@ -581,8 +581,13 @@ defmodule Maestro.Ops.Rules.Curator do
           always = Enum.filter(cat_rules, &(&1.severity == :must))
           should = Enum.filter(cat_rules, &(&1.severity != :must))
           header = ["## #{category |> to_string() |> String.capitalize()}", ""]
-          always_lines = Enum.map(always, fn r -> "**ALWAYS** #{r.content}" end)
-          should_lines = Enum.map(should, fn r -> "- #{r.content}" end)
+
+          always_lines =
+            Enum.map(always, &RuleDirective.markdown_line(&1.content, &1.directive, &1.severity))
+
+          should_lines =
+            Enum.map(should, &RuleDirective.markdown_line(&1.content, &1.directive, &1.severity))
+
           header ++ always_lines ++ should_lines ++ [""]
         end)
 
@@ -593,7 +598,13 @@ defmodule Maestro.Ops.Rules.Curator do
   defp write_rules_json(rules) do
     json_rules =
       Enum.map(rules, fn r ->
-        base = %{id: r.id, content: r.content, category: r.category, severity: r.severity}
+        base = %{
+          id: r.id,
+          content: r.content,
+          category: r.category,
+          directive: r.directive,
+          severity: r.severity
+        }
 
         if r.fix_type do
           Map.merge(base, %{

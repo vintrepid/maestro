@@ -37,6 +37,8 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
   use Mix.Task
   @shortdoc "Generate CLAUDE.md from approved rules"
 
+  alias Maestro.Ops.RuleDirective
+
   @spec run([String.t()]) :: :ok
   def run(args) do
     Mix.Task.run("app.start")
@@ -104,10 +106,10 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
         rule_lines =
           cat_rules
           |> Enum.map(fn rule ->
-            prefix = severity_prefix(rule.severity)
-            content = normalize_content(rule.content)
             proposed = if rule.status == :proposed, do: " [PROPOSED]", else: ""
-            "#{prefix} #{content}#{proposed}"
+
+            RuleDirective.markdown_line(rule.content, rule.directive, rule.severity) <>
+              proposed
           end)
           |> Enum.join("\n\n")
 
@@ -221,20 +223,6 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
     fix dies with this session.
     """
   end
-
-  # Strip leading severity markers from rule content — the prefix provides them
-  defp normalize_content(content) do
-    content
-    |> String.replace(~r/^\*\*(Always|Never|ALWAYS|NEVER)\*\*\s*/i, "")
-    |> String.replace(~r/^-\s*\*\*(Always|Never|Prefer|Avoid)\*\*\s*/i, "")
-    |> String.replace(~r/^-\s+/, "")
-    |> String.replace(~r/^(ALWAYS|NEVER)\s+/i, "")
-    |> String.trim()
-  end
-
-  defp severity_prefix(:must), do: "**ALWAYS**"
-  defp severity_prefix(:should), do: "-"
-  defp severity_prefix(:prefer), do: "- Prefer:"
 
   defp format_category(cat) do
     cat

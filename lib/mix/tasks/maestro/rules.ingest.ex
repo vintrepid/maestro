@@ -163,6 +163,7 @@ defmodule Mix.Tasks.Maestro.Rules.Ingest do
       %{
         content: rule_text,
         category: category,
+        directive: Maestro.Ops.RuleDirective.infer(rule_text),
         severity: detect_severity(rule_text),
         source_project_slug: dep,
         source_commit: if(version, do: "v#{version}", else: nil),

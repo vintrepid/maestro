@@ -485,7 +485,7 @@ defmodule Maestro.Ops.Rule.Facade do
 
   @doc """
   Returns tag counts via raw SQL (unnesting the tags array column).
-  Accepts an optional filters map with keys "status", "category", "severity".
+  Accepts an optional filters map with keys "status", "category", "directive", "severity".
   """
   @spec tag_cloud(map()) :: [{String.t(), non_neg_integer()}]
   def tag_cloud(filters \\ %{}) do
@@ -514,7 +514,7 @@ defmodule Maestro.Ops.Rule.Facade do
   @spec extract_cinder_filters(map()) :: map()
   def extract_cinder_filters(params) do
     params
-    |> Enum.filter(fn {k, _v} -> k in ~w(status category severity source_type) end)
+    |> Enum.filter(fn {k, _v} -> k in ~w(status category directive severity source_type) end)
     |> Map.new()
   end
 
@@ -573,12 +573,13 @@ defmodule Maestro.Ops.Rule.Facade do
   Consolidates a cluster by creating a new "god rule" with synthesized content,
   then supersedes ALL rules in the cluster (including the old canonical) under it.
 
-  The new rule inherits category, severity, and tags from the cluster.
+  The new rule inherits category, directive, severity, and tags from the cluster.
   Returns `{:ok, god_rule, superseded_count}`.
   """
   @spec consolidate_cluster(String.t(), map(), keyword()) :: {:ok, map(), non_neg_integer()}
   def consolidate_cluster(content, cluster, opts \\ []) do
     category = Keyword.get(opts, :category, cluster.canonical.category)
+    directive = Keyword.get(opts, :directive, cluster.canonical.directive)
     severity = Keyword.get(opts, :severity, cluster.canonical.severity || :should)
 
     # Merge tags from all rules in the cluster
@@ -591,6 +592,7 @@ defmodule Maestro.Ops.Rule.Facade do
         %{
           content: content,
           category: category,
+          directive: directive,
           severity: severity,
           tags: merged_tags,
           source_type: :consolidated,
@@ -781,6 +783,12 @@ defmodule Maestro.Ops.Rule.Facade do
       case Map.get(filters, "category") do
         nil -> {conditions, params, idx}
         category -> {conditions ++ ["category = $#{idx}"], params ++ [category], idx + 1}
+      end
+
+    {conditions, params, idx} =
+      case Map.get(filters, "directive") do
+        nil -> {conditions, params, idx}
+        directive -> {conditions ++ ["directive = $#{idx}"], params ++ [directive], idx + 1}
       end
 
     {conditions, params, _idx} =

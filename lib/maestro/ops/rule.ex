@@ -75,6 +75,7 @@ defmodule Maestro.Ops.Rule do
         :content,
         :content_hash,
         :category,
+        :directive,
         :severity,
         :source_project_slug,
         :source_commit,
@@ -88,6 +89,7 @@ defmodule Maestro.Ops.Rule do
       ]
 
       change set_attribute(:status, :proposed)
+      change Maestro.Ops.Rule.Changes.InferDirective
       change Maestro.Ops.Rule.Changes.ComputeContentHash
     end
 
@@ -96,6 +98,7 @@ defmodule Maestro.Ops.Rule do
         :content,
         :content_hash,
         :category,
+        :directive,
         :severity,
         :source_project_slug,
         :source_commit,
@@ -109,6 +112,7 @@ defmodule Maestro.Ops.Rule do
       ]
 
       change set_attribute(:status, :proposed)
+      change Maestro.Ops.Rule.Changes.InferDirective
       change Maestro.Ops.Rule.Changes.ComputeContentHash
     end
 
@@ -118,6 +122,7 @@ defmodule Maestro.Ops.Rule do
       accept [
         :content,
         :category,
+        :directive,
         :severity,
         :source_project_slug,
         :source_commit,
@@ -269,6 +274,13 @@ defmodule Maestro.Ops.Rule do
       default :should
       public? true
       description "How strongly this rule is enforced"
+    end
+
+    attribute :directive, :atom do
+      constraints one_of: [:require, :forbid, :prefer]
+      allow_nil? false
+      public? true
+      description "Whether the rule requires, forbids, or prefers its behavior"
     end
 
     attribute :status, :atom do
