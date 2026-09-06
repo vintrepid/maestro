@@ -15,7 +15,7 @@ defmodule Maestro.Ops.RuleDirective do
   @type severity :: :must | :should | :prefer
 
   @leading_bullet ~r/^\s*-\s*/u
-  @leading_marker ~r/^(?<opening>\*\*)?(?<marker>you\s+are\s+forbidden\s+(?:from|to)|must\s+not|should\s+not|do\s+not|don't|always|never|must|should|prefer|avoid|forbidden)(?<closing>\*\*)?(?:\s*:\s*|\s+)(?<content>.*)$/isu
+  @leading_marker ~r/^(?<opening>\*\*)?(?<marker>you\s+are\s+forbidden\s+(?:from|to)|must\s+not|should\s+not|prefer\s+not|do\s+not|don't|always|never|must|should|prefer|avoid|forbidden)(?<closing>\*\*)?(?:\s*:\s*|\s+)(?<content>.*)$/isu
 
   @doc """
   Infers direction only from an explicit leading instruction marker.

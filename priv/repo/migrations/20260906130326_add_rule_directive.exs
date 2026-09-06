@@ -17,7 +17,7 @@ defmodule Maestro.Repo.Migrations.AddRuleDirective do
     execute """
     UPDATE rules
     SET directive = CASE
-      WHEN content ~* '^[[:space:]]*(-[[:space:]]*)?(\\*\\*)?[[:space:]]*(never|avoid|must[[:space:]]+not|should[[:space:]]+not|do[[:space:]]+not|don''t|you[[:space:]]+are[[:space:]]+forbidden|forbidden)(\\*\\*)?([[:space:]]*:|[[:space:]])'
+      WHEN content ~* '^[[:space:]]*(-[[:space:]]*)?(\\*\\*)?[[:space:]]*(never|avoid|must[[:space:]]+not|should[[:space:]]+not|prefer[[:space:]]+not|do[[:space:]]+not|don''t|you[[:space:]]+are[[:space:]]+forbidden|forbidden)(\\*\\*)?([[:space:]]*:|[[:space:]])'
         THEN 'forbid'
       WHEN content ~* '^[[:space:]]*(-[[:space:]]*)?(\\*\\*)?[[:space:]]*prefer(\\*\\*)?([[:space:]]*:|[[:space:]])'
         THEN 'prefer'
@@ -43,11 +43,11 @@ defmodule Maestro.Repo.Migrations.AddRuleDirective do
         without_bullet,
         regexp_replace(
           without_bullet,
-          '^(\\*\\*)?(you[[:space:]]+are[[:space:]]+forbidden[[:space:]]+(from|to)|must[[:space:]]+not|should[[:space:]]+not|do[[:space:]]+not|don''t|always|never|must|should|prefer|avoid|forbidden)(\\*\\*)?([[:space:]]*:[[:space:]]*|[[:space:]]+)',
+          '^(\\*\\*)?(you[[:space:]]+are[[:space:]]+forbidden[[:space:]]+(from|to)|must[[:space:]]+not|should[[:space:]]+not|prefer[[:space:]]+not|do[[:space:]]+not|don''t|always|never|must|should|prefer|avoid|forbidden)(\\*\\*)?([[:space:]]*:[[:space:]]*|[[:space:]]+)',
           '',
           'i'
         ) AS normalized_content,
-        without_bullet ~* '^\\*\\*(you[[:space:]]+are[[:space:]]+forbidden[[:space:]]+(from|to)|must[[:space:]]+not|should[[:space:]]+not|do[[:space:]]+not|don''t|always|never|must|should|prefer|avoid|forbidden)([[:space:]]*:|[[:space:]])' AS whole_bold_marker
+        without_bullet ~* '^\\*\\*(you[[:space:]]+are[[:space:]]+forbidden[[:space:]]+(from|to)|must[[:space:]]+not|should[[:space:]]+not|prefer[[:space:]]+not|do[[:space:]]+not|don''t|always|never|must|should|prefer|avoid|forbidden)([[:space:]]*:|[[:space:]])' AS whole_bold_marker
       FROM source
     ), normalized AS (
       SELECT

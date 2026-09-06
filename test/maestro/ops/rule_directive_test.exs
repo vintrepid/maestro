@@ -40,7 +40,8 @@ defmodule Maestro.Ops.RuleDirectiveTest do
         {"**Always** validate generated code", :require, :must,
          "**ALWAYS** validate generated code"},
         {"- Prefer: platform primitives", :prefer, :prefer, "- Prefer: platform primitives"},
-        {"Avoid raw database access", :forbid, :should, "- Avoid: raw database access"}
+        {"Avoid raw database access", :forbid, :should, "- Avoid: raw database access"},
+        {"Avoid page-specific styles", :forbid, :prefer, "- Prefer not: page-specific styles"}
       ]
 
       for {source, directive, severity, expected} <- examples do

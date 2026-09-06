@@ -338,7 +338,7 @@ defmodule Maestro.Ops.Rule do
 
     attribute :content_hash, :string do
       public? true
-      description "SHA256 of normalized content for deduplication"
+      description "SHA256 of normalized directive and content for deduplication"
     end
 
     attribute :superseded_by_id, :uuid do
