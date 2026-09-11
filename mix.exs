@@ -5,7 +5,7 @@ defmodule Maestro.MixProject do
     [
       app: :maestro,
       version: "0.1.0",
-      elixir: "~> 1.15",
+      elixir: "~> 1.20",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -13,7 +13,29 @@ defmodule Maestro.MixProject do
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
       listeners: [Phoenix.CodeReloader],
       consolidate_protocols: Mix.env() != :dev,
-      usage_rules: usage_rules()
+      usage_rules: usage_rules(),
+      maestro: [
+        dependency_tags: dependency_tags(),
+        pre_deploy: ["maestro.lint --run --baseline .maestro-lint-baseline.json lib", "test"]
+      ]
+    ]
+  end
+
+  defp dependency_tags do
+    [
+      ash: [:foundation, :data],
+      ash_postgres: [:data],
+      phoenix: [:foundation, :ui],
+      phoenix_live_view: [:foundation, :ui],
+      cinder: [:foundation, :ui],
+      oban: [:foundation, :workflow],
+      maestro_tool: [:foundation, :tooling],
+      css_linter: [:tooling],
+      usage_rules: [:tooling, :guidance],
+      igniter: [:tooling],
+      sourceror: [:tooling],
+      tidewave: [:tooling],
+      live_debugger: [:tooling]
     ]
   end
 
@@ -77,7 +99,7 @@ defmodule Maestro.MixProject do
     [
       {:open_api_spex, "~> 3.0"},
       {:ash_json_api, "~> 1.0"},
-      {:maestro_tool, path: "../forks/maestro_tool"},
+      {:maestro_tool, path: maestro_tool_path()},
       {:css_linter, path: "../forks/css_linter"},
       {:fun_with_flags, "~> 1.11"},
       {:fun_with_flags_ui, "~> 1.0"},
@@ -125,7 +147,7 @@ defmodule Maestro.MixProject do
        compile: false,
        depth: 1},
       {:swoosh, "~> 1.16"},
-      {:earmark, "~> 1.4"},
+      {:mdex, "~> 0.13.5"},
       {:req, "~> 0.5"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
@@ -135,6 +157,10 @@ defmodule Maestro.MixProject do
       {:bandit, "~> 1.5"},
       {:slugify, "~> 1.3"}
     ]
+  end
+
+  defp maestro_tool_path do
+    System.get_env("MAESTRO_TOOL_PATH") || "vendor/maestro_tool"
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
@@ -156,7 +182,13 @@ defmodule Maestro.MixProject do
         "esbuild maestro --minify",
         "phx.digest"
       ],
-      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
+      precommit: [
+        "compile --warnings-as-errors",
+        "deps.unlock --unused",
+        "format",
+        "maestro.lint --run --baseline .maestro-lint-baseline.json lib",
+        "test"
+      ]
     ]
   end
 end

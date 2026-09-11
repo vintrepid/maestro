@@ -86,10 +86,12 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
         {:noreply, socket}
 
       session ->
-        db_session = case Ash.get(Maestro.Agents.Session, session.id, authorize?: false) do
-          {:ok, val} -> val
-          {:error, _} -> nil
-        end
+        db_session =
+          case Ash.get(Maestro.Agents.Session, session.id, authorize?: false) do
+            {:ok, val} -> val
+            {:error, _} -> nil
+          end
+
         Maestro.Agents.Logger.end_session(db_session)
         {:noreply, socket}
     end
@@ -101,14 +103,18 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
         {:noreply, socket}
 
       session ->
-        agent = case Ash.get(Maestro.Agents.Agent, session.agent_id, authorize?: false) do
-          {:ok, val} -> val
-          {:error, _} -> nil
-        end
-        db_session = case Ash.get(Maestro.Agents.Session, session.id, authorize?: false) do
-          {:ok, val} -> val
-          {:error, _} -> nil
-        end
+        agent =
+          case Ash.get(Maestro.Agents.Agent, session.agent_id, authorize?: false) do
+            {:ok, val} -> val
+            {:error, _} -> nil
+          end
+
+        db_session =
+          case Ash.get(Maestro.Agents.Session, session.id, authorize?: false) do
+            {:ok, val} -> val
+            {:error, _} -> nil
+          end
+
         Maestro.Agents.Logger.log_request(agent, db_session, :agent_response, milestone)
         {:noreply, assign(socket, task_input: "")}
     end
@@ -272,7 +278,7 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
                 <p class="text-xs opacity-50 mb-2">{@session_date}</p>
                 <%= if @task.description do %>
                   <div class="prose prose-sm max-w-none compact-prose max-h-48 overflow-y-auto text-xs">
-                    {raw(Earmark.as_html!(@task.description))}
+                    {MaestroWeb.Markdown.render(@task.description)}
                   </div>
                 <% end %>
                 <%= if @task.status == "in_progress" do %>
