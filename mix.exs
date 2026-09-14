@@ -99,7 +99,10 @@ defmodule Maestro.MixProject do
     [
       {:open_api_spex, "~> 3.0"},
       {:ash_json_api, "~> 1.0"},
-      {:maestro_tool, path: maestro_tool_path(), env: Mix.env(), runtime: false},
+      {:maestro_tool,
+       path: maestro_tool_path(),
+       env: if(Mix.env() == :dev, do: :dev, else: :prod),
+       runtime: false},
       {:css_linter,
        github: "vintrepid/css_linter", ref: "fcd770df9c4a52c51e94ea720edbd31be6870b40"},
       {:fun_with_flags, "~> 1.11"},
