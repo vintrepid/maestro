@@ -1,6 +1,8 @@
 import Config
 config :ash, policies: [show_policy_breakdowns?: true]
 
+web_port = String.to_integer(System.get_env("PORT") || "4004")
+
 # Configure your database
 config :maestro, Maestro.Repo,
   username: "vince",
@@ -20,7 +22,7 @@ config :maestro, Maestro.Repo,
 config :maestro, MaestroWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PORT") || "4004")],
+  http: [ip: {127, 0, 0, 1}, port: web_port],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
@@ -90,4 +92,5 @@ config :swoosh, :api_client, false
 
 config :live_debugger,
   enabled: true,
-  port: String.to_integer(System.get_env("LIVE_DEBUGGER_PORT") || "4012")
+  port: web_port + 1,
+  auto_port: true

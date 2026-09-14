@@ -5,7 +5,7 @@ defmodule Maestro.MixProject do
     [
       app: :maestro,
       version: "0.1.0",
-      elixir: "~> 1.15",
+      elixir: "~> 1.20",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -13,7 +13,29 @@ defmodule Maestro.MixProject do
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
       listeners: [Phoenix.CodeReloader],
       consolidate_protocols: Mix.env() != :dev,
-      usage_rules: usage_rules()
+      usage_rules: usage_rules(),
+      maestro: [
+        dependency_tags: dependency_tags(),
+        pre_deploy: ["maestro.lint --run --baseline .maestro-lint-baseline.json lib", "test"]
+      ]
+    ]
+  end
+
+  defp dependency_tags do
+    [
+      ash: [:foundation, :data],
+      ash_postgres: [:data],
+      phoenix: [:foundation, :ui],
+      phoenix_live_view: [:foundation, :ui],
+      cinder: [:foundation, :ui],
+      oban: [:foundation, :workflow],
+      maestro_tool: [:foundation, :tooling],
+      css_linter: [:tooling],
+      usage_rules: [:tooling, :guidance],
+      igniter: [:tooling],
+      sourceror: [:tooling],
+      tidewave: [:tooling],
+      live_debugger: [:tooling]
     ]
   end
 
@@ -77,38 +99,50 @@ defmodule Maestro.MixProject do
     [
       {:open_api_spex, "~> 3.0"},
       {:ash_json_api, "~> 1.0"},
-      {:maestro_tool, path: "../forks/maestro_tool"},
-      {:css_linter, path: "../forks/css_linter"},
+      {:maestro_tool,
+       path: maestro_tool_path(),
+       env: if(Mix.env() == :dev, do: :dev, else: :prod),
+       runtime: false},
+      {:css_linter,
+       github: "vintrepid/css_linter", ref: "fcd770df9c4a52c51e94ea720edbd31be6870b40"},
       {:fun_with_flags, "~> 1.11"},
       {:fun_with_flags_ui, "~> 1.0"},
-      {:cinder, path: "../forks/cinder", override: true},
-      {:ex_money_sql, "~> 1.0"},
+      {:cinder,
+       github: "vintrepid/cinder", ref: "a48ad76ee217c47f0742778965334b168439c7b8", override: true},
+      {:ex_money_sql, "~> 2.1"},
       {:ex_cldr, "~> 2.0"},
       {:picosat_elixir, "~> 0.2"},
       {:sourceror, "~> 1.8"},
       {:oban, "~> 2.0"},
-      {:usage_rules, "~> 1.2", only: [:dev]},
-      {:ash_cloak, "~> 0.1"},
+      {:usage_rules, "~> 1.2.8", only: [:dev]},
+      {:ash_cloak, "~> 0.4"},
       {:cloak, "~> 1.0"},
-      {:ash_ai, "~> 0.5"},
-      {:ash_paper_trail, "~> 0.5"},
+      {:ash_ai, "~> 1.0"},
+      {:ash_paper_trail, "~> 0.7"},
       {:tidewave, "~> 0.5", only: [:dev]},
       {:live_debugger, "~> 0.4", only: [:dev]},
       {:ash_archival, "~> 2.0"},
-      {:ash_money, "~> 0.2"},
+      {:ash_money, "~> 0.2.6"},
       {:oban_web, "~> 2.0"},
       {:ash_oban, "~> 0.7"},
-      {:ash_admin, "~> 0.13"},
-      {:ash_authentication_phoenix, "~> 2.0"},
-      {:ash_authentication, "~> 4.0"},
-      {:ash_postgres, "~> 2.0"},
-      {:ash_phoenix, "~> 2.0"},
-      {:ash, "~> 3.0"},
-      {:igniter, "~> 0.6"},
-      {:phoenix, "~> 1.8"},
+      {:ash_admin, "~> 1.3"},
+      {:ash_authentication_phoenix, "~> 2.17"},
+      {:ash_authentication,
+       github: "vintrepid/ash_authentication",
+       ref: "f39c0add31582ba158b3097ad4998827ab3bc1b1",
+       override: true},
+      {:ash_postgres, "~> 2.13"},
+      {:ash_phoenix, "~> 2.3"},
+      {:ash,
+       github: "vintrepid/ash_lotus_core",
+       ref: "fc4185358a25b3e84b10eceb4f98666532701116",
+       override: true},
+      {:igniter, "~> 0.8.4", override: true},
+      {:phoenix, "== 1.8.13"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
-      {:postgrex, ">= 0.0.0"},
+      {:postgrex, ">= 0.22.0 and < 1.0.0"},
+      {:decimal, ">= 3.0.0 and < 4.0.0"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.1"},
@@ -124,8 +158,8 @@ defmodule Maestro.MixProject do
        app: false,
        compile: false,
        depth: 1},
-      {:swoosh, "~> 1.16"},
-      {:earmark, "~> 1.4"},
+      {:swoosh, "~> 1.28"},
+      {:mdex, "~> 0.13.5"},
       {:req, "~> 0.5"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
@@ -135,6 +169,10 @@ defmodule Maestro.MixProject do
       {:bandit, "~> 1.5"},
       {:slugify, "~> 1.3"}
     ]
+  end
+
+  defp maestro_tool_path do
+    System.get_env("MAESTRO_TOOL_PATH") || "vendor/maestro_tool"
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
@@ -156,7 +194,13 @@ defmodule Maestro.MixProject do
         "esbuild maestro --minify",
         "phx.digest"
       ],
-      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
+      precommit: [
+        "compile --warnings-as-errors",
+        "deps.unlock --unused",
+        "format",
+        "maestro.lint --run --baseline .maestro-lint-baseline.json lib",
+        "test"
+      ]
     ]
   end
 end

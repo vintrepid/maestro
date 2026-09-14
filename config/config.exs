@@ -26,6 +26,7 @@ config :maestro, Oban,
   plugins: [{Oban.Plugins.Cron, []}]
 
 config :ash,
+  default_string_length_count: :codepoints,
   allow_forbidden_field_for_relationships_by_default?: true,
   include_embedded_source_by_default?: false,
   show_keysets_for_all_actions?: false,
@@ -92,7 +93,9 @@ config :maestro,
   generators: [timestamp_type: :utc_datetime],
   ash_domains: [Maestro.Accounts, Maestro.Ops, Maestro.Agents],
   editor_command: "codium",
-  current_app: "Maestro"
+  current_app: "Maestro",
+  developer_emails: :all,
+  mailer_from: [name: "dab hand", email: "hello@dabhand.fyi"]
 
 config :css_linter,
   repo: Maestro.Repo,

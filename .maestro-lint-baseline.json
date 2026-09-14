@@ -1,0 +1,1337 @@
+{
+  "version": 1,
+  "violations": [
+    {
+      "check": "ash_non_null_string",
+      "count": 2,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/agents/agent.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "subscribe/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/agents/pub_sub.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "topic/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/agents/pub_sub.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 1,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/agents/request.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 1,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/agents/session.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "changeset/2 @spec is all term() — needs real types.",
+      "path": "lib/maestro/analysis/tailwind_class_usage.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "config_change/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro/application.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "active_session/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/agent_dashboard.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "all_files/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/agent_dashboard.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "changed_files/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/agent_dashboard.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "current_task/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/agent_dashboard.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "latest_session/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/agent_dashboard.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "untracked_files/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/agent_dashboard.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 3,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/ops/agent_session.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "get_current_project/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/app_state.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "get_current_task/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/app_state.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 1,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/ops/audit.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "category_summary/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "deep_audit_available?/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "diff_audits/2 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "fetch_module_dag/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "find_result/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "fix_all/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "result_exists?/2 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "results_query/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "run_audit/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "subscribe/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "notify/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro/ops/audit_pub_sub.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "topic/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit_pub_sub.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 1,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/ops/audit_result.ex"
+    },
+    {
+      "check": "bare_rescue",
+      "count": 1,
+      "message": "Broad rescue without exception type. Use `rescue e in [SpecificError] ->`.",
+      "path": "lib/maestro/ops/audit_runner.ex"
+    },
+    {
+      "check": "bare_rescue",
+      "count": 1,
+      "message": "Log-and-continue anti-pattern in rescue. Either re-raise, return {:error, reason}, or let it crash.",
+      "path": "lib/maestro/ops/audit_runner.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "deep_audit_available?/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit_runner.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "fetch_module_dag/2 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit_runner.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "run/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/audit_runner.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 2,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/ops/library.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 3,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/ops/project.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 11,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/ops/rule.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "change/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro/ops/rule/changes/compute_content_hash.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "bundle_options/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rule/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "category_options/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rule/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "source_type_options/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rule/facade.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "status_options/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rule/facade.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 3,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/ops/rule/fix_config.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 3,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/ops/rule/lint_config.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 2,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/ops/rule_source.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "generate_all/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/bundler.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "by_library/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/coverage.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "skills/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/coverage.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "totals/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/coverage.ex"
+    },
+    {
+      "check": "bare_rescue",
+      "count": 1,
+      "message": "Broad rescue without exception type. Use `rescue e in [SpecificError] ->`.",
+      "path": "lib/maestro/ops/rules/curator.ex"
+    },
+    {
+      "check": "single_value_pipe",
+      "count": 1,
+      "message": "Single-value pipe — use direct function call instead.",
+      "path": "lib/maestro/ops/rules/curator.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "near_duplicate?/3 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/dedup.ex"
+    },
+    {
+      "check": "bare_rescue",
+      "count": 1,
+      "message": "Broad rescue without exception type. Use `rescue e in [SpecificError] ->`.",
+      "path": "lib/maestro/ops/rules/fixer.ex"
+    },
+    {
+      "check": "bare_rescue",
+      "count": 1,
+      "message": "Log-and-continue anti-pattern in rescue. Either re-raise, return {:error, reason}, or let it crash.",
+      "path": "lib/maestro/ops/rules/fixer.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "available?/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/giulia_client.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "fetch_categories/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/giulia_client.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "fetch_conventions/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/giulia_client.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "fetch_dependencies/2 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/giulia_client.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "fetch_dependents/2 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/giulia_client.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "fetch_skills/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/giulia_client.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "search_skills/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/giulia_client.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "ast_contains_module?/2 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/parsed_file.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "ast_has_def?/2 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/parsed_file.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "heex_contains?/2 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/parsed_file.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "heex_has_tag?/2 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/parsed_file.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "parse/2 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/parsed_file.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "auto_assign_all/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/prioritizer.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "audit_rules/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/quality.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "passes_quality?/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/quality.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "summarize/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/rules/quality.ex"
+    },
+    {
+      "check": "bare_rescue",
+      "count": 1,
+      "message": "Broad rescue without exception type. Use `rescue e in [SpecificError] ->`.",
+      "path": "lib/maestro/ops/rules/site_audit.ex"
+    },
+    {
+      "check": "bare_rescue",
+      "count": 1,
+      "message": "Log-and-continue anti-pattern in rescue. Either re-raise, return {:error, reason}, or let it crash.",
+      "path": "lib/maestro/ops/rules/site_audit.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 3,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/ops/skill.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 2,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/ops/task.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "calculate/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro/ops/task/display_name.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "load/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro/ops/task/display_name.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "notify/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro/ops/task_pub_sub.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "topic/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro/ops/task_pub_sub.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "installed_extensions/0 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro/repo.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "min_pg_version/0 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro/repo.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "prefer_transaction?/0 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro/repo.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 6,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/resources/resource.ex"
+    },
+    {
+      "check": "ash_non_null_string",
+      "count": 2,
+      "message": "Ash string attributes must explicitly declare allow_nil? true or false.",
+      "path": "lib/maestro/resources/tag.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "channel/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "controller/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "html/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "live_component/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "live_view/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "router/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "static_paths/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "verified_routes/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web.ex"
+    },
+    {
+      "check": "missing_moduledoc",
+      "count": 1,
+      "message": "MaestroWeb.AshJsonApiRouter has no @moduledoc.",
+      "path": "lib/maestro_web/ash_json_api_router.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_async/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/components/agent_dashboard_component.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/components/agent_dashboard_component.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/components/agent_dashboard_component.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/components/agent_dashboard_component.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "update/2 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/components/agent_dashboard_component.ex"
+    },
+    {
+      "check": "pubsub_handle_info",
+      "count": 1,
+      "message": "Module subscribes to PubSub but handle_info may not match PubSub messages. Add a clause for {ResourcePubSub, _, _, _} or a catch-all.",
+      "path": "lib/maestro_web/components/agent_dashboard_component.ex"
+    },
+    {
+      "check": "web_time_display",
+      "count": 3,
+      "message": "Direct timestamp formatting in web code bypasses Calvin.TimeDisplay.",
+      "path": "lib/maestro_web/components/agent_dashboard_component.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "translate_errors/2 has no @spec.",
+      "path": "lib/maestro_web/components/core_components.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "get_commits_ahead_of_master/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/git_widget.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "get_commits_behind_master/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/git_widget.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "get_current_branch/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/git_widget.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "get_other_branches_ahead/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/git_widget.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/components/giulia_skills_catalog.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/components/giulia_skills_catalog.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/components/giulia_skills_catalog.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "update/2 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/components/giulia_skills_catalog.ex"
+    },
+    {
+      "check": "form_usage",
+      "count": 2,
+      "message": "Uses raw <input> instead of <.input> component.",
+      "path": "lib/maestro_web/components/guidelines_viewer.ex"
+    },
+    {
+      "check": "bare_rescue",
+      "count": 1,
+      "message": "Bare rescue catches everything silently. Specify the exception type.",
+      "path": "lib/maestro_web/components/layouts.ex"
+    },
+    {
+      "check": "form_usage",
+      "count": 1,
+      "message": "Uses raw <input> instead of <.input> component.",
+      "path": "lib/maestro_web/components/layouts.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "admin_menu/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/layouts.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "app/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/layouts.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "flash_group/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/layouts.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "git_dropdown/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/layouts.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "theme_selector/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/layouts.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "user_menu/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/layouts.ex"
+    },
+    {
+      "check": "heex_anti_patterns",
+      "count": 1,
+      "message": "Avoid inline <script> tags in HEEx — use Phoenix hooks instead.",
+      "path": "lib/maestro_web/components/layouts/root.html.heex"
+    },
+    {
+      "check": "web_time_display",
+      "count": 1,
+      "message": "Direct timestamp formatting in web code bypasses Calvin.TimeDisplay.",
+      "path": "lib/maestro_web/components/resource_table.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "rule_editor/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/rule_editor.ex"
+    },
+    {
+      "check": "form_usage",
+      "count": 1,
+      "message": "<form> missing for= attribute.",
+      "path": "lib/maestro_web/components/rules_curation_table.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "rules_table/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/rules_curation_table.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "rules_stats/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/components/rules_stats_component.ex"
+    },
+    {
+      "check": "bare_rescue",
+      "count": 3,
+      "message": "Broad rescue without exception type. Use `rescue e in [SpecificError] ->`.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "blur_event_context",
+      "count": 3,
+      "message": "<textarea> phx-blur must carry stable phx-value-* context or declare data-maestro-blur-safe.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "form_usage",
+      "count": 1,
+      "message": "<form> missing for= attribute.",
+      "path": "lib/maestro_web/live/admin_live/page_inventory_live.ex"
+    },
+    {
+      "check": "form_usage",
+      "count": 1,
+      "message": "Uses raw <input> instead of <.input> component.",
+      "path": "lib/maestro_web/live/admin_live/page_inventory_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/page_inventory_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/page_inventory_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/page_inventory_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/page_inventory_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "fields/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "filters/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "list_class_usage/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "table_options/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "web_time_display",
+      "count": 2,
+      "message": "Direct timestamp formatting in web code bypasses Calvin.TimeDisplay.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "blur_event_context",
+      "count": 1,
+      "message": "<textarea> phx-blur must carry stable phx-value-* context or declare data-maestro-blur-safe.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "form_usage",
+      "count": 1,
+      "message": "<form> missing for= attribute.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "form_usage",
+      "count": 4,
+      "message": "Uses raw <input> instead of <.input> component.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "form_usage",
+      "count": 1,
+      "message": "<form> missing for= attribute.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "form_usage",
+      "count": 1,
+      "message": "Uses raw <input> instead of <.input> component.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "update/2 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "open_file/1 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/live/helpers/file_opener.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "blur_event_context",
+      "count": 1,
+      "message": "<textarea> phx-blur must carry stable phx-value-* context or declare data-maestro-blur-safe.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/profile_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/profile_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/profile_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/profile_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/project_form_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/project_form_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/project_form_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/project_form_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "web_time_display",
+      "count": 1,
+      "message": "Direct timestamp formatting in web code bypasses Calvin.TimeDisplay.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "web_time_display",
+      "count": 1,
+      "message": "Direct timestamp formatting in web code bypasses Calvin.TimeDisplay.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_event/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "handle_params/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "mount/3 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "web_time_display",
+      "count": 1,
+      "message": "Direct timestamp formatting in web code bypasses Calvin.TimeDisplay.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "web_time_display",
+      "count": 1,
+      "message": "Direct timestamp formatting in web code bypasses Calvin.TimeDisplay.",
+      "path": "lib/maestro_web/live/tasks_live.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/markdown.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "metrics/0 @spec is all term() — needs real types.",
+      "path": "lib/maestro_web/telemetry.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "igniter/1 is a callback — @spec is unnecessary.",
+      "path": "lib/mix/tasks/dev/open_wip.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "info/2 is a callback — @spec is unnecessary.",
+      "path": "lib/mix/tasks/dev/open_wip.ex"
+    },
+    {
+      "check": "bare_rescue",
+      "count": 1,
+      "message": "Broad rescue without exception type. Use `rescue e in [SpecificError] ->`.",
+      "path": "lib/mix/tasks/maestro/agent.run.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "run/1 is a callback — @spec is unnecessary.",
+      "path": "lib/mix/tasks/maestro/agent.run.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "run/1 is a callback — @spec is unnecessary.",
+      "path": "lib/mix/tasks/maestro/agent.session.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "run/1 is a callback — @spec is unnecessary.",
+      "path": "lib/mix/tasks/maestro/audit.fix.ex"
+    },
+    {
+      "check": "bare_rescue",
+      "count": 1,
+      "message": "Bare rescue catches everything silently. Specify the exception type.",
+      "path": "lib/mix/tasks/maestro/handoff.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "run/1 is a callback — @spec is unnecessary.",
+      "path": "lib/mix/tasks/maestro/map.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "run/1 is a callback — @spec is unnecessary.",
+      "path": "lib/mix/tasks/maestro/rules.export.ex"
+    },
+    {
+      "check": "single_value_pipe",
+      "count": 3,
+      "message": "Single-value pipe — use direct function call instead.",
+      "path": "lib/mix/tasks/maestro/rules.inspect.ex"
+    },
+    {
+      "check": "string_to_atom",
+      "count": 2,
+      "message": "String.to_atom/1 is unsafe (atom table not GC'd). Use String.to_existing_atom/1.",
+      "path": "lib/mix/tasks/maestro/rules.run.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "run/1 is a callback — @spec is unnecessary.",
+      "path": "lib/mix/tasks/maestro/task.create.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "igniter/2 is a callback — @spec is unnecessary.",
+      "path": "lib/mix/tasks/project/add_guidelines.ex"
+    },
+    {
+      "check": "missing_spec",
+      "count": 1,
+      "message": "info/2 is a callback — @spec is unnecessary.",
+      "path": "lib/mix/tasks/project/add_guidelines.ex"
+    }
+  ]
+}

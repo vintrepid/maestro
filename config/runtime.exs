@@ -81,6 +81,29 @@ if config_env() == :prod do
       System.get_env("TOKEN_SIGNING_SECRET") ||
         raise("Missing environment variable `TOKEN_SIGNING_SECRET`!")
 
+  developer_emails =
+    System.get_env("MAESTRO_DEVELOPER_EMAILS", "")
+    |> String.split(",", trim: true)
+    |> Enum.map(&String.downcase(String.trim(&1)))
+    |> Enum.reject(&(&1 == ""))
+
+  config :maestro,
+    developer_emails: developer_emails,
+    mailer_from: [
+      name: System.get_env("MAIL_FROM_NAME", "dab hand"),
+      email: System.get_env("MAIL_FROM_EMAIL", "hello@dabhand.fyi")
+    ]
+
+  case System.get_env("RESEND_API_KEY") do
+    resend_api_key when resend_api_key not in [nil, ""] ->
+      config :maestro, Maestro.Mailer,
+        adapter: Swoosh.Adapters.Resend,
+        api_key: resend_api_key
+
+    _ ->
+      :ok
+  end
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

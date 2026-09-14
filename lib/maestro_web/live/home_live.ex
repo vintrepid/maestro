@@ -21,7 +21,7 @@ defmodule MaestroWeb.HomeLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
-      <div class="hero min-h-screen bg-base-200">
+      <div id="maestro-home" class="hero min-h-screen bg-base-200">
         <div class="hero-content text-center">
           <div class="max-w-2xl">
             <h1 class="text-6xl font-bold mb-8">

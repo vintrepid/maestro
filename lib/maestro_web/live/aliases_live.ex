@@ -79,7 +79,7 @@ defmodule MaestroWeb.AliasesLive do
               </div>
             <% else %>
               <div class="prose max-w-none">
-                {raw(Earmark.as_html!(@content))}
+                {MaestroWeb.Markdown.render(@content)}
               </div>
             <% end %>
           </div>

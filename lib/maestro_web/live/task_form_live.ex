@@ -306,7 +306,7 @@ defmodule MaestroWeb.TaskFormLive do
                             <.icon name="hero-pencil" class="w-3 h-3 text-base-content/40" />
                           </div>
                           <div class="prose prose-sm max-w-none compact-prose">
-                            {raw(Earmark.as_html!(@task.description))}
+                            {MaestroWeb.Markdown.render(@task.description)}
                           </div>
                         </div>
                       <% else %>
@@ -356,7 +356,7 @@ defmodule MaestroWeb.TaskFormLive do
                             <.icon name="hero-pencil" class="w-3 h-3 text-base-content/40" />
                           </div>
                           <div class="prose prose-sm max-w-none compact-prose">
-                            {raw(Earmark.as_html!(@task.notes))}
+                            {MaestroWeb.Markdown.render(@task.notes)}
                           </div>
                         </div>
                       <% else %>
@@ -447,7 +447,7 @@ defmodule MaestroWeb.TaskFormLive do
                         <div class="text-xs text-base-content/60 font-semibold">Notes</div>
                         <.icon name="hero-pencil" class="w-3 h-3 text-base-content/40" />
                       </div>
-                      {raw(Earmark.as_html!(@task.notes))}
+                      {MaestroWeb.Markdown.render(@task.notes)}
                     </div>
                   <% else %>
                     <button

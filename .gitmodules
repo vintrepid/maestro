@@ -1,0 +1,4 @@
+[submodule "vendor/maestro_tool"]
+	path = vendor/maestro_tool
+	url = https://github.com/vintrepid/maestro_tool.git
+	branch = master
