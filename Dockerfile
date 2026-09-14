@@ -27,6 +27,7 @@ COPY config/config.exs config/${MIX_ENV}.exs config/
 RUN mix deps.compile
 
 COPY assets assets
+RUN npm --prefix assets ci --omit=dev
 RUN mix assets.setup
 
 COPY priv priv
