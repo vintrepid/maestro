@@ -7,6 +7,17 @@ defmodule MaestroWeb.AuthController do
 
   @spec success(Plug.Conn.t(), any(), any(), any()) :: term()
   def success(conn, activity, user, _token) do
+    if Maestro.Accounts.DeveloperAccess.allowed?(user) do
+      complete_sign_in(conn, activity, user)
+    else
+      conn
+      |> clear_session(:maestro)
+      |> put_flash(:error, "This account does not have Maestro developer access")
+      |> redirect(to: ~p"/sign-in")
+    end
+  end
+
+  defp complete_sign_in(conn, activity, user) do
     return_to = get_session(conn, :return_to) || ~p"/"
 
     message =

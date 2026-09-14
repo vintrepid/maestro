@@ -25,6 +25,12 @@ defmodule MaestroWeb.Router do
     plug :set_actor, :user
   end
 
+  pipeline :developer_browser do
+    plug MaestroWeb.Plugs.RequireDeveloper
+  end
+
+  get "/healthz", MaestroWeb.HealthController, :check
+
   scope "/api/json" do
     pipe_through [:api]
 
@@ -36,19 +42,25 @@ defmodule MaestroWeb.Router do
   end
 
   scope "/" do
-    pipe_through :browser
+    pipe_through [:browser, :developer_browser]
 
     live_session :css_linter,
-      on_mount: [{MaestroWeb.LiveUserAuth, :load_current_user}] do
+      on_mount: [
+        {MaestroWeb.LiveUserAuth, :current_user},
+        {MaestroWeb.LiveUserAuth, :live_user_required}
+      ] do
       live "/admin/css-analysis", @css_linter_module, :index
     end
   end
 
   scope "/", MaestroWeb do
-    pipe_through :browser
+    pipe_through [:browser, :developer_browser]
 
     live_session :authenticated_routes,
-      on_mount: [{MaestroWeb.LiveUserAuth, :load_current_user}] do
+      on_mount: [
+        {MaestroWeb.LiveUserAuth, :current_user},
+        {MaestroWeb.LiveUserAuth, :live_user_required}
+      ] do
       live "/", HomeLive, :index
       live "/concepts", ConceptsLive, :index
       live "/projects", DashboardLive, :projects
@@ -81,9 +93,13 @@ defmodule MaestroWeb.Router do
   end
 
   scope "/", MaestroWeb do
-    pipe_through :browser
+    pipe_through [:browser, :developer_browser]
 
     get "/api/git/info", GitController, :info
+  end
+
+  scope "/", MaestroWeb do
+    pipe_through :browser
 
     auth_routes AuthController, Maestro.Accounts.User, path: "/auth"
     sign_out_route AuthController

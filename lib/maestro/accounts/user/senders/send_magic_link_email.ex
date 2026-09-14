@@ -10,7 +10,6 @@ defmodule Maestro.Accounts.User.Senders.SendMagicLinkEmail do
   alias Maestro.Mailer
 
   @impl true
-  @spec send(any(), any(), any()) :: term()
   def send(user_or_email, token, _) do
     # if you get a user, its for a user that already exists.
     # if you get an email, then the user does not yet exist.
@@ -21,13 +20,18 @@ defmodule Maestro.Accounts.User.Senders.SendMagicLinkEmail do
         email -> email
       end
 
-    new()
-    # TODO: Replace with your email
-    |> from({"noreply", "noreply@example.com"})
-    |> to(to_string(email))
-    |> subject("Your login link")
-    |> html_body(body(token: token, email: email))
-    |> Mailer.deliver!()
+    if Maestro.Accounts.DeveloperAccess.allowed_email?(email) do
+      from = Application.fetch_env!(:maestro, :mailer_from)
+
+      new()
+      |> from({from[:name], from[:email]})
+      |> to(to_string(email))
+      |> subject("Your Maestro sign-in link")
+      |> html_body(body(token: token, email: email))
+      |> Mailer.deliver!()
+    else
+      :ok
+    end
   end
 
   defp body(params) do
