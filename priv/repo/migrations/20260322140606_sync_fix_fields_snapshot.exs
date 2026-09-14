@@ -1,4 +1,4 @@
-defmodule Maestro.Repo.Migrations.AddFixFieldsToRules do
+defmodule Maestro.Repo.Migrations.SyncFixFieldsSnapshot do
   @moduledoc """
   Updates resources based on their most recent snapshots.
 
