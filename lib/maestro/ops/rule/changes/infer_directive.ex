@@ -12,7 +12,6 @@ defmodule Maestro.Ops.Rule.Changes.InferDirective do
   alias Maestro.Ops.RuleDirective
 
   @impl true
-  @spec change(Ash.Changeset.t(), keyword(), map()) :: Ash.Changeset.t()
   def change(changeset, _opts, _context) do
     case Ash.Changeset.fetch_change(changeset, :directive) do
       {:ok, directive} when not is_nil(directive) ->

@@ -39,7 +39,10 @@ defmodule MaestroWeb.Components.RulesCurationTable do
         field="directive"
         label="Direction"
         sort
-        filter={[type: :select, options: [{"Require", "require"}, {"Forbid", "forbid"}, {"Prefer", "prefer"}]]}
+        filter={[
+          type: :select,
+          options: [{"Require", "require"}, {"Forbid", "forbid"}, {"Prefer", "prefer"}]
+        ]}
       >
         {rule.directive}
       </:col>

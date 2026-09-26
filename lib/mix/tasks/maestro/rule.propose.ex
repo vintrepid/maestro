@@ -50,23 +50,28 @@ defmodule Mix.Tasks.Maestro.Rule.Propose do
     category = opts[:category] || raise "Missing --category"
 
     attrs =
-      %{
-        content: content,
-        category: String.to_existing_atom(category),
-        severity:
-          if(opts[:severity], do: String.to_existing_atom(opts[:severity]), else: :should),
-        source_project_slug: opts[:source_project],
-        source_commit: opts[:source_commit],
-        source_context: opts[:context],
-        tags:
-          if(opts[:tags], do: Enum.map(String.split(opts[:tags], ","), &String.trim/1), else: []),
-        applies_to:
-          if(opts[:applies_to],
-            do: Enum.map(String.split(opts[:applies_to], ","), &String.trim/1),
-            else: ["all"]
-          )
-      }
-      |> maybe_put_directive(opts[:directive])
+      maybe_put_directive(
+        %{
+          content: content,
+          category: String.to_existing_atom(category),
+          severity:
+            if(opts[:severity], do: String.to_existing_atom(opts[:severity]), else: :should),
+          source_project_slug: opts[:source_project],
+          source_commit: opts[:source_commit],
+          source_context: opts[:context],
+          tags:
+            if(opts[:tags],
+              do: Enum.map(String.split(opts[:tags], ","), &String.trim/1),
+              else: []
+            ),
+          applies_to:
+            if(opts[:applies_to],
+              do: Enum.map(String.split(opts[:applies_to], ","), &String.trim/1),
+              else: ["all"]
+            )
+        },
+        opts[:directive]
+      )
 
     case Maestro.Ops.Rule.propose(attrs) do
       {:ok, rule} ->
