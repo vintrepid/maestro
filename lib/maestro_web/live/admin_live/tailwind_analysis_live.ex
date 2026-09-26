@@ -5,6 +5,19 @@ defmodule MaestroWeb.AdminLive.TailwindAnalysisLive do
   use MaestroWeb, :live_view
   use LiveTable.LiveResource
 
+  # LiveTable also uses Phoenix.Component. Keep only one verifier callback so
+  # Phoenix does not define the same catch-all verifier twice.
+  before_compile_callbacks =
+    __MODULE__
+    |> Module.get_attribute(:before_compile)
+    |> Enum.uniq()
+
+  Module.delete_attribute(__MODULE__, :before_compile)
+
+  before_compile_callbacks
+  |> Enum.reverse()
+  |> Enum.each(&Module.put_attribute(__MODULE__, :before_compile, &1))
+
   alias Maestro.Analysis.TailwindClassUsage
 
   @impl true

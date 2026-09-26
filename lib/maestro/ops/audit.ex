@@ -93,5 +93,4 @@ defmodule Maestro.Ops.Audit do
     sum :total_pass_checks, :results, :pass
     avg :avg_score, :results, :score
   end
-
 end

@@ -39,14 +39,22 @@ defmodule Maestro.Ops.AuditRunner do
     all_paths = [project_path]
 
     total_modules =
-      Enum.sum(Enum.map(all_paths, fn p -> length(Path.wildcard(Path.join(p, "lib/**/*.ex"))) end))
+      Enum.sum(
+        Enum.map(all_paths, fn p -> length(Path.wildcard(Path.join(p, "lib/**/*.ex"))) end)
+      )
 
     project_id = Keyword.get(opts, :project_id)
-    {:ok, audit} = Audit.create(%{total_modules: total_modules, project_id: project_id}, authorize?: false)
 
-    {rule_by_module, rule_errors} = safe_run("rule audit", fn -> run_rule_audit(all_paths, opts) end)
+    {:ok, audit} =
+      Audit.create(%{total_modules: total_modules, project_id: project_id}, authorize?: false)
+
+    {rule_by_module, rule_errors} =
+      safe_run("rule audit", fn -> run_rule_audit(all_paths, opts) end)
+
     {giulia_by_module, giulia_errors} =
-      if deep?, do: safe_run("giulia audit", fn -> run_deep_audit(project_path) end), else: {%{}, []}
+      if deep?,
+        do: safe_run("giulia audit", fn -> run_deep_audit(project_path) end),
+        else: {%{}, []}
 
     persist_merged_results(audit, rule_by_module, giulia_by_module)
 
@@ -121,28 +129,6 @@ defmodule Maestro.Ops.AuditRunner do
     end)
   end
 
-  # Returns absolute paths to owned (path) dependencies' roots.
-  defp owned_dep_paths(project_path) do
-    Mix.Project.config()[:deps]
-    |> Enum.flat_map(fn
-      {_name, opts} when is_list(opts) ->
-        case Keyword.get(opts, :path) do
-          nil -> []
-          path -> [Path.expand(path, project_path)]
-        end
-
-      {_name, _ver, opts} when is_list(opts) ->
-        case Keyword.get(opts, :path) do
-          nil -> []
-          path -> [Path.expand(path, project_path)]
-        end
-
-      _ ->
-        []
-    end)
-    |> Enum.filter(&File.dir?/1)
-  end
-
   # -- Deep audit strategy (Giulia) --
 
   defp run_deep_audit(project_path) do
@@ -212,9 +198,13 @@ defmodule Maestro.Ops.AuditRunner do
       {func.(), []}
     rescue
       e ->
-        msg = Exception.message(e) <> "\n" <> Exception.format_stacktrace(__STACKTRACE__)
         require Logger
-        Logger.error("Audit step '#{step_name}' failed: #{msg}")
+
+        Logger.error("Audit step failed",
+          event: "maestro.audit.step_failed",
+          outcome: "error"
+        )
+
         {%{}, [{step_name, Exception.message(e)}]}
     end
   end

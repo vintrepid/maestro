@@ -18,15 +18,15 @@ defmodule Maestro.Ops.Rules.SiteAudit do
   def discover_modules(project_path) do
     Enum.flat_map(Path.wildcard(Path.join(project_path, "lib/**/*.ex")), fn file ->
       source = File.read!(file)
-    
+
       case extract_module_name(source) do
         nil ->
           []
-    
+
         mod_name ->
           ast = parse_ast(source)
           heex = extract_heex_blocks(source)
-    
+
           [
             %{
               path: Path.relative_to(file, project_path),
@@ -88,18 +88,32 @@ defmodule Maestro.Ops.Rules.SiteAudit do
     applicable_checks = Enum.reject(checks, &(&1.type == :skip))
 
     Enum.map(pages, fn page ->
-      findings = Enum.map(applicable_checks, fn check ->
-        try do
-          check_page(page, check)
-        rescue
-          e ->
-            require Logger
-            Logger.error("Check #{check.rule_id} crashed on #{page.path}: #{Exception.message(e)}")
-            %{rule_id: check.rule_id, rule_content: check.rule_content,
-              rule_category: check.rule_category, pass?: false,
-              evidence: ["CHECK CRASHED: #{Exception.message(e)}"]}
-        end
-      end)
+      findings =
+        Enum.map(applicable_checks, fn check ->
+          try do
+            check_page(page, check)
+          rescue
+            e ->
+              require Logger
+
+              Logger.error("Audit check crashed",
+                event: "maestro.audit.check_crashed",
+                outcome: "error",
+                resource: "rule",
+                resource_id: check.rule_id,
+                file: page.path
+              )
+
+              %{
+                rule_id: check.rule_id,
+                rule_content: check.rule_content,
+                rule_category: check.rule_category,
+                pass?: false,
+                evidence: ["CHECK CRASHED: #{Exception.message(e)}"]
+              }
+          end
+        end)
+
       pass_count = Enum.count(findings, & &1.pass?)
       fail_count = Enum.count(findings, &(not &1.pass?))
       skip_count = length(checks) - length(applicable_checks)
@@ -356,12 +370,16 @@ defmodule Maestro.Ops.Rules.SiteAudit do
       evidence = Enum.map(violations, & &1.message)
 
       # Serialize violations for JSON storage — convert Sourceror.Range structs to maps
-      serializable_violations = Enum.map(violations, fn v ->
-        Map.update(v, :source_range, nil, fn
-          %Sourceror.Range{start: s, end: e} -> %{start: Enum.into(s, %{}), end: Enum.into(e, %{})}
-          other -> other
+      serializable_violations =
+        Enum.map(violations, fn v ->
+          Map.update(v, :source_range, nil, fn
+            %Sourceror.Range{start: s, end: e} ->
+              %{start: Enum.into(s, %{}), end: Enum.into(e, %{})}
+
+            other ->
+              other
+          end)
         end)
-      end)
 
       result
       |> Map.put(:pass?, false)

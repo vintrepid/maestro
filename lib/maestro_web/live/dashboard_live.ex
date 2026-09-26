@@ -35,10 +35,11 @@ defmodule MaestroWeb.DashboardLive do
   @spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) ::
           {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("delete_project", %{"id" => id}, socket) do
-    project = case Ash.get(Maestro.Ops.Project, id, authorize?: false) do
-      {:ok, val} -> val
-      {:error, _} -> nil
-    end
+    project =
+      case Ash.get(Maestro.Ops.Project, id, authorize?: false) do
+        {:ok, val} -> val
+        {:error, _} -> nil
+      end
 
     case Maestro.Ops.Project.destroy(project, authorize?: false) do
       :ok ->

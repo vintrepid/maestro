@@ -59,7 +59,13 @@ defmodule Maestro.Ops.Rules.SessionAnalyzer do
       end)
 
     Enum.sort_by(findings, fn f ->
-      sev_rank = case f.severity do :error -> 0; :warning -> 1; _ -> 2 end
+      sev_rank =
+        case f.severity do
+          :error -> 0
+          :warning -> 1
+          _ -> 2
+        end
+
       {sev_rank, f.check}
     end)
   end
@@ -90,22 +96,31 @@ defmodule Maestro.Ops.Rules.SessionAnalyzer do
       # Distinguish "multiple unrelated topics" from "one topic with facets"
       # If the first line names a single topic and bullets elaborate, it's a checklist (lower severity)
       first_line = List.first(lines) || ""
-      has_topic_header = String.contains?(first_line, ":") or String.ends_with?(String.trim(first_line), ":")
+
+      has_topic_header =
+        String.contains?(first_line, ":") or String.ends_with?(String.trim(first_line), ":")
 
       {severity, qualifier} =
         if has_topic_header,
           do: {:info, "checklist (single topic with facets)"},
           else: {:warning, "likely multiple unrelated rules consolidated"}
 
-      [%{
-        rule_id: rule.id,
-        check: :multi_bullet,
-        severity: severity,
-        message: "Rule has #{bullets} bullet points — #{qualifier}",
-        recommendation: if(severity == :warning,
-          do: "Break into individual rules. Verify each point is covered by an existing rule.",
-          else: "Review: bullets may be fine as a checklist. Only break up if bullets are unrelated topics.")
-      } | findings]
+      [
+        %{
+          rule_id: rule.id,
+          check: :multi_bullet,
+          severity: severity,
+          message: "Rule has #{bullets} bullet points — #{qualifier}",
+          recommendation:
+            if(severity == :warning,
+              do:
+                "Break into individual rules. Verify each point is covered by an existing rule.",
+              else:
+                "Review: bullets may be fine as a checklist. Only break up if bullets are unrelated topics."
+            )
+        }
+        | findings
+      ]
     else
       findings
     end
@@ -118,13 +133,16 @@ defmodule Maestro.Ops.Rules.SessionAnalyzer do
       end)
 
     Enum.reduce(stale, findings, fn {_pattern, msg}, acc ->
-      [%{
-        rule_id: rule.id,
-        check: :stale_reference,
-        severity: :warning,
-        message: msg,
-        recommendation: "Retire or update the rule to reference current infrastructure."
-      } | acc]
+      [
+        %{
+          rule_id: rule.id,
+          check: :stale_reference,
+          severity: :warning,
+          message: msg,
+          recommendation: "Retire or update the rule to reference current infrastructure."
+        }
+        | acc
+      ]
     end)
   end
 
@@ -136,22 +154,30 @@ defmodule Maestro.Ops.Rules.SessionAnalyzer do
 
     cond do
       session_bundle == :model and ui_score >= 2 ->
-        [%{
-          rule_id: rule.id,
-          check: :bundle_mismatch,
-          severity: :error,
-          message: "Rule mentions #{ui_score} UI terms but is in a model session (bundle: #{rule.bundle})",
-          recommendation: "Move to bundle: ui"
-        } | findings]
+        [
+          %{
+            rule_id: rule.id,
+            check: :bundle_mismatch,
+            severity: :error,
+            message:
+              "Rule mentions #{ui_score} UI terms but is in a model session (bundle: #{rule.bundle})",
+            recommendation: "Move to bundle: ui"
+          }
+          | findings
+        ]
 
       session_bundle == :model and maestro_score >= 2 ->
-        [%{
-          rule_id: rule.id,
-          check: :bundle_mismatch,
-          severity: :error,
-          message: "Rule mentions #{maestro_score} Maestro-specific terms but is in bundle: #{rule.bundle}",
-          recommendation: "Move to bundle: maestro"
-        } | findings]
+        [
+          %{
+            rule_id: rule.id,
+            check: :bundle_mismatch,
+            severity: :error,
+            message:
+              "Rule mentions #{maestro_score} Maestro-specific terms but is in bundle: #{rule.bundle}",
+            recommendation: "Move to bundle: maestro"
+          }
+          | findings
+        ]
 
       true ->
         findings
@@ -160,13 +186,17 @@ defmodule Maestro.Ops.Rules.SessionAnalyzer do
 
   defp check_user_notes(findings, rule) do
     if rule.notes && String.length(rule.notes) > 10 do
-      [%{
-        rule_id: rule.id,
-        check: :has_user_notes,
-        severity: :info,
-        message: "Rule has curation notes (#{String.length(rule.notes)} chars) — read and process before other analysis",
-        recommendation: "Read notes first. They may contain specific curation instructions."
-      } | findings]
+      [
+        %{
+          rule_id: rule.id,
+          check: :has_user_notes,
+          severity: :info,
+          message:
+            "Rule has curation notes (#{String.length(rule.notes)} chars) — read and process before other analysis",
+          recommendation: "Read notes first. They may contain specific curation instructions."
+        }
+        | findings
+      ]
     else
       findings
     end
@@ -188,13 +218,16 @@ defmodule Maestro.Ops.Rules.SessionAnalyzer do
     if dupes != [] do
       dupe_ids = Enum.join(Enum.map(dupes, &String.slice(&1.id, 0, 8)), ", ")
 
-      [%{
-        rule_id: rule.id,
-        check: :duplicate,
-        severity: :warning,
-        message: "High similarity with #{length(dupes)} other rule(s): #{dupe_ids}",
-        recommendation: "Consolidate or retire duplicates. Keep the most specific version."
-      } | findings]
+      [
+        %{
+          rule_id: rule.id,
+          check: :duplicate,
+          severity: :warning,
+          message: "High similarity with #{length(dupes)} other rule(s): #{dupe_ids}",
+          recommendation: "Consolidate or retire duplicates. Keep the most specific version."
+        }
+        | findings
+      ]
     else
       findings
     end

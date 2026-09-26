@@ -54,7 +54,7 @@ defmodule MaestroWeb.ConceptsController do
     else
       conn
       |> put_flash(:error, "File not found")
-      |> redirect(to: ~p"/concepts/#{dir}")
+      |> redirect(to: ~p"/concepts")
     end
   end
 

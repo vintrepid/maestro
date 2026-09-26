@@ -60,7 +60,7 @@ defmodule MaestroWeb.ResourceFormLive do
     form = socket.assigns.form.source
 
     case AshPhoenix.Form.submit(form, params: params) do
-      {:ok, resource} ->
+      {:ok, _resource} ->
         {:noreply,
          socket
          |> put_flash(:info, "Resource saved successfully")

@@ -4,12 +4,12 @@ defmodule Maestro.Accounts do
   """
   use Ash.Domain, otp_app: :maestro, extensions: [AshAdmin.Domain, AshJsonApi.Domain]
 
-  admin do
-    show? true
-  end
-
   json_api do
     authorize? true
+  end
+
+  admin do
+    show? true
   end
 
   resources do

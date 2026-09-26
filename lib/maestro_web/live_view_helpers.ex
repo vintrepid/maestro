@@ -14,7 +14,19 @@ defmodule MaestroWeb.LiveViewHelpers do
     - `handle_info({:session_ended, ...}, ...)` — Refreshes agent dashboard
   """
 
-  defmacro __before_compile__(_env) do
+  defmacro __before_compile__(env) do
+    agent_dashboard_handler =
+      unless Module.get_attribute(env.module, :skip_agent_dashboard_forwarding) do
+        quote do
+          # Forward PubSub messages to the agent dashboard LiveComponent
+          def handle_info({event, _data}, socket)
+              when event in [:agent_request, :agent_response, :session_started, :session_ended] do
+            send_update(MaestroWeb.Components.AgentDashboardComponent, id: "agent-dashboard")
+            {:noreply, socket}
+          end
+        end
+      end
+
     quote do
       # File opener for the agent dashboard's changed files list
       @spec handle_event(any(), map(), Phoenix.LiveView.Socket.t()) :: term()
@@ -23,12 +35,7 @@ defmodule MaestroWeb.LiveViewHelpers do
         {:noreply, socket}
       end
 
-      # Forward PubSub messages to the agent dashboard LiveComponent
-      def handle_info({event, _data}, socket)
-          when event in [:agent_request, :agent_response, :session_started, :session_ended] do
-        send_update(MaestroWeb.Components.AgentDashboardComponent, id: "agent-dashboard")
-        {:noreply, socket}
-      end
+      unquote(agent_dashboard_handler)
 
       # Forward task PubSub messages to the agent dashboard
       @spec handle_info(term(), term()) :: term()

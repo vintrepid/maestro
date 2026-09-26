@@ -10,6 +10,10 @@ defmodule Maestro.Resources.ResourceTag do
   json_api do
     type "resource_tags"
 
+    primary_key do
+      keys [:resource_id, :tag_id]
+    end
+
     routes do
       base "/resource-tags"
       index :read
@@ -42,11 +46,13 @@ defmodule Maestro.Resources.ResourceTag do
     belongs_to :resource, Maestro.Resources.Resource do
       allow_nil? false
       attribute_type :integer
+      primary_key? true
     end
 
     belongs_to :tag, Maestro.Resources.Tag do
       allow_nil? false
       attribute_type :integer
+      primary_key? true
     end
   end
 

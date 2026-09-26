@@ -42,7 +42,7 @@ defmodule Mix.Tasks.Maestro.Task.Update do
       end
 
     case Maestro.Ops.Task.update(task, %{field_atom => actual_value}) do
-      {:ok, updated_task} ->
+      {:ok, _updated_task} ->
         IO.puts(
           IO.ANSI.green() <>
             "✓ Task ##{id} updated: #{field} = #{inspect(actual_value)}" <> IO.ANSI.reset()

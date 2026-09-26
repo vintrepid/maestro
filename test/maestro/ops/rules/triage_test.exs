@@ -24,7 +24,8 @@ defmodule Maestro.Ops.Rules.TriageTest do
     end
 
     test "**Never** auto-approves" do
-      assert %{status: :approved} = Triage.decide("**Never** swallow errors with a log-and-continue", nil)
+      assert %{status: :approved} =
+               Triage.decide("**Never** swallow errors with a log-and-continue", nil)
     end
 
     test "**FORBIDDEN** is treated the same as **Never**" do
@@ -32,7 +33,8 @@ defmodule Maestro.Ops.Rules.TriageTest do
     end
 
     test "**Avoid** also auto-approves" do
-      assert %{status: :approved} = Triage.decide("**Avoid** mocking the database in integration tests", nil)
+      assert %{status: :approved} =
+               Triage.decide("**Avoid** mocking the database in integration tests", nil)
     end
   end
 

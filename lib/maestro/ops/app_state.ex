@@ -52,7 +52,12 @@ defmodule Maestro.Ops.AppState do
 
   @impl true
   def handle_call({:set_current_project, project_id}, _from, state) do
-    Logger.info("Setting current project to: #{project_id}")
+    Logger.info("Setting current project",
+      event: "maestro.app_state.project_selected",
+      resource: "project",
+      resource_id: project_id
+    )
+
     {:reply, :ok, %{state | current_project_id: project_id}}
   end
 
@@ -73,7 +78,12 @@ defmodule Maestro.Ops.AppState do
 
   @impl true
   def handle_call({:set_current_task, task_id}, _from, state) do
-    Logger.info("Setting current task to: #{task_id}")
+    Logger.info("Setting current task",
+      event: "maestro.app_state.task_selected",
+      resource: "task",
+      task_id: task_id
+    )
+
     {:reply, :ok, %{state | current_task_id: task_id}}
   end
 end

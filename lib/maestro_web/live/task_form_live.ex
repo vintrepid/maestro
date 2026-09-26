@@ -571,16 +571,15 @@ defmodule MaestroWeb.TaskFormLive do
 
   defp get_entity_name("Task", entity_id) when not is_nil(entity_id) do
     case Task.by_id(entity_id) do
-      {:ok, task} -> task |> Maestro.Ops.load!([:display_name]) |> Map.get(:display_name)
-      _ -> nil
+      {:ok, task} ->
+        task |> Ash.load!([:display_name], authorize?: false) |> Map.get(:display_name)
+
+      _ ->
+        nil
     end
   end
 
   defp get_entity_name(_, _), do: nil
-
-  defp is_nil_or_empty(nil), do: true
-  defp is_nil_or_empty(""), do: true
-  defp is_nil_or_empty(_), do: false
 
   defp status_class(:done), do: "badge-success"
   defp status_class(:in_progress), do: "badge-warning"

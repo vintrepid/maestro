@@ -7,6 +7,8 @@
 # General application configuration
 import Config
 
+config :ex_money, auto_start_exchange_rate_service: false
+
 config :mime,
   extensions: %{"json" => "application/vnd.api+json"},
   types: %{"application/vnd.api+json" => ["json"]}
@@ -91,7 +93,7 @@ config :spark,
 config :maestro,
   ecto_repos: [Maestro.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [Maestro.Accounts, Maestro.Ops, Maestro.Agents],
+  ash_domains: [Maestro.Accounts, Maestro.Ops, Maestro.Agents, Maestro.Resources],
   editor_command: "codium",
   current_app: "Maestro",
   developer_emails: :all,

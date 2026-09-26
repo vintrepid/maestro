@@ -10,6 +10,10 @@ defmodule Maestro.Resources.TagHierarchy do
   json_api do
     type "tag_hierarchies"
 
+    primary_key do
+      keys [:parent_tag_id, :child_tag_id]
+    end
+
     routes do
       base "/tag-hierarchies"
       index :read
@@ -42,11 +46,13 @@ defmodule Maestro.Resources.TagHierarchy do
     belongs_to :parent_tag, Maestro.Resources.Tag do
       allow_nil? false
       attribute_type :integer
+      primary_key? true
     end
 
     belongs_to :child_tag, Maestro.Resources.Tag do
       allow_nil? false
       attribute_type :integer
+      primary_key? true
     end
   end
 

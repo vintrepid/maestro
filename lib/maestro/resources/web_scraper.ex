@@ -148,10 +148,7 @@ defmodule Maestro.Resources.WebScraper do
     if Keyword.get(opts, :skip_thumbnail, false) do
       {:ok, nil}
     else
-      case capture_screenshot(url) do
-        {:ok, thumbnail_path} -> {:ok, thumbnail_path}
-        {:error, _} -> {:ok, nil}
-      end
+      capture_screenshot(url)
     end
   end
 

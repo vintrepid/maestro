@@ -23,8 +23,7 @@ defmodule Mix.Tasks.Project.AddGuidelines do
   end
 
   @impl Igniter.Mix.Task
-  @spec igniter(any(), any()) :: term()
-  def igniter(igniter, _argv) do
+  def igniter(igniter) do
     guidelines_path = "GUIDELINES.md"
 
     maybe_create_guidelines_file(

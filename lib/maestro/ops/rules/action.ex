@@ -138,8 +138,6 @@ defmodule Maestro.Ops.Rules.Action do
   # that never lands in the DB.
   defp apply_decision(rule, %{status: :proposed}), do: call(Rule, :reset_to_proposed, rule)
 
-  defp apply_decision(_rule, _), do: :ok
-
   defp call(mod, fun, rule), do: call(mod, fun, rule, %{})
 
   defp call(mod, fun, %{id: id}, args) do
@@ -155,6 +153,5 @@ defmodule Maestro.Ops.Rules.Action do
   defp atomize(v) when is_atom(v), do: v
   defp atomize(v) when is_binary(v), do: String.to_existing_atom(v)
 
-  defp preview(nil), do: ""
   defp preview(s), do: s |> String.replace(~r/\n+/, " ") |> String.slice(0, 110)
 end

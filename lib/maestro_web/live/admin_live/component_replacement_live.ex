@@ -231,6 +231,8 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
     end
   end
 
+  defp transform_html(_html, _), do: {"", nil}
+
   # Custom renderer for Phoenix components
   defp render_component_html(doc) do
     doc
@@ -268,12 +270,10 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   defp render_node(text) when is_binary(text), do: text
   defp render_node({:comment, comment}), do: "<!--#{comment}-->"
 
-  defp transform_html(_html, _), do: {"", nil}
-
   # Transform card divs to section_card component
   defp transform_section_card(doc) do
     Floki.traverse_and_update(doc, fn
-      {"div", attrs, children} = node ->
+      {"div", _attrs, children} = node ->
         class = List.first(Floki.attribute([node], "class"))
 
         if class && String.contains?(class, "card bg-base-100 shadow-xl") do
@@ -315,7 +315,7 @@ defmodule MaestroWeb.AdminLive.ComponentReplacementLive do
   # Transform stats divs to stats_grid component  
   defp transform_stats_grid(doc) do
     Floki.traverse_and_update(doc, fn
-      {"div", attrs, children} = node ->
+      {"div", _attrs, children} = node ->
         class = List.first(Floki.attribute([node], "class"))
 
         if class && String.contains?(class, "stats stats-vertical lg:stats-horizontal") do

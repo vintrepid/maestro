@@ -3,8 +3,6 @@ defmodule Maestro.Ops.ProjectMonitor do
   Project Monitor GenServer.
   """
   use GenServer
-  require Logger
-
   alias Maestro.Ops.Project
 
   @check_interval :timer.seconds(10)

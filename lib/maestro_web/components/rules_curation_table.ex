@@ -39,7 +39,10 @@ defmodule MaestroWeb.Components.RulesCurationTable do
         field="severity"
         label="Sev"
         sort
-        filter={[type: :select, options: [{"Must", "must"}, {"Should", "should"}, {"Prefer", "prefer"}]]}
+        filter={[
+          type: :select,
+          options: [{"Must", "must"}, {"Should", "should"}, {"Prefer", "prefer"}]
+        ]}
       >
         <span class={["badge badge-sm badge-outline", severity_badge(rule.severity)]}>
           {rule.severity}
@@ -112,10 +115,18 @@ defmodule MaestroWeb.Components.RulesCurationTable do
         <button phx-click="approve" phx-value-id={@rule.id} class="btn btn-xs btn-success btn-outline">
           Approve
         </button>
-        <button phx-click="mark_linter" phx-value-id={@rule.id} class="btn btn-xs btn-info btn-outline">
+        <button
+          phx-click="mark_linter"
+          phx-value-id={@rule.id}
+          class="btn btn-xs btn-info btn-outline"
+        >
           Linter
         </button>
-        <button phx-click="mark_anti_pattern" phx-value-id={@rule.id} class="btn btn-xs btn-error btn-outline">
+        <button
+          phx-click="mark_anti_pattern"
+          phx-value-id={@rule.id}
+          class="btn btn-xs btn-error btn-outline"
+        >
           Anti
         </button>
       <% end %>

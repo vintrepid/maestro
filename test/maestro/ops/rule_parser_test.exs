@@ -43,11 +43,13 @@ defmodule Maestro.Ops.RuleParserTest do
 
   describe "categorize_by_content/2 — domain rules still route correctly" do
     test "Ash content lands in :ash" do
-      assert RuleParser.categorize_by_content("Use Ash.Changeset.for_update/3 for updates.") == :ash
+      assert RuleParser.categorize_by_content("Use Ash.Changeset.for_update/3 for updates.") ==
+               :ash
     end
 
     test "LiveView content lands in :liveview" do
-      assert RuleParser.categorize_by_content("Use handle_event/3 to handle phx- events.") == :liveview
+      assert RuleParser.categorize_by_content("Use handle_event/3 to handle phx- events.") ==
+               :liveview
     end
 
     test "HEEx content lands in :heex" do
@@ -55,7 +57,9 @@ defmodule Maestro.Ops.RuleParserTest do
     end
 
     test "Tailwind/CSS content lands in :css" do
-      assert RuleParser.categorize_by_content("Use DaisyUI component classes instead of tailwind utilities.") == :css
+      assert RuleParser.categorize_by_content(
+               "Use DaisyUI component classes instead of tailwind utilities."
+             ) == :css
     end
   end
 

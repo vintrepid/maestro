@@ -1,5 +1,6 @@
 defmodule Maestro.Ops.Audit.Facade do
   require Logger
+
   @moduledoc """
   Facade API for the Audit domain.
 
@@ -108,8 +109,11 @@ defmodule Maestro.Ops.Audit.Facade do
   Shows new rules, resolved findings, and files affected.
   """
   @spec diff_audits(term(), term()) :: term()
-  def diff_audits(nil, _current), do: %{new_findings: [], resolved_findings: [], files_changed: []}
-  def diff_audits(_previous, nil), do: %{new_findings: [], resolved_findings: [], files_changed: []}
+  def diff_audits(nil, _current),
+    do: %{new_findings: [], resolved_findings: [], files_changed: []}
+
+  def diff_audits(_previous, nil),
+    do: %{new_findings: [], resolved_findings: [], files_changed: []}
 
   def diff_audits(%{id: prev_id}, %{id: curr_id}) do
     prev_results =
@@ -169,11 +173,11 @@ defmodule Maestro.Ops.Audit.Facade do
   defp new_rule_ids(prev_results, curr_results) do
     prev_ids =
       prev_results
-      |> Enum.flat_map(fn r -> Enum.map(r.findings, &(&1["rule_id"])) end)
+      |> Enum.flat_map(fn r -> Enum.map(r.findings, & &1["rule_id"]) end)
       |> MapSet.new()
 
     curr_results
-    |> Enum.flat_map(fn r -> Enum.map(r.findings, &(&1["rule_id"])) end)
+    |> Enum.flat_map(fn r -> Enum.map(r.findings, & &1["rule_id"]) end)
     |> MapSet.new()
     |> MapSet.difference(prev_ids)
     |> MapSet.to_list()
@@ -213,15 +217,21 @@ defmodule Maestro.Ops.Audit.Facade do
       audit = Ash.reload!(audit, authorize?: false)
 
       if audit.status == :completed do
-        case fix_all(audit) do
-          {:ok, fixed_count} ->
-            Logger.info("Auto-fixed #{fixed_count} file(s) after audit ##{audit.id}")
+        {:ok, fixed_count} = fix_all(audit)
 
-          {:error, reason} ->
-            Logger.warning("Auto-fix errors after audit ##{audit.id}: #{inspect(reason)}")
-        end
+        Logger.info("Audit auto-fix completed",
+          event: "maestro.audit.auto_fix_completed",
+          resource: "audit",
+          resource_id: audit.id,
+          count: fixed_count
+        )
       else
-        Logger.warning("Audit ##{audit.id} failed — skipping auto-fix. Notes: #{audit.notes}")
+        Logger.warning("Audit failed; skipping auto-fix",
+          event: "maestro.audit.auto_fix_skipped",
+          resource: "audit",
+          resource_id: audit.id,
+          outcome: "error"
+        )
       end
 
       {:ok, audit}
@@ -274,16 +284,18 @@ defmodule Maestro.Ops.Audit.Facade do
       end)
 
     if errors != [] do
-      error_notes = Enum.map_join(errors, "\n", fn {path, reason} ->
-        "#{path}: #{inspect(reason)}"
-      end)
-
-      Logger.warning("Fixer errors:\n#{error_notes}")
+      Logger.warning("Fixer errors",
+        event: "maestro.audit.fixer_errors",
+        outcome: "error",
+        count: length(errors)
+      )
     end
 
     # Write Igniter-tracked changes (Maestro rule fixes)
     sources = updated_igniter.rewrite.sources
-    igniter_changed = Enum.filter(sources, fn {_path, source} -> Rewrite.Source.updated?(source) end)
+
+    igniter_changed =
+      Enum.filter(sources, fn {_path, source} -> Rewrite.Source.updated?(source) end)
 
     for {path, source} <- igniter_changed do
       content = Rewrite.Source.get(source, :content)
@@ -323,19 +335,25 @@ defmodule Maestro.Ops.Audit.Facade do
       case f["check_module"] do
         mod when is_binary(mod) and mod != "" ->
           Map.put(base, :check_module, String.to_existing_atom(mod))
-        _ -> base
+
+        _ ->
+          base
       end
 
     case f["violations"] do
       violations when is_list(violations) and violations != [] ->
-        atomized = Enum.map(violations, fn v ->
-          Map.new(v, fn
-            {k, val} when is_binary(k) -> {String.to_existing_atom(k), val}
-            {k, val} -> {k, val}
+        atomized =
+          Enum.map(violations, fn v ->
+            Map.new(v, fn
+              {k, val} when is_binary(k) -> {String.to_existing_atom(k), val}
+              {k, val} -> {k, val}
+            end)
           end)
-        end)
+
         Map.put(base, :violations, atomized)
-      _ -> base
+
+      _ ->
+        base
     end
   end
 end

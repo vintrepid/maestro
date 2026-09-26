@@ -4,7 +4,6 @@ defmodule MaestroWeb.ProfileLive do
   """
   use MaestroWeb, :live_view
 
-  alias MaestroWeb.Components.GitWidget
   alias MaestroWeb.Components.GuidelinesViewer
   import MaestroWeb.Live.Helpers.FileOpener
 

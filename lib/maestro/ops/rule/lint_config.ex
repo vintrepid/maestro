@@ -28,6 +28,7 @@ defmodule Maestro.Ops.Rule.LintConfig do
 
     attribute :check_module, :string do
       public? true
+
       description "Fully-qualified module implementing MaestroTool.Lint.Check (e.g. MaestroTool.Lint.Checks.BangInHandleEvent)"
     end
 

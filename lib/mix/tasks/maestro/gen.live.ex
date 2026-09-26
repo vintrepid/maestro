@@ -75,7 +75,8 @@ defmodule Mix.Tasks.Maestro.Gen.Live do
   defp table_template(live_module, module_name, snake_name, with_pubsub?) do
     pubsub_mount =
       if with_pubsub?,
-        do: "\n    if connected?(socket), do: Maestro.ResourcePubSub.subscribe(\"#{snake_name}\")\n",
+        do:
+          "\n    if connected?(socket), do: Maestro.ResourcePubSub.subscribe(\"#{snake_name}\")\n",
         else: ""
 
     pubsub_handler =
@@ -145,7 +146,8 @@ defmodule Mix.Tasks.Maestro.Gen.Live do
   defp simple_template(live_module, module_name, snake_name, with_pubsub?) do
     pubsub_mount =
       if with_pubsub?,
-        do: "\n    if connected?(socket), do: Maestro.ResourcePubSub.subscribe(\"#{snake_name}\")\n",
+        do:
+          "\n    if connected?(socket), do: Maestro.ResourcePubSub.subscribe(\"#{snake_name}\")\n",
         else: ""
 
     pubsub_handler =

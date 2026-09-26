@@ -2,11 +2,11 @@ defmodule MaestroWeb.Live.Helpers.FileOpener do
   @moduledoc """
   Opens files in the user's configured editor.
 
-  Uses the same detection as LiveDebugger: ELIXIR_EDITOR env var,
-  then TERM_PROGRAM detection, then app config fallback.
+  Uses Maestro Tool's runtime editor helper so this module does not depend on
+  LiveDebugger being compiled outside the development environment.
   """
 
-  alias LiveDebugger.App.Debugger.Utils.Editor
+  alias MaestroTool.Editor
 
   @spec open_file(term()) :: term()
   def open_file(path) when is_binary(path) do
@@ -15,13 +15,14 @@ defmodule MaestroWeb.Live.Helpers.FileOpener do
         do: path,
         else: Path.join(File.cwd!(), path)
 
-    editor = Editor.detect_editor()
+    editor =
+      Editor.detect_editor(System.get_env(), Application.get_env(:maestro, :editor_command))
 
     if editor do
-      cmd = Editor.get_editor_cmd(editor, file_path, 1)
+      command = Editor.command(editor, file_path, 1)
 
       spawn(fn ->
-        Editor.run_shell_cmd(cmd)
+        Editor.run(command)
       end)
     end
   end

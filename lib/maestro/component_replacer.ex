@@ -56,7 +56,7 @@ defmodule Maestro.ComponentReplacer do
   # Transform card divs to section_card component
   defp transform_section_card(doc) do
     Floki.traverse_and_update(doc, fn
-      {"div", attrs, children} = node ->
+      {"div", _attrs, children} = node ->
         class = List.first(Floki.attribute([node], "class"))
 
         if class && String.contains?(class, "card bg-base-100 shadow-xl") do
@@ -98,7 +98,7 @@ defmodule Maestro.ComponentReplacer do
   # Transform stats divs to stats_grid component  
   defp transform_stats_grid(doc) do
     Floki.traverse_and_update(doc, fn
-      {"div", attrs, children} = node ->
+      {"div", _attrs, children} = node ->
         class = List.first(Floki.attribute([node], "class"))
 
         if class && String.contains?(class, "stats stats-vertical lg:stats-horizontal") do

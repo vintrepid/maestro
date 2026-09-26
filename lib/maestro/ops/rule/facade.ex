@@ -18,7 +18,6 @@ defmodule Maestro.Ops.Rule.Facade do
 
   require Ash.Query
   import Ash.Query
-  import Ecto.Query, only: [from: 2]
   import Phoenix.Component, only: [to_form: 1]
 
   alias Maestro.Ops.Rule
@@ -134,7 +133,13 @@ defmodule Maestro.Ops.Rule.Facade do
 
     if Quality.passes_quality?(rule) do
       {:ok, rule} = Rule.approve(rule)
-      request_curation(rule, :approved, "Approved — verify bundle, category, tags, and check for duplicates to supersede")
+
+      request_curation(
+        rule,
+        :approved,
+        "Approved — verify bundle, category, tags, and check for duplicates to supersede"
+      )
+
       :ok
     else
       {:error, "Rule fails quality checks — fix content before approving"}
@@ -155,7 +160,13 @@ defmodule Maestro.Ops.Rule.Facade do
   def mark_linter(id) do
     rule = Rule.by_id!(id)
     result = Rule.mark_linter(rule)
-    request_curation(rule, :linter, "Marked linter — design igniter/mix task to enforce this rule automatically")
+
+    request_curation(
+      rule,
+      :linter,
+      "Marked linter — design igniter/mix task to enforce this rule automatically"
+    )
+
     result
   end
 
@@ -164,7 +175,13 @@ defmodule Maestro.Ops.Rule.Facade do
   def mark_anti_pattern(id) do
     rule = Rule.by_id!(id)
     result = Rule.mark_anti_pattern(rule)
-    request_curation(rule, :anti_pattern, "Marked anti-pattern — find canonical rule, link via superseded_by, extract curation insight")
+
+    request_curation(
+      rule,
+      :anti_pattern,
+      "Marked anti-pattern — find canonical rule, link via superseded_by, extract curation insight"
+    )
+
     result
   end
 
@@ -180,24 +197,34 @@ defmodule Maestro.Ops.Rule.Facade do
   """
   @spec get_rule_with_related(String.t()) :: {term(), map()}
   def get_rule_with_related(id) do
-    rule = Rule.by_id!(id, authorize?: false, load: [:superseded_by, :supersedes, :library, :rule_source])
+    rule =
+      Rule.by_id!(id,
+        authorize?: false,
+        load: [:superseded_by, :supersedes, :library, :rule_source]
+      )
 
     same_category =
       Rule
-      |> filter(category == ^rule.category and id != ^rule.id and status in [:approved, :proposed])
+      |> filter(
+        category == ^rule.category and id != ^rule.id and status in [:approved, :proposed]
+      )
       |> sort(priority: :desc)
       |> Ash.read!(authorize?: false, page: [limit: 10])
       |> Map.get(:results, [])
 
     same_tags =
       if rule.tags != [] do
-        all = Rule.read!(authorize?: false)
-        |> Enum.filter(fn r ->
-          r.id != rule.id and r.status in [:approved, :proposed] and
-          Enum.any?(r.tags || [], &(&1 in (rule.tags || [])))
-        end)
-        |> Enum.sort_by(fn r -> -length((r.tags || []) -- (r.tags || [] -- (rule.tags || []))) end)
-        |> Enum.take(10)
+        all =
+          Rule.read!(authorize?: false)
+          |> Enum.filter(fn r ->
+            r.id != rule.id and r.status in [:approved, :proposed] and
+              Enum.any?(r.tags || [], &(&1 in (rule.tags || [])))
+          end)
+          |> Enum.sort_by(fn r ->
+            -length((r.tags || []) -- (r.tags || [] -- (rule.tags || [])))
+          end)
+          |> Enum.take(10)
+
         all
       else
         []
@@ -235,15 +262,18 @@ defmodule Maestro.Ops.Rule.Facade do
   def discuss_rule(id) do
     rule = Rule.by_id!(id, authorize?: false)
 
-    Maestro.Ops.Task.create(%{
-      title: "Discuss: #{String.slice(rule.content, 0, 80)}",
-      description: rule.content,
-      notes: rule.notes,
-      task_type: :discussion,
-      status: :todo,
-      entity_type: "rule",
-      entity_id: rule.id
-    }, authorize?: false)
+    Maestro.Ops.Task.create(
+      %{
+        title: "Discuss: #{String.slice(rule.content, 0, 80)}",
+        description: rule.content,
+        notes: rule.notes,
+        task_type: :discussion,
+        status: :todo,
+        entity_type: "rule",
+        entity_id: rule.id
+      },
+      authorize?: false
+    )
   end
 
   @doc "Returns open discussion tasks for rules."
@@ -262,13 +292,18 @@ defmodule Maestro.Ops.Rule.Facade do
   @spec pending_rule_tasks() :: [term()]
   def pending_rule_tasks do
     Maestro.Ops.Task.read!(authorize?: false)
-    |> Enum.filter(&(&1.task_type in [:discussion, :curation] and &1.status in [:todo, :in_progress] and &1.entity_type == "rule"))
+    |> Enum.filter(
+      &(&1.task_type in [:discussion, :curation] and &1.status in [:todo, :in_progress] and
+          &1.entity_type == "rule")
+    )
     |> Enum.sort_by(& &1.inserted_at, {:desc, DateTime})
   end
 
   defp pending_rule_tasks(type) do
     Maestro.Ops.Task.read!(authorize?: false)
-    |> Enum.filter(&(&1.task_type == type and &1.status in [:todo, :in_progress] and &1.entity_type == "rule"))
+    |> Enum.filter(
+      &(&1.task_type == type and &1.status in [:todo, :in_progress] and &1.entity_type == "rule")
+    )
     |> Enum.sort_by(& &1.inserted_at, {:desc, DateTime})
   end
 
@@ -281,15 +316,19 @@ defmodule Maestro.Ops.Rule.Facade do
   """
   @spec request_curation(term(), atom(), String.t()) :: {:ok, term()}
   def request_curation(rule, new_status, instructions) do
-    Maestro.Ops.Task.create(%{
-      title: "Curate: #{String.slice(rule.content, 0, 60)}",
-      description: "Rule #{String.slice(rule.id, 0, 8)} changed to #{new_status}.\n\n**Content:** #{rule.content}\n\n**Notes:** #{rule.notes}",
-      notes: instructions,
-      task_type: :curation,
-      status: :todo,
-      entity_type: "rule",
-      entity_id: rule.id
-    }, authorize?: false)
+    Maestro.Ops.Task.create(
+      %{
+        title: "Curate: #{String.slice(rule.content, 0, 60)}",
+        description:
+          "Rule #{String.slice(rule.id, 0, 8)} changed to #{new_status}.\n\n**Content:** #{rule.content}\n\n**Notes:** #{rule.notes}",
+        notes: instructions,
+        task_type: :curation,
+        status: :todo,
+        entity_type: "rule",
+        entity_id: rule.id
+      },
+      authorize?: false
+    )
   end
 
   @doc "Returns an AshPhoenix form for creating a new rule."
@@ -323,8 +362,12 @@ defmodule Maestro.Ops.Rule.Facade do
 
   defp normalize_params(params) do
     case Map.get(params, "tags") do
-      nil -> params
-      tags when is_list(tags) -> params
+      nil ->
+        params
+
+      tags when is_list(tags) ->
+        params
+
       tags when is_binary(tags) ->
         Map.put(params, "tags", tags |> String.split(",", trim: true) |> Enum.map(&String.trim/1))
     end
@@ -487,7 +530,9 @@ defmodule Maestro.Ops.Rule.Facade do
   @spec find_duplicate_clusters(keyword()) :: [map()]
   def find_duplicate_clusters(opts \\ []) do
     min_similarity = Keyword.get(opts, :min_similarity, 0.4)
-    statuses = Keyword.get(opts, :statuses, [:approved, :proposed, :retired, :linter, :anti_pattern])
+
+    statuses =
+      Keyword.get(opts, :statuses, [:approved, :proposed, :retired, :linter, :anti_pattern])
 
     rules =
       Rule.read!(authorize?: false)
@@ -542,32 +587,36 @@ defmodule Maestro.Ops.Rule.Facade do
 
     # Create the god rule
     {:ok, god_rule} =
-      Rule.propose(%{
-        content: content,
-        category: category,
-        severity: severity,
-        tags: merged_tags,
-        source_type: :consolidated,
-        source_context: "consolidated:#{DateTime.to_iso8601(DateTime.utc_now())}",
-        source_project_slug: "maestro"
-      }, authorize?: false)
+      Rule.propose(
+        %{
+          content: content,
+          category: category,
+          severity: severity,
+          tags: merged_tags,
+          source_type: :consolidated,
+          source_context: "consolidated:#{DateTime.to_iso8601(DateTime.utc_now())}",
+          source_project_slug: "maestro"
+        },
+        authorize?: false
+      )
 
     # Approve it
     {:ok, god_rule} = Rule.approve(god_rule, authorize?: false)
 
     # Supersede all rules in the cluster under the god rule
-    count = Enum.count(all_rules, fn rule ->
-      if rule.status != :retired do
-        case Rule.supersede(rule, %{superseded_by_id: god_rule.id}, authorize?: false) do
-          {:ok, _} -> true
-          _ -> false
+    count =
+      Enum.count(all_rules, fn rule ->
+        if rule.status != :retired do
+          case Rule.supersede(rule, %{superseded_by_id: god_rule.id}, authorize?: false) do
+            {:ok, _} -> true
+            _ -> false
+          end
+        else
+          # Already retired — just link it
+          Rule.update(rule, %{superseded_by_id: god_rule.id}, authorize?: false)
+          true
         end
-      else
-        # Already retired — just link it
-        Rule.update(rule, %{superseded_by_id: god_rule.id}, authorize?: false)
-        true
-      end
-    end)
+      end)
 
     {:ok, god_rule, count}
   end
@@ -589,15 +638,28 @@ defmodule Maestro.Ops.Rule.Facade do
 
     %{
       totals: by_status,
-      clusters: Enum.map(clusters, fn c ->
-        %{
-          canonical: %{id: c.canonical.id, content: String.slice(c.canonical.content, 0, 100), category: c.canonical.category, status: c.canonical.status},
-          duplicates: Enum.map(c.duplicates, fn d ->
-            %{id: d.id, content: String.slice(d.content, 0, 100), category: d.category, status: d.status, similarity: c.similarity}
-          end),
-          size: 1 + length(c.duplicates)
-        }
-      end),
+      clusters:
+        Enum.map(clusters, fn c ->
+          %{
+            canonical: %{
+              id: c.canonical.id,
+              content: String.slice(c.canonical.content, 0, 100),
+              category: c.canonical.category,
+              status: c.canonical.status
+            },
+            duplicates:
+              Enum.map(c.duplicates, fn d ->
+                %{
+                  id: d.id,
+                  content: String.slice(d.content, 0, 100),
+                  category: d.category,
+                  status: d.status,
+                  similarity: c.similarity
+                }
+              end),
+            size: 1 + length(c.duplicates)
+          }
+        end),
       cluster_count: length(clusters),
       total_duplicates: Enum.sum(Enum.map(clusters, fn c -> length(c.duplicates) end))
     }
@@ -613,7 +675,9 @@ defmodule Maestro.Ops.Rule.Facade do
     |> String.replace(~r/[^a-z0-9\s]/, " ")
     |> String.split(~r/\s+/, trim: true)
     |> Enum.reject(&(String.length(&1) < 3))
-    |> Enum.reject(&(&1 in ~w(the and for not use always never with this that from are but has have)))
+    |> Enum.reject(
+      &(&1 in ~w(the and for not use always never with this that from are but has have))
+    )
     |> MapSet.new()
   end
 
@@ -636,11 +700,12 @@ defmodule Maestro.Ops.Rule.Facade do
 
   defp cluster_rules(pairs, _rules) do
     # Union-find: group rules into clusters
-    parent = Enum.reduce(pairs, %{}, fn {r1, r2, _sim}, acc ->
-      root1 = find_root(acc, r1.id)
-      root2 = find_root(acc, r2.id)
-      if root1 != root2, do: Map.put(acc, root2, root1), else: acc
-    end)
+    parent =
+      Enum.reduce(pairs, %{}, fn {r1, r2, _sim}, acc ->
+        root1 = find_root(acc, r1.id)
+        root2 = find_root(acc, r2.id)
+        if root1 != root2, do: Map.put(acc, root2, root1), else: acc
+      end)
 
     # Collect clusters
     all_in_pairs =
@@ -649,7 +714,8 @@ defmodule Maestro.Ops.Rule.Facade do
       |> Enum.uniq_by(& &1.id)
 
     groups =
-      Enum.filter(Enum.group_by(all_in_pairs, fn r -> find_root(parent, r.id) end), fn {_, members} ->
+      Enum.filter(Enum.group_by(all_in_pairs, fn r -> find_root(parent, r.id) end), fn {_,
+                                                                                        members} ->
         length(members) > 1
       end)
 
@@ -662,23 +728,23 @@ defmodule Maestro.Ops.Rule.Facade do
             status_rank = if r.status == :approved, do: 0, else: 1
             {status_rank, -(r.priority || 0)}
           end)
-    
+
         [canonical | dupes] = sorted
-    
+
         avg_sim =
           if pairs != [] do
             relevant =
               Enum.filter(pairs, fn {r1, r2, _} ->
                 r1.id in Enum.map(members, & &1.id) and r2.id in Enum.map(members, & &1.id)
               end)
-    
+
             if relevant != [],
               do: Enum.sum(Enum.map(relevant, fn {_, _, s} -> s end)) / length(relevant),
               else: 0.0
           else
             0.0
           end
-    
+
         %{canonical: canonical, duplicates: dupes, similarity: Float.round(avg_sim, 2)}
       end),
       fn c -> -(1 + length(c.duplicates)) end

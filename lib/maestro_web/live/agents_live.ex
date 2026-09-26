@@ -4,6 +4,7 @@ defmodule MaestroWeb.AgentsLive do
 
   Thin rendering shell — all domain logic lives in `Maestro.Agents.Facade`.
   """
+  @skip_agent_dashboard_forwarding true
   use MaestroWeb, :live_view
 
   import MaestroWeb.Live.Helpers.FileOpener
@@ -166,7 +167,6 @@ defmodule MaestroWeb.AgentsLive do
 
           <%!-- Requests/Activity Feed --%>
           <div class="card bg-base-200 shadow-sm lg:col-span-2">
-
             <div class="card-body p-4">
               <div class="flex items-center justify-between">
                 <h2 class="card-title text-lg">

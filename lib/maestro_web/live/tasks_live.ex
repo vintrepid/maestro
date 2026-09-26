@@ -28,7 +28,9 @@ defmodule MaestroWeb.TasksLive do
 
         <Cinder.collection
           id="tasks-table"
-          query={Maestro.Ops.Task |> Ash.Query.sort(updated_at: :desc) |> Ash.Query.load(:display_name)}
+          query={
+            Maestro.Ops.Task |> Ash.Query.sort(updated_at: :desc) |> Ash.Query.load(:display_name)
+          }
           url_state={@url_state}
           page_size={25}
           theme="daisy_ui"

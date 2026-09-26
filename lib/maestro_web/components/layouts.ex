@@ -18,14 +18,15 @@ defmodule MaestroWeb.Layouts do
 
   @spec app(term()) :: term()
   def app(assigns) do
-    current_project = try do
-      Maestro.Ops.AppState.get_current_project()
-    rescue
-      _ -> nil
-    end
+    current_project =
+      try do
+        Maestro.Ops.AppState.get_current_project()
+      rescue
+        _ -> nil
+      end
 
     assigns = assign(assigns, :current_project, current_project)
-    
+
     ~H"""
     <div class="drawer">
       <input id="main-drawer" type="checkbox" class="drawer-toggle" />
@@ -43,33 +44,32 @@ defmodule MaestroWeb.Layouts do
           <div class="navbar-center gap-2">
             <a href="/projects" class="btn btn-ghost">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
               </svg>
               Projects
             </a>
             <a href="/tasks" class="btn btn-ghost">
-              <.icon name="hero-check-circle" class="w-5 h-5" />
-              Tasks
+              <.icon name="hero-check-circle" class="w-5 h-5" /> Tasks
             </a>
             <a href="/resources" class="btn btn-ghost">
-              <.icon name="hero-bookmark" class="w-5 h-5" />
-              Resources
+              <.icon name="hero-bookmark" class="w-5 h-5" /> Resources
             </a>
             <a href="/concepts" class="btn btn-ghost">
-              <.icon name="hero-square-3-stack-3d" class="w-5 h-5" />
-              Concepts
+              <.icon name="hero-square-3-stack-3d" class="w-5 h-5" /> Concepts
             </a>
             <a href="/rules" class="btn btn-ghost">
-              <.icon name="hero-document-text" class="w-5 h-5" />
-              Rules
+              <.icon name="hero-document-text" class="w-5 h-5" /> Rules
             </a>
             <a href="/audit" class="btn btn-ghost">
-              <.icon name="hero-clipboard-document-check" class="w-5 h-5" />
-              Audit
+              <.icon name="hero-clipboard-document-check" class="w-5 h-5" /> Audit
             </a>
             <a href="/agents" class="btn btn-ghost">
-              <.icon name="hero-cpu-chip" class="w-5 h-5" />
-              Agents
+              <.icon name="hero-cpu-chip" class="w-5 h-5" /> Agents
             </a>
           </div>
           <div class="navbar-end gap-2">
@@ -79,7 +79,10 @@ defmodule MaestroWeb.Layouts do
         </div>
 
         <%= if @live? do %>
-          <.live_component module={MaestroWeb.Components.AgentDashboardComponent} id="agent-dashboard" />
+          <.live_component
+            module={MaestroWeb.Components.AgentDashboardComponent}
+            id="agent-dashboard"
+          />
         <% end %>
 
         <main class="container mx-auto px-4 py-2 max-w-7xl flex-1">
@@ -91,18 +94,29 @@ defmodule MaestroWeb.Layouts do
     <.flash_group flash={@flash} />
     """
   end
-@spec git_dropdown(term()) :: term()
+
+  @spec git_dropdown(term()) :: term()
 
   def git_dropdown(assigns) do
     ~H"""
-    <div class="dropdown dropdown-end" id="git-dropdown" data-project-path="" phx-hook="GitDropdownHook">
+    <div
+      class="dropdown dropdown-end"
+      id="git-dropdown"
+      data-project-path=""
+      phx-hook="GitDropdownHook"
+    >
       <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2" id="git-dropdown-button">
         <.icon name="hero-code-bracket" class="w-4 h-4" />
         <span class="font-mono text-xs" id="git-branch-label">git</span>
         <span id="git-commits-ahead"></span>
         <span id="git-commits-behind"></span>
       </div>
-      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-64" id="git-dropdown-menu" style="display: none;">
+      <ul
+        tabindex="0"
+        class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-64"
+        id="git-dropdown-menu"
+        style="display: none;"
+      >
         <li class="menu-title">Current Branch</li>
         <li class="px-4 py-2">
           <span class="font-mono text-sm" id="git-current-branch"></span>
@@ -146,7 +160,8 @@ defmodule MaestroWeb.Layouts do
     </div>
     """
   end
-@spec user_menu(term()) :: term()
+
+  @spec user_menu(term()) :: term()
 
   attr :current_user, :map, default: nil
 
@@ -165,7 +180,10 @@ defmodule MaestroWeb.Layouts do
             <% end %>
           </div>
         </div>
-        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52">
+        <ul
+          tabindex="0"
+          class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52"
+        >
           <li class="menu-title">
             <span class="truncate">{@current_user.email}</span>
           </li>
@@ -174,8 +192,16 @@ defmodule MaestroWeb.Layouts do
             <details>
               <summary><.icon name="hero-cog-6-tooth" class="w-4 h-4" /> Settings</summary>
               <ul>
-                <li><a href="/settings/hotkeys"><.icon name="hero-command-line" class="w-4 h-4" /> Hotkeys</a></li>
-                <li><a href="/settings/aliases"><.icon name="hero-chat-bubble-left-right" class="w-4 h-4" /> Aliases</a></li>
+                <li>
+                  <a href="/settings/hotkeys"><.icon name="hero-command-line" class="w-4 h-4" />
+                  Hotkeys</a>
+                </li>
+                <li>
+                  <a href="/settings/aliases"><.icon
+                    name="hero-chat-bubble-left-right"
+                    class="w-4 h-4"
+                  /> Aliases</a>
+                </li>
                 <li><a href="/admin/tailwind-analysis">Tailwind Analysis</a></li>
                 <li><a href="/admin/page-inventory">Page Inventory</a></li>
                 <li><a href="/admin/component-replacement">Component Replacement</a></li>
@@ -198,7 +224,10 @@ defmodule MaestroWeb.Layouts do
               </ul>
             </details>
           </li>
-          <li><a href="/sign-out"><.icon name="hero-arrow-right-on-rectangle" class="w-4 h-4" /> Sign Out</a></li>
+          <li>
+            <a href="/sign-out"><.icon name="hero-arrow-right-on-rectangle" class="w-4 h-4" />
+            Sign Out</a>
+          </li>
         </ul>
       </div>
     <% else %>

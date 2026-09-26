@@ -199,10 +199,15 @@ defmodule MaestroWeb.ProjectDetailLive do
   end
 
   defp project_git_status(assigns) do
-    project_path = Path.expand("~/dev/#{assigns.project.slug}")
+    assigns = assign(assigns, :project_path, Path.expand("~/dev/#{assigns.project.slug}"))
 
     ~H"""
-    <div id={"git-status-#{@project.id}"} data-project-path={project_path} data-project-id={@project.id} phx-hook="ProjectGitInfoHook">
+    <div
+      id={"git-status-#{@project.id}"}
+      data-project-path={@project_path}
+      data-project-id={@project.id}
+      phx-hook="ProjectGitInfoHook"
+    >
       <button class="btn btn-sm btn-ghost gap-2">
         <.icon name="hero-code-bracket" class="w-4 h-4" />
         <span id={"git-branch-#{@project.id}"}>Click to load...</span>

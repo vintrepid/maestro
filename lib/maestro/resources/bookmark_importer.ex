@@ -32,7 +32,7 @@ defmodule Maestro.Resources.BookmarkImporter do
     end
   end
 
-  defp extract_bookmarks(html_tree, path \\ []) do
+  defp extract_bookmarks(html_tree, path) do
     Enum.flat_map(Floki.find(html_tree, "dt"), fn dt ->
       case extract_bookmark_or_folder(dt, path) do
         {:bookmark, bookmark} ->

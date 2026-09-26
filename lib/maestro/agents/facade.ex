@@ -7,8 +7,6 @@ defmodule Maestro.Agents.Facade do
   returns plain maps suitable for LiveView streams (string `:id` keys).
   """
 
-  require Ash.Query
-
   alias Maestro.Agents.{Agent, Session, Request, PubSub}
 
   # --- PubSub ---

@@ -114,15 +114,7 @@ defmodule Maestro.Ops.Rules.ParsedFile do
   end
 
   defp parse_heex(heex_source) do
-    # Use the HEEx tokenizer from Phoenix LiveView
-    try do
-      case Phoenix.LiveView.HTMLEngine.component_to_tree(heex_source) do
-        {:ok, tree} -> {:ok, tree}
-        error -> error
-      end
-    rescue
-      _ -> {:error, :parse_failed}
-    end
+    MaestroTool.HEExParser.parse(heex_source)
   end
 
   defp tree_has_tag?(nodes, tag_name) when is_list(nodes) do
@@ -134,5 +126,6 @@ defmodule Maestro.Ops.Rules.ParsedFile do
   end
 
   defp tree_has_tag?({:tag_self_close, name, _attrs}, tag_name), do: name == tag_name
+
   defp tree_has_tag?(_, _), do: false
 end

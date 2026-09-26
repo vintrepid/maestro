@@ -86,6 +86,7 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMd do
   end
 
   defp drop_maestro_bundle_for_projects(rules, "maestro"), do: rules
+
   defp drop_maestro_bundle_for_projects(rules, _project),
     do: Enum.reject(rules, &(&1.bundle == :maestro))
 

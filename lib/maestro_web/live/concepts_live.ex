@@ -114,7 +114,6 @@ defmodule MaestroWeb.ConceptsLive do
         category_nodes =
           Enum.map_join(by_category, "\n", fn {category, cat_rules} ->
             safe_cat = safe_id("#{bundle_name}_#{category}")
-            rule_count = length(cat_rules)
             severities = cat_rules |> Enum.map(& &1.severity) |> Enum.frequencies()
             must_count = Map.get(severities, "must", 0)
             should_count = Map.get(severities, "should", 0)

@@ -15,7 +15,7 @@ defmodule Mix.Tasks.Maestro.Handoff do
   @shortdoc "Write current_task.json handoff for next agent session"
 
   alias Maestro.Ops.Rule
-  alias Maestro.Ops.Rules.{Quality, Coverage, SiteAudit}
+  alias Maestro.Ops.Rules.{Quality, SiteAudit}
 
   @spec run([String.t()]) :: :ok
   def run(args) do

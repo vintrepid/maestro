@@ -27,7 +27,6 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   use MaestroWeb, :live_component
 
   alias Maestro.Ops.AgentDashboard
-  alias Maestro.Agents.PubSub, as: AgentPubSub
 
   # --- Lifecycle ---
 
@@ -49,11 +48,6 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
       end
 
     {:ok, load_data(socket)}
-  end
-
-  @impl true
-  def handle_info({:task_changed, _action, _task}, socket) do
-    {:noreply, load_data(socket)}
   end
 
   # --- Events ---
@@ -371,13 +365,6 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   defp session_status_badge("failed"), do: "badge-error"
   defp session_status_badge(_), do: "badge-ghost"
 
-  defp kind_badge("user_prompt"), do: "badge-primary"
-  defp kind_badge("tool_call"), do: "badge-warning"
-  defp kind_badge("tool_result"), do: "badge-info"
-  defp kind_badge("agent_response"), do: "badge-success"
-  defp kind_badge("system"), do: "badge-ghost"
-  defp kind_badge(_), do: "badge-ghost"
-
   defp file_type_badge(:elixir), do: "badge-primary"
   defp file_type_badge(:heex), do: "badge-secondary"
   defp file_type_badge(:css), do: "badge-accent"
@@ -385,15 +372,4 @@ defmodule MaestroWeb.Components.AgentDashboardComponent do
   defp file_type_badge(:json), do: "badge-info"
   defp file_type_badge(:markdown), do: "badge-ghost"
   defp file_type_badge(_), do: "badge-ghost"
-
-  # --- Formatting helpers ---
-
-  defp truncate_text(nil, _), do: ""
-  defp truncate_text(str, max) when byte_size(str) <= max, do: str
-  defp truncate_text(str, max), do: String.slice(str, 0, max) <> "..."
-
-  defp format_datetime(nil), do: ""
-  defp format_datetime(%NaiveDateTime{} = dt), do: Calendar.strftime(dt, "%Y-%m-%d %H:%M")
-  defp format_datetime(%DateTime{} = dt), do: Calendar.strftime(dt, "%Y-%m-%d %H:%M")
-  defp format_datetime(_), do: ""
 end

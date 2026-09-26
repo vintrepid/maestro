@@ -93,7 +93,11 @@ defmodule Maestro.Ops.Rules.GiuliaClient do
 
     # Filter dead code false positives: functions called from HEEx templates
     heex_calls = Maestro.Ops.Rules.HeexCalls.extract(project_path)
-    results = %{results | dead_code: Maestro.Ops.Rules.HeexCalls.filter_dead_code(results.dead_code, heex_calls)}
+
+    results = %{
+      results
+      | dead_code: Maestro.Ops.Rules.HeexCalls.filter_dead_code(results.dead_code, heex_calls)
+    }
 
     normalize_to_audit_results(results)
   end
@@ -325,5 +329,4 @@ defmodule Maestro.Ops.Rules.GiuliaClient do
   end
 
   defp add_convention_findings(acc, _), do: acc
-
 end

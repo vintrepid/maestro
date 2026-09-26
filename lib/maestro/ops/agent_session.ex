@@ -85,22 +85,22 @@ defmodule Maestro.Ops.AgentSession do
       argument :rule_id, :uuid, allow_nil?: false
 
       change manage_relationship(:rule_id, :rules,
-        on_no_match: :error,
-        on_match: :ignore,
-        value_is_key: :id,
-        type: :append
-      )
+               on_no_match: :error,
+               on_match: :ignore,
+               value_is_key: :id,
+               type: :append
+             )
     end
 
     update :remove_rule do
       argument :rule_id, :uuid, allow_nil?: false
 
       change manage_relationship(:rule_id, :rules,
-        on_no_match: :ignore,
-        on_match: :unrelate,
-        value_is_key: :id,
-        type: :remove
-      )
+               on_no_match: :ignore,
+               on_match: :unrelate,
+               value_is_key: :id,
+               type: :remove
+             )
     end
 
     read :active do

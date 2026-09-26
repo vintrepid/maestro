@@ -10,19 +10,20 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
   @spec guidelines_viewer(map()) :: term()
   def guidelines_viewer(assigns) do
     project = assigns[:project] || get_project_name()
-    startup_sequence = get_startup_sequence(project)
+    startup_sequence = get_startup_sequence()
     agents_tree = get_agents_tree()
     total_size = calculate_total_size(agents_tree)
 
     assigns = assign(assigns, :startup_sequence, startup_sequence)
     assigns = assign(assigns, :agents_tree, agents_tree)
     assigns = assign(assigns, :total_size, total_size)
+    assigns = assign(assigns, :project, project)
 
     ~H"""
     <.card class={@class}>
       <div class="text-xs font-bold text-primary mb-2">🚀 Agent Startup Sequence</div>
       <div class="text-xs text-base-content/70 mb-3">Read in this order each session:</div>
-      <div id="startup-sequence" phx-hook="SortableHook" data-project={project}>
+      <div id="startup-sequence" phx-hook="SortableHook" data-project={@project}>
         <%= for {item, index} <- Enum.with_index(@startup_sequence, 1) do %>
           <.startup_item item={item} index={index} />
         <% end %>
@@ -66,22 +67,6 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
         </div>
         <div class="text-xs text-base-content/60 ml-5">{@item.description}</div>
       </div>
-    </div>
-    """
-  end
-
-  attr :item, :map, required: true
-
-  defp file_item(assigns) do
-    ~H"""
-    <div
-      class="flex items-center gap-2 py-1 hover:bg-base-200 rounded px-2 cursor-pointer"
-      phx-click="open_file"
-      phx-value-path={get_file_path(@item.name)}
-    >
-      <input type="checkbox" checked={@item.checked} class="checkbox checkbox-xs" />
-      <.icon name="hero-document-text" class="w-3 h-3 text-base-content/60" />
-      <span class="text-xs">{@item.name}</span>
     </div>
     """
   end
@@ -133,20 +118,7 @@ defmodule MaestroWeb.Components.GuidelinesViewer do
     """
   end
 
-  defp get_file_path(name) do
-    cond do
-      String.contains?(name, "(project root)") ->
-        String.replace(name, " (project root)", "")
-
-      String.ends_with?(name, ".md") ->
-        "agents/project-specific/maestro/#{name}"
-
-      true ->
-        "agents/#{name}"
-    end
-  end
-
-  defp get_startup_sequence(project) do
+  defp get_startup_sequence do
     agents_md = %{
       name: "AGENTS.md",
       path: "AGENTS.md",

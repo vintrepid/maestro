@@ -103,7 +103,6 @@ defmodule MaestroWeb.AuditLive do
      |> assign(:module_dag, nil)}
   end
 
-
   @impl true
   def handle_info(:do_audit, socket) do
     Audit.run_audit(
@@ -113,6 +112,7 @@ defmodule MaestroWeb.AuditLive do
       linter: socket.assigns.filter_linter,
       deep: socket.assigns.filter_giulia
     )
+
     {:noreply, socket}
   end
 
@@ -228,7 +228,6 @@ defmodule MaestroWeb.AuditLive do
               </span>
             </label>
           </div>
-
         </div>
 
         <%= if @audit && @audit.status == :completed do %>
@@ -261,8 +260,7 @@ defmodule MaestroWeb.AuditLive do
               <div class="collapse-title font-medium">
                 Changes since last audit
                 <span class="badge badge-sm ml-2">
-                  {length(@audit_diff.new_findings)} new /
-                  {length(@audit_diff.resolved_findings)} resolved
+                  {length(@audit_diff.new_findings)} new / {length(@audit_diff.resolved_findings)} resolved
                 </span>
               </div>
               <div class="collapse-content">

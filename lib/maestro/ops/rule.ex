@@ -42,6 +42,7 @@ defmodule Maestro.Ops.Rule do
   postgres do
     table "rules"
     repo Maestro.Repo
+    migration_defaults applies_to: ~s|fragment("'{all}'::text[]")|
   end
 
   code_interface do

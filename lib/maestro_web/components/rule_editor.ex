@@ -57,13 +57,34 @@ defmodule MaestroWeb.Components.RuleEditor do
         <.input field={@form[:content]} type="textarea" label="Content" rows={4} required />
 
         <div class="grid grid-cols-2 gap-x-4">
-          <.input field={@form[:category]} type="select" label="Category" prompt="Select..." options={@category_options} required />
+          <.input
+            field={@form[:category]}
+            type="select"
+            label="Category"
+            prompt="Select..."
+            options={@category_options}
+            required
+          />
           <.input field={@form[:severity]} type="select" label="Severity" options={@severity_options} />
-          <.input field={@form[:bundle]} type="select" label="Bundle" prompt="Select..." options={@bundle_options} />
-          <.input field={@form[:source_project_slug]} label="Source Project" placeholder="e.g. maestro" />
+          <.input
+            field={@form[:bundle]}
+            type="select"
+            label="Bundle"
+            prompt="Select..."
+            options={@bundle_options}
+          />
+          <.input
+            field={@form[:source_project_slug]}
+            label="Source Project"
+            placeholder="e.g. maestro"
+          />
         </div>
 
-        <.input field={@form[:source_context]} label="Source Context" placeholder="Why this rule exists" />
+        <.input
+          field={@form[:source_context]}
+          label="Source Context"
+          placeholder="Why this rule exists"
+        />
         <.input
           field={@form[:tags]}
           label="Tags (comma-separated)"
@@ -92,10 +113,18 @@ defmodule MaestroWeb.Components.RuleEditor do
         <button phx-click="approve" phx-value-id={@rule.id} class="btn btn-sm btn-success btn-outline">
           <.icon name="hero-check" class="w-4 h-4" /> Approve
         </button>
-        <button phx-click="mark_linter" phx-value-id={@rule.id} class="btn btn-sm btn-info btn-outline">
+        <button
+          phx-click="mark_linter"
+          phx-value-id={@rule.id}
+          class="btn btn-sm btn-info btn-outline"
+        >
           <.icon name="hero-wrench-screwdriver" class="w-4 h-4" /> Linter
         </button>
-        <button phx-click="mark_anti_pattern" phx-value-id={@rule.id} class="btn btn-sm btn-error btn-outline">
+        <button
+          phx-click="mark_anti_pattern"
+          phx-value-id={@rule.id}
+          class="btn btn-sm btn-error btn-outline"
+        >
           <.icon name="hero-x-circle" class="w-4 h-4" /> Anti-pattern
         </button>
       <% end %>

@@ -46,7 +46,8 @@ defmodule MaestroWeb.RulesLive do
   def handle_event("approve", %{"id" => id}, socket) do
     case Rules.approve_rule(id) do
       :ok ->
-        {:noreply, socket |> refresh_counts() |> refresh_table() |> put_flash(:info, "Rule approved")}
+        {:noreply,
+         socket |> refresh_counts() |> refresh_table() |> put_flash(:info, "Rule approved")}
 
       {:error, msg} ->
         {:noreply, put_flash(socket, :error, msg)}
@@ -65,7 +66,9 @@ defmodule MaestroWeb.RulesLive do
 
   def handle_event("mark_anti_pattern", %{"id" => id}, socket) do
     Rules.mark_anti_pattern(id)
-    {:noreply, socket |> refresh_counts() |> refresh_table() |> put_flash(:info, "Marked as anti-pattern")}
+
+    {:noreply,
+     socket |> refresh_counts() |> refresh_table() |> put_flash(:info, "Marked as anti-pattern")}
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
@@ -231,7 +234,6 @@ defmodule MaestroWeb.RulesLive do
           bundle_options={@bundle_options}
           source_type_options={@source_type_options}
         />
-
       </div>
     </Layouts.app>
     """
@@ -264,7 +266,10 @@ defmodule MaestroWeb.RulesLive do
         <button
           phx-click="filter_tag"
           phx-value-tag={tag}
-          class={["badge cursor-pointer gap-1", if(@active_tag == tag, do: "badge-primary", else: "badge-outline badge-sm")]}
+          class={[
+            "badge cursor-pointer gap-1",
+            if(@active_tag == tag, do: "badge-primary", else: "badge-outline badge-sm")
+          ]}
         >
           {tag} <span class="opacity-60">{count}</span>
         </button>
@@ -283,7 +288,10 @@ defmodule MaestroWeb.RulesLive do
         <button
           phx-click="filter_category"
           phx-value-category={cat}
-          class={["badge badge-lg cursor-pointer gap-1", if(@active_category == cat, do: "badge-primary", else: "badge-outline")]}
+          class={[
+            "badge badge-lg cursor-pointer gap-1",
+            if(@active_category == cat, do: "badge-primary", else: "badge-outline")
+          ]}
         >
           {cat} <span class="badge badge-sm badge-ghost">{count}</span>
         </button>

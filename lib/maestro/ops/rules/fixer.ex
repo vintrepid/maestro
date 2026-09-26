@@ -18,8 +18,10 @@ defmodule Maestro.Ops.Rules.Fixer do
         File.write!(source_file, new_source)
 
       {:error, error} ->
-        Logger.error(
-          "Fixer refused to write invalid source to #{source_file}: #{inspect(error)}"
+        Logger.error("Fixer refused invalid source",
+          event: "maestro.rules.fixer.invalid_source",
+          outcome: "error",
+          file: source_file
         )
 
         {:error, {:invalid_output, source_file, error}}
@@ -68,6 +70,7 @@ defmodule Maestro.Ops.Rules.Fixer do
       Enum.split_with(failed, fn f ->
         mod = Map.get(f, :check_module)
         violations = Map.get(f, :violations, [])
+
         mod && violations != [] && Enum.any?(violations, & &1[:fixable]) &&
           function_exported?(mod, :fix, 2)
       end)
@@ -128,14 +131,29 @@ defmodule Maestro.Ops.Rules.Fixer do
               fixed = mod.fix(s, violation)
 
               case Sourceror.parse_string(fixed) do
-                {:ok, _} -> fixed
+                {:ok, _} ->
+                  fixed
+
                 {:error, _} ->
-                  Logger.warning("Fix produced invalid source for #{inspect(mod)}, skipping violation at line #{violation[:line]}")
+                  Logger.warning("Fix produced invalid source; skipping violation",
+                    event: "maestro.rules.fixer.invalid_fix",
+                    outcome: "error",
+                    module: mod,
+                    line: violation[:line]
+                  )
+
                   s
               end
             rescue
-              e ->
-                Logger.warning("Fix crashed for #{inspect(mod)} at line #{violation[:line]}: #{Exception.message(e)}")
+              # maestro: allow bare_rescue -- one fixer must not abort the remaining fixes
+              _error ->
+                Logger.warning("Fix crashed",
+                  event: "maestro.rules.fixer.crashed",
+                  outcome: "error",
+                  module: mod,
+                  line: violation[:line]
+                )
+
                 s
             end
           end)
@@ -151,7 +169,12 @@ defmodule Maestro.Ops.Rules.Fixer do
 
   # -- Giulia finding fixes --
 
-  @giulia_fixable_patterns ["missing_spec", "missing_moduledoc", "single_value_pipe", "runtime_atom_creation"]
+  @giulia_fixable_patterns [
+    "missing_spec",
+    "missing_moduledoc",
+    "single_value_pipe",
+    "runtime_atom_creation"
+  ]
 
   defp fixable_giulia_finding?(finding) do
     evidence = List.first(finding.evidence || []) || ""
@@ -231,7 +254,9 @@ defmodule Maestro.Ops.Rules.Fixer do
     # Match both `def func(` and `def func do` (zero-arity without parens)
     func_name_escaped = Regex.escape(to_string(func_name))
     func_with_parens = ~r/^\s*def[p]?\s+#{func_name_escaped}\s*\(/
-    func_no_parens = ~r/^\s*def[p]?\s+#{func_name_escaped}\s*[,\n]|\s*def[p]?\s+#{func_name_escaped}\s+do\b/
+
+    func_no_parens =
+      ~r/^\s*def[p]?\s+#{func_name_escaped}\s*[,\n]|\s*def[p]?\s+#{func_name_escaped}\s+do\b/
 
     {result, _inserted} =
       Enum.reduce(lines, {[], false}, fn line, {acc, already_inserted_here} ->
@@ -351,6 +376,7 @@ defmodule Maestro.Ops.Rules.Fixer do
       String.contains?(module_name, "Controller") ->
         controller =
           module_name |> String.split(".") |> List.last() |> String.replace("Controller", "")
+
         "Controller for #{humanize(controller)} routes."
 
       source =~ "use Ash.Domain" ->
@@ -400,7 +426,9 @@ defmodule Maestro.Ops.Rules.Fixer do
 
   defp apply_single_pipe_patches_iteratively(source, passes_remaining) do
     case collect_single_pipe_patches(source) do
-      [] -> source
+      [] ->
+        source
+
       patches ->
         new_source = Sourceror.patch_string(source, patches)
         apply_single_pipe_patches_iteratively(new_source, passes_remaining - 1)
@@ -521,7 +549,6 @@ defmodule Maestro.Ops.Rules.Fixer do
         []
     end
   end
-
 
   # -- Maestro rule fix strategies --
 

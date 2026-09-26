@@ -54,7 +54,10 @@ defmodule MaestroWeb.Components.GiuliaSkillsCatalog do
   @spec handle_event(term(), term(), term()) :: term()
   def handle_event("filter_category", %{"category" => cat}, socket) do
     selected = if cat == socket.assigns.selected_category, do: nil, else: cat
-    skills = if selected, do: GiuliaClient.fetch_skills(selected), else: GiuliaClient.fetch_skills()
+
+    skills =
+      if selected, do: GiuliaClient.fetch_skills(selected), else: GiuliaClient.fetch_skills()
+
     {:noreply, socket |> assign(:selected_category, selected) |> assign(:skills, skills)}
   end
 
