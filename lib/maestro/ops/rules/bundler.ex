@@ -45,7 +45,7 @@ defmodule Maestro.Ops.Rules.Bundler do
   """
   @spec generate_bundle(any(), any()) :: term()
   def generate_bundle(bundle_name, rules \\ nil) do
-    rules = rules || fetch_approved_rules()
+    rules = MaestroTool.GuidancePolicy.application_rules(rules || fetch_approved_rules())
 
     # Filter by bundle assignment first, then fall back to category matching
     bundle_rules = filter_for_bundle(rules, bundle_name)
@@ -80,7 +80,7 @@ defmodule Maestro.Ops.Rules.Bundler do
   """
   @spec generate_compact_json(any()) :: term()
   def generate_compact_json(bundle_name \\ :universal) do
-    rules = fetch_approved_rules()
+    rules = fetch_approved_rules() |> MaestroTool.GuidancePolicy.application_rules()
     bundle_rules = filter_for_bundle(rules, bundle_name)
 
     sorted =

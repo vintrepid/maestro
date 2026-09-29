@@ -150,12 +150,6 @@
     "content": "**Prefer** process-first naming: name the action, parameterize the participants. Processors end in `-er` (validator, parser, builder). Contracts/interfaces end in `-able` (validatable, parseable, buildable). The process owns the verb; the nouns are participants. This is Interface Segregation made manifest in vocabulary."
   },
   {
-    "id": "bf6966ef-4763-4c77-b198-9a75e293e544",
-    "category": "agent_behavior",
-    "severity": "must",
-    "content": "Never run mix maestro.deploy (or any equivalent production-shipping command) without an explicit user instruction for the specific change. Prior approvals do not carry forward across commits. Commit locally, summarize, stop, and wait for an explicit 'deploy' or 'ship it'."
-  },
-  {
     "id": "a50bfea1-b602-42ef-935a-4f02a15b4ff5",
     "category": "elixir",
     "severity": "should",
@@ -316,12 +310,6 @@
     "category": "elixir",
     "severity": "should",
     "content": "- Prefer: **Prefer** process-first naming: name the action, parameterize the participants. Processors end in `-er` (validator, parser, builder). Contracts/interfaces end in `-able` (validatable, parseable, buildable). The process owns the verb; the nouns are participants. This is Interface Segregation made manifest in vocabulary."
-  },
-  {
-    "id": "399679a4-9add-4169-96a8-cfe96c4208a5",
-    "category": "architecture",
-    "severity": "should",
-    "content": "**Always** Before side-effecting actions (`mix maestro.deploy`, destructive\n  git, fly commands, external service calls): a one-line \"why ship\n  this?\" plus explicit ask. Never chain commit → deploy without\n  asking; see feedback_deploy_requires_explicit_go.md."
   },
   {
     "id": "6acdb0f9-e223-4cb3-bffd-6078e5992f8d",

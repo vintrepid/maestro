@@ -563,7 +563,7 @@ defmodule Maestro.Ops.Rules.Curator do
   # ── Phase 6: Write outputs ─────────────────────────────────────────
 
   defp write_outputs do
-    rules = Rule.approved!()
+    rules = Rule.approved!() |> MaestroTool.GuidancePolicy.application_rules()
     write_rules_md(rules)
     write_rules_json(rules)
   end
@@ -575,6 +575,7 @@ defmodule Maestro.Ops.Rules.Curator do
       [
         "# Rules",
         "# Curated by Maestro · #{Date.utc_today()} · #{length(rules)} approved rules",
+        MaestroTool.GuidancePolicy.workflow_reference(),
         ""
       ] ++
         Enum.flat_map(by_category, fn {category, cat_rules} ->

@@ -13,7 +13,7 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMdTest do
     rule =
       Rule.create!(
         %{
-          content: "**Never** deploy without explicit approval",
+          content: "**Never** log authentication tokens",
           category: :deployment,
           severity: :must
         },
@@ -30,7 +30,32 @@ defmodule Mix.Tasks.Maestro.Gen.ClaudeMdTest do
 
     guidelines = File.read!(output)
 
-    assert guidelines =~ "**NEVER** deploy without explicit approval"
-    refute guidelines =~ "**ALWAYS** deploy without explicit approval"
+    assert guidelines =~ "**NEVER** log authentication tokens"
+    refute guidelines =~ "**ALWAYS** log authentication tokens"
+  end
+
+  test "shared workflow rules are routed to Maestro Tool instead of copied into the app" do
+    rule =
+      Rule.create!(
+        %{
+          content: "Prior approvals do not carry forward across commits. Stop and ask again.",
+          category: :deployment,
+          severity: :must
+        },
+        authorize?: false
+      )
+
+    Rule.approve!(rule, authorize?: false)
+
+    output =
+      Path.join(System.tmp_dir!(), "maestro-workflow-routing-#{System.unique_integer()}.md")
+
+    on_exit(fn -> File.rm(output) end)
+    Mix.Task.reenable("maestro.gen.claude_md")
+    Mix.Tasks.Maestro.Gen.ClaudeMd.run(["--project", "calvin", "--output", output])
+
+    guidelines = File.read!(output)
+    assert guidelines =~ MaestroTool.GuidancePolicy.workflow_reference()
+    refute guidelines =~ "Prior approvals do not carry forward"
   end
 end

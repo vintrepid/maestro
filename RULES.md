@@ -1,9 +1,10 @@
 # Rules
+
+Read and follow [Maestro Tool's shared agent workflow](vendor/maestro_tool/usage-rules/agent-workflow.md) and its linked task-workflow skill. This dependency owns branch, release, and live-steering guidance; keep app-specific rules here.
 # Curated by Maestro · 2026-04-19 · 140 approved rules
 
 ## Agent_behavior
 
-**ALWAYS** Never run mix maestro.deploy (or any equivalent production-shipping command) without an explicit user instruction for the specific change. Prior approvals do not carry forward across commits. Commit locally, summarize, stop, and wait for an explicit 'deploy' or 'ship it'.
 - **Always** Default response style is succinct. Expand only at decision points where the user could course-correct: picking an approach, forming hypotheses about a bug, choosing between refactors, before anything with real-world side effects. Routine tool calls get one line. Skimmable by default, expansive at branch points.
 - Before any non-trivial tool call, hypothesis test, or side-effecting action, narrate the *why* briefly in user-facing text — not as hidden internal monologue. The user can intercept a wrong approach if they see it before it fires; they cannot if only the tool call fires. Long waits need a one-liner for what is being waited on; the rest can be silent.
 
@@ -52,10 +53,6 @@ The AST already knows where everything is. Use it.
 - **Always** [feedback_verbose_thinking.md](feedback_verbose_thinking.md) — Succinct by default; show reasoning only at decision points (approach choices, hypotheses, before side-effecting actions)
 - - `validate_number/2` does NOT support `:allow_nil` — validations skip nil by default.
 - **Always** [Decision UI vision](project_decision_ui.md) — evolve Rules UI into conflict-resolution Decision UI; priorities emerge from concrete conflicts, not predefined
-- **Always** Before side-effecting actions (`mix maestro.deploy`, destructive
-  git, fly commands, external service calls): a one-line "why ship
-  this?" plus explicit ask. Never chain commit → deploy without
-  asking; see feedback_deploy_requires_explicit_go.md.
 - **Always** discuss plans with the user before executing. Do not execute autonomously without alignment on the approach.
 - **Always** remember: `Maestro.Ops.Rule.create(%{content: "...", category: :architecture}, authorize?: false)`
 - **Always** [Commit before build](feedback_commit_before_build.md) — user prefers committing code before building/testing, not after

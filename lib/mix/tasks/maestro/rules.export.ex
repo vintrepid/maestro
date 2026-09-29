@@ -109,6 +109,8 @@ defmodule Mix.Tasks.Maestro.Rules.Export do
     agents_md = """
     # Agent Rules
 
+    #{MaestroTool.GuidancePolicy.workflow_reference()}
+
     1. Read `MAP.md` for the codebase architecture. Do NOT explore files manually.
        confirm: You have read MAP.md (state the module count)
 

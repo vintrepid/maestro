@@ -102,7 +102,7 @@ defmodule Maestro.MixProject do
       {:maestro_tool,
        path: maestro_tool_path(),
        runtime: false,
-       env: if(Mix.env() == :prod, do: :prod, else: :host)},
+       env: if(Mix.env() == :prod, do: :maestro_prod, else: :maestro_host)},
       {:css_linter,
        github: "vintrepid/css_linter", ref: "fcd770df9c4a52c51e94ea720edbd31be6870b40"},
       {:fun_with_flags, "~> 1.11"},
