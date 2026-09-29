@@ -5,24 +5,31 @@ defmodule Maestro.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      MaestroWeb.Telemetry,
-      Maestro.Repo,
-      {Phoenix.PubSub, name: Maestro.PubSub},
-      {DNSCluster, query: Application.get_env(:maestro, :dns_cluster_query) || :ignore},
-      {Oban,
-       AshOban.config(
-         Application.fetch_env!(:maestro, :ash_domains),
-         Application.fetch_env!(:maestro, Oban)
-       )},
-      Maestro.Ops.ProjectMonitor,
-      Maestro.Ops.AppState,
-      MaestroWeb.Endpoint,
-      {AshAuthentication.Supervisor, [otp_app: :maestro]},
-      # Enable FunWithFlags PubSub AFTER PubSub is started.
-      # This avoids the race condition where FWF tries to subscribe before PubSub is ready.
-      {Task, fn -> enable_fwf_pubsub() end}
-    ]
+    children =
+      [
+        MaestroWeb.Telemetry,
+        Maestro.Repo,
+        {Phoenix.PubSub, name: Maestro.PubSub},
+        {DNSCluster, query: Application.get_env(:maestro, :dns_cluster_query) || :ignore},
+        {Oban,
+         AshOban.config(
+           Application.fetch_env!(:maestro, :ash_domains),
+           Application.fetch_env!(:maestro, Oban)
+         )},
+        Maestro.Ops.ProjectMonitor,
+        Maestro.Ops.AppState,
+        MaestroWeb.Endpoint,
+        {AshAuthentication.Supervisor, [otp_app: :maestro]},
+        # Enable FunWithFlags PubSub AFTER PubSub is started.
+        # This avoids the race condition where FWF tries to subscribe before PubSub is ready.
+        {Task, fn -> enable_fwf_pubsub() end}
+      ] ++
+        MaestroTool.DevServer.Startup.children(
+          Application.get_env(:maestro, :env),
+          Phoenix.Endpoint.server?(:maestro, MaestroWeb.Endpoint),
+          name: Maestro.ManagedDevBootstrap,
+          projects: Application.get_env(:maestro, :managed_dev_projects, [])
+        )
 
     opts = [strategy: :one_for_one, name: Maestro.Supervisor]
     Supervisor.start_link(children, opts)

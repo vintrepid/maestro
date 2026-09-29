@@ -10,13 +10,6 @@ defmodule Maestro.Ops do
   end
 
   resources do
-    resource Maestro.Ops.Dependency
-    resource Maestro.Ops.DependencyInventory
-    resource Maestro.Ops.DependencyUpdate
-    resource Maestro.Ops.WorktreeBootstrap
-    resource Maestro.Ops.GitRepository
-    resource Maestro.Ops.GitBranch
-    resource Maestro.Ops.BranchLifecycle
     resource Maestro.Ops.Project
     resource Maestro.Ops.Task
     resource Maestro.Ops.Rule

@@ -7,6 +7,8 @@
 # General application configuration
 import Config
 
+config :maestro, :env, config_env()
+
 config :ex_money, auto_start_exchange_rate_service: false
 
 config :mime,

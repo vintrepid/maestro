@@ -3,6 +3,11 @@ config :ash, policies: [show_policy_breakdowns?: true]
 
 web_port = String.to_integer(System.get_env("PORT") || "4004")
 
+config :maestro, :managed_dev_projects, [
+  %{slug: "calvin", project_path: Path.expand("../../calvin", __DIR__), app_port: 4000},
+  %{slug: "dabhand", project_path: Path.expand("../../dabhand", __DIR__), app_port: 4008}
+]
+
 # Configure your database
 config :maestro, Maestro.Repo,
   username: "vince",
@@ -89,8 +94,3 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
-
-config :live_debugger,
-  enabled: true,
-  port: web_port + 1,
-  auto_port: true
