@@ -7,11 +7,12 @@ defmodule Maestro.Ops.Rules.Curator do
   1. **Inspect installed upstream** — no dependency update or rule adoption
   2. **Libraries** — upsert Library records from configured deps
   3. **Sources + Rules** — parse rule files, dedup, ingest new rules, triage
-  4. **External sources** — discover .md/.json in project root and extra dirs
-  5. **Skills** — discover and sync skill definitions
-  6. **Quality gate** — audit approved rules, demote failures, auto-fix proposed
-  7. **Write outputs** — generate RULES.md, rules.json
-  8. **Coverage** — report per-library stats
+  4. **Skills** — discover and sync skill definitions
+  5. **Quality gate** — audit approved rules, demote failures, auto-fix proposed
+  6. **Write outputs** — generate RULES.md, rules.json
+  7. **Coverage** — report per-library stats
+
+  Project documents and agent memory are not automatically ingested as rules.
 
   The mix task `mix maestro.rules.curate` is a thin shell that calls `run/1`.
   """
@@ -19,31 +20,27 @@ defmodule Maestro.Ops.Rules.Curator do
   alias Maestro.Ops.{Rule, Library, RuleDirective, RuleSource, RuleParser, Skill}
   alias Maestro.Ops.Rules.{Triage, LintExtractor, SkillParser, Dedup, Coverage, Quality}
 
-  @curate_outputs ~w(RULES.md rules.json)
-  @extra_scan_dirs [
-    {"/Users/vince/.claude/projects/-Users-vince-dev-maestro/memory", "claude-memory"},
-    {"agents/docs", "agents"}
-  ]
-
   @doc """
   Run the full curation pipeline. Options:
   - `:skip_deps` / `:skip_sync` — legacy options; no upstream mutation occurs
   - `:report` — read-only, no mutations
   """
   @spec run(keyword()) :: :ok
-  def run(opts \\ []) do
+  def run(opts \\ [])
+
+  def run(opts) when is_list(opts) do
+    if opts[:report], do: report_coverage(), else: curate()
+    :ok
+  end
+
+  defp curate do
     log("1: Inspect installed dependencies — no updates or bulk rule sync")
 
     log("2: Libraries")
     libraries = sync_libraries()
 
-    unless opts[:report] do
-      log("3: Sources + Rules")
-      sync_sources_and_rules(libraries)
-
-      log("3b: External Sources")
-      sync_external_sources()
-    end
+    log("3: Sources + Rules")
+    sync_sources_and_rules(libraries)
 
     log("4: Skills")
     sync_skills()
@@ -194,97 +191,6 @@ defmodule Maestro.Ops.Rules.Curator do
     do: Rule.retire(rule, %{retired_reason: r})
 
   defp apply_decision(_rule, %{status: :proposed}), do: :ok
-
-  # ── Phase 3b: External sources ──
-
-  defp sync_external_sources do
-    existing_hashes = load_existing_hashes()
-    existing_normalized = load_existing_normalized()
-    now = DateTime.utc_now()
-    root = File.cwd!()
-
-    root_files =
-      (Path.wildcard(Path.join(root, "*.md")) ++ Path.wildcard(Path.join(root, "*.json")))
-      |> Enum.reject(fn path -> Path.basename(path) in @curate_outputs end)
-      |> Enum.filter(&File.regular?/1)
-
-    file_sources =
-      Enum.map(root_files, fn path ->
-        %{path: path, name: "maestro-project", parser: detect_parser(path)}
-      end)
-
-    dir_sources =
-      Enum.flat_map(@extra_scan_dirs, fn {dir, name} ->
-        dir = if Path.type(dir) == :relative, do: Path.join(root, dir), else: dir
-
-        if File.dir?(dir) do
-          (Path.wildcard(Path.join(dir, "**/*.md")) ++ Path.wildcard(Path.join(dir, "**/*.json")))
-          |> Enum.filter(&File.regular?/1)
-          |> Enum.map(fn path -> %{path: path, name: name, parser: detect_parser(path)} end)
-        else
-          []
-        end
-      end)
-
-    (file_sources ++ dir_sources)
-    |> Enum.group_by(& &1.name)
-    |> Enum.each(fn {lib_name, sources} ->
-      {:ok, lib} =
-        Library.create(%{
-          name: lib_name,
-          description: "Auto-discovered from project root",
-          version: nil,
-          last_synced_at: now
-        })
-
-      {total_new, total_exact, total_near} =
-        Enum.reduce(sources, {0, 0, 0}, fn source, {tn, te, tnr} ->
-          rules = parse_external(source.parser, source.path, lib_name)
-          hash = RuleParser.file_hash(source.path)
-
-          {:ok, rs} =
-            RuleSource.create(%{
-              library_id: lib.id,
-              file_path: source.path,
-              sub_rule_name: Path.basename(source.path, Path.extname(source.path)),
-              content_hash: hash,
-              rule_count: length(rules),
-              last_synced_at: now
-            })
-
-          Enum.reduce(rules, {tn, te, tnr}, fn rule, {n, e, nr} ->
-            case Dedup.check(
-                   rule.content,
-                   rule.content_hash,
-                   existing_hashes,
-                   existing_normalized
-                 ) do
-              :exact_duplicate ->
-                {n, e + 1, nr}
-
-              :near_duplicate ->
-                {n, e, nr + 1}
-
-              :new ->
-                ingest(rule, lib.id, rs.id)
-                {n + 1, e, nr}
-            end
-          end)
-        end)
-
-      log(
-        "  #{lib_name}: #{total_new} new, #{total_exact} exact, #{total_near} near (#{length(sources)} files)"
-      )
-    end)
-  end
-
-  defp detect_parser(path) do
-    if Path.extname(path) == ".json", do: :startup_json, else: :agents
-  end
-
-  defp parse_external(:agents, path, name), do: RuleParser.parse_agents_file(path, name)
-  defp parse_external(:startup_json, path, name), do: RuleParser.parse_startup_json(path, name)
-  defp parse_external(:memory_dir, path, name), do: RuleParser.parse_memory_dir(path, name)
 
   defp link_orphan_rules do
     orphans =

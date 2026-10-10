@@ -48,16 +48,13 @@ Project orchestration and agent coordination hub.
 - Remove old Maestro-specific analysis files
 - Document web UI usage in css_linter
 
-### Access Points
-
-- **Web App**: http://localhost:4004
-- **Live Debugger**: http://localhost:4012
+Use `mix maestro.dev_server.status` for the configured server address and status.
 
 ## Agent guidance
 
 Maestro maintains the reviewed policy catalog. Maestro Tool owns shared
 generators, components and executable checks. Each application's AGENTS.md is
-a compact workflow entry point, not an export of the catalog.
+a link to Maestro Tool's shared AGENTS, not a copy of its instructions or catalog.
 
 Run `mix precommit` for verification and `mix maestro.guidance.bootstrap --check`
 to guard against startup bloat. Adoption through `--apply` preserves exact old
@@ -66,7 +63,9 @@ reference material; do not bulk-sync them into startup instructions.
 
 `mix maestro.rules.export` exports catalog reference bundles only. The retired
 CLAUDE generator refuses to write, and curation no longer updates dependencies
-or bulk-imports usage rules. Existing catalogs and historical evidence are kept
+or bulk-imports usage rules. Rule-cluster skill generation is retired; curation
+does not discover instructions in arbitrary project documents or agent memory.
+Existing catalogs and historical evidence are kept
 for review, not implicitly adopted as instructions.
 
 ## Orchestration Features
@@ -125,7 +124,7 @@ mix ecto.setup
 mix phx.server
 ```
 
-Visit: http://localhost:4004
+Use the address reported by `mix maestro.dev_server.status`.
 
 ### Database Commands
 
@@ -149,11 +148,3 @@ priv/
 │   ├── migrations/
 │   └── seeds.exs
 ```
-
-## Other Projects Tracked
-
-- **Ready**: Web 4000, Debugger 4008
-- **new_project**: Web 4001, Debugger 4009
-- **Calvin**: Web 4002, Debugger 4010
-- **SanJuan**: Web 4003, Debugger 4011
-- **Circle**: Web 4015, Debugger 4016
