@@ -196,6 +196,7 @@ defmodule Maestro.MixProject do
       ],
       precommit: [
         "compile --warnings-as-errors",
+        "maestro.guidance.bootstrap --check",
         "deps.unlock --unused",
         "format",
         "maestro.lint --run --baseline .maestro-lint-baseline.json lib",

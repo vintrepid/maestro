@@ -4,7 +4,7 @@ defmodule Maestro.Ops.Rules.Curator do
   triaging, quality-gating, and packaging rules.
 
   Seven phases:
-  1. **Sync upstream** — update deps, sync usage_rules skills
+  1. **Inspect installed upstream** — no dependency update or rule adoption
   2. **Libraries** — upsert Library records from configured deps
   3. **Sources + Rules** — parse rule files, dedup, ingest new rules, triage
   4. **External sources** — discover .md/.json in project root and extra dirs
@@ -27,16 +27,12 @@ defmodule Maestro.Ops.Rules.Curator do
 
   @doc """
   Run the full curation pipeline. Options:
-  - `:skip_deps` — skip deps.update
-  - `:skip_sync` — skip usage_rules.sync and external sources
+  - `:skip_deps` / `:skip_sync` — legacy options; no upstream mutation occurs
   - `:report` — read-only, no mutations
   """
   @spec run(keyword()) :: :ok
   def run(opts \\ []) do
-    unless opts[:skip_sync] || opts[:report] do
-      log("1: Deps + Sync")
-      sync_upstream(opts)
-    end
+    log("1: Inspect installed dependencies — no updates or bulk rule sync")
 
     log("2: Libraries")
     libraries = sync_libraries()
@@ -65,19 +61,6 @@ defmodule Maestro.Ops.Rules.Curator do
   end
 
   # ── Phase 1 ─────────────────────────────────────────────────────────
-
-  defp sync_upstream(opts) do
-    unless opts[:skip_deps] do
-      Mix.Task.run("deps.update", ["--all"])
-    end
-
-    try do
-      Mix.Task.run("usage_rules.sync", ["--yes"])
-      log("  Skills sync complete")
-    rescue
-      e -> log("  Skills sync failed: #{inspect(e)} — continuing")
-    end
-  end
 
   # ── Phase 2 ─────────────────────────────────────────────────────────
 
@@ -339,7 +322,7 @@ defmodule Maestro.Ops.Rules.Curator do
   #
   # Model: a superseded rule stays in the corpus as a non-canonical variant.
   # Its status (:proposed, :retired, :linter) isn't changed here — linking
-  # just marks "there's a canonical version of this; CLAUDE.md should use
+  # just marks "there's a canonical version of this; catalog exports should use
   # that one." Retiring and superseding are independent decisions.
   defp link_superseded_rules do
     approved = Rule.approved!()
@@ -350,8 +333,7 @@ defmodule Maestro.Ops.Rules.Curator do
       end)
 
     unlinked_non_approved =
-      Rule.read!()
-      |> Enum.filter(&(&1.status != :approved and is_nil(&1.superseded_by_id)))
+      Enum.filter(Rule.read!(), &(&1.status != :approved and is_nil(&1.superseded_by_id)))
 
     {linked, ambiguous} =
       Enum.reduce(unlinked_non_approved, {0, 0}, fn rule, {l, a} ->

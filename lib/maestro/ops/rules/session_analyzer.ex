@@ -7,7 +7,7 @@ defmodule Maestro.Ops.Rules.SessionAnalyzer do
 
   Checks:
   - `:multi_bullet` — consolidated rules with multiple bullets that should be individual rules
-  - `:stale_reference` — references to retired infrastructure (AGENTS.md, old mix tasks)
+  - `:stale_reference` — references to retired infrastructure (CLAUDE.md, old mix tasks)
   - `:bundle_mismatch` — rule content suggests a different bundle than assigned
   - `:duplicate` — rule restates an existing approved rule
   - `:irrelevant` — rule content doesn't match the session's domain scope
@@ -20,7 +20,7 @@ defmodule Maestro.Ops.Rules.SessionAnalyzer do
   alias Maestro.Ops.{AgentSession, Rule}
 
   @stale_patterns [
-    {"AGENTS.md", "AGENTS.md is no longer used — replaced by CLAUDE.md"},
+    {"CLAUDE.md", "CLAUDE.md is retired — use compact AGENTS.md and executable checks"},
     {"mix maestro.update", "mix maestro.update may be stale — verify it still exists"},
     {"live_redirect", "live_redirect is deprecated — use push_navigate"},
     {"live_patch", "live_patch is deprecated — use push_patch"},

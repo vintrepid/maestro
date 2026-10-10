@@ -8,7 +8,7 @@ defmodule Maestro.Ops.AgentSession do
 
   The worktree tool creates sessions and populates rules from bundle categories.
   The Rules UI filters by session to show/edit the rule set.
-  CLAUDE.md generation reads from the session's rules, not ad-hoc category filters.
+  Sessions support rule-catalog review; they do not generate startup rulebooks.
   """
 
   use Ash.Resource,

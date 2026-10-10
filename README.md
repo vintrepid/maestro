@@ -53,31 +53,21 @@ Project orchestration and agent coordination hub.
 - **Web App**: http://localhost:4004
 - **Live Debugger**: http://localhost:4012
 
-## Managing the Agents Directory
+## Agent guidance
 
-Maestro is responsible for managing `~/dev/agents/` - the central repository of shared knowledge for all projects.
+Maestro maintains the reviewed policy catalog. Maestro Tool owns shared
+generators, components and executable checks. Each application's AGENTS.md is
+a compact workflow entry point, not an export of the catalog.
 
-**Directory structure:**
-- The `agents/` directory is **symlinked into each project** (e.g., `maestro/agents -> ~/dev/agents`)
-- This allows all projects to share the same guidelines without duplication
-- Changes made in one project's agents directory affect all projects
-- The canonical version lives at `~/dev/agents/` and is a git repository
+Run `mix precommit` for verification and `mix maestro.guidance.bootstrap --check`
+to guard against startup bloat. Adoption through `--apply` preserves exact old
+instruction bytes as inactive archives. Dependency usage rules remain searchable
+reference material; do not bulk-sync them into startup instructions.
 
-**What Maestro manages:**
-- **Guidelines** (`bootstrap/`, `ui_work/`, `database_work/`, etc.) - Core patterns and best practices
-- **Usage Rules** (`usage_rules/`) - Package-specific guidelines from dependencies and our forks
-- **Bundles** (`bundles/`) - Consolidated guideline sets for efficient loading
-- **Sessions** (`sessions/`) - Archived learnings from agent sessions
-- **Logs** (`logs/`) - Session tracking data for optimization
-
-**Key responsibilities:**
-- Sync upstream changes from frameworks (e.g., Phoenix AGENTS.md → `bootstrap/PHOENIX_AGENTS.md`)
-- Build and maintain usage_rules bundles using `mix usage_rules.sync`
-- Extract learnings from sessions using `mix session.learn`
-- Generate concept maps and relationships between guidelines
-- Track guideline usage to optimize startup bundles
-
-**Why this matters:** Other projects consume from this directory but Maestro is the orchestrator that maintains it. This ensures all projects have access to current, well-organized knowledge without duplication.
+`mix maestro.rules.export` exports catalog reference bundles only. The retired
+CLAUDE generator refuses to write, and curation no longer updates dependencies
+or bulk-imports usage rules. Existing catalogs and historical evidence are kept
+for review, not implicitly adopted as instructions.
 
 ## Orchestration Features
 

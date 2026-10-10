@@ -746,6 +746,492 @@
       "path": "lib/maestro_web/components/rules_stats_component.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/bundle_graph.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/bundle_graph.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"mb-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/bundle_graph.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/bundle_graph.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"p-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/bundle_graph.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/bundle_graph.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/bundle_graph.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow-xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/bundle_graph.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/bundle_graph.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/bundle_graph.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/bundle_graph.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"mb-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"p-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow-xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"stroke-current\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/directory.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/file.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/file.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"mb-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/file.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/file.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"p-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/file.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"prose\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/file.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"prose-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/file.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/file.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/file.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"rounded\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/file.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/file.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-300\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"mb-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"p-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"prose\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"prose-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"rounded\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow-xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"stroke-current\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/concepts_html/index.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/404.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/404.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-semibold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/404.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/404.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/404.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/404.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-9xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/404.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/404.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-center\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/404.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-error\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/404.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/500.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/500.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-semibold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/500.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/500.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/500.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/500.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-9xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/500.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/500.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-center\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/500.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-error\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/error_html/500.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/page_html/home.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/page_html/home.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-12\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/page_html/home.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/page_html/home.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/page_html/home.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-6xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/page_html/home.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/page_html/home.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-center\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/page_html/home.html.heex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-primary\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/controllers/page_html/home.html.heex"
+    },
+    {
       "check": "bare_rescue",
       "count": 3,
       "message": "Broad rescue without exception type. Use `rescue e in [SpecificError] ->`.",
@@ -782,6 +1268,114 @@
       "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 7,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"border-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"border-base-300\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"border-dashed\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"break-all\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"font-mono\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 7,
+      "message": "View presentation token \"font-semibold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"form-control\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"mb-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 6,
+      "message": "View presentation token \"mb-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"mb-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"p-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"p-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 8,
+      "message": "View presentation token \"rounded\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 6,
+      "message": "View presentation token \"text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 14,
+      "message": "View presentation token \"text-xs\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/component_replacement_live.ex"
+    },
+    {
       "check": "form_usage",
       "count": 1,
       "message": "<form> missing for= attribute.",
@@ -815,6 +1409,12 @@
       "check": "missing_spec",
       "count": 1,
       "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/admin_live/page_inventory_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"form-control\" belongs in a semantic component or shared CSS.",
       "path": "lib/maestro_web/live/admin_live/page_inventory_live.ex"
     },
     {
@@ -860,6 +1460,168 @@
       "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-primary/5\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"cursor-pointer\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-medium\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 6,
+      "message": "View presentation token \"font-mono\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"font-semibold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"form-control\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"hover\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"hover:bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"italic\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 6,
+      "message": "View presentation token \"mb-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"p-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"pb-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-0\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"rounded\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/40\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-error\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-primary\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 19,
+      "message": "View presentation token \"text-right\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-secondary\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 6,
+      "message": "View presentation token \"text-xs\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/admin_live/tailwind_analysis_live.ex"
+    },
+    {
       "check": "missing_spec",
       "count": 1,
       "message": "handle_params/3 is a callback — @spec is unnecessary.",
@@ -875,6 +1637,210 @@
       "check": "missing_spec",
       "count": 1,
       "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-300\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"border-l-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"border-success/30\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"break-words\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"cursor-pointer\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"font-mono\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-semibold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"hover:bg-base-300\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mr-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"mt-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"opacity-40\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"opacity-50\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"opacity-60\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"opacity-70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"p-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"p-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"pl-3\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"ring-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"ring-primary\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"rounded\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"shadow-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-center\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"text-lg\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"text-xs\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"transition-colors\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"truncate\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/agents_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"whitespace-pre-wrap\" belongs in a semantic component or shared CSS.",
       "path": "lib/maestro_web/live/agents_live.ex"
     },
     {
@@ -914,6 +1880,96 @@
       "path": "lib/maestro_web/live/aliases_live.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-300\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-mono\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"prose\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-12\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"rounded\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow-xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-4xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/aliases_live.ex"
+    },
+    {
       "check": "form_usage",
       "count": 1,
       "message": "<form> missing for= attribute.",
@@ -950,6 +2006,138 @@
       "path": "lib/maestro_web/live/audit_live.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"audit-diff\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 5,
+      "message": "View presentation token \"cursor-pointer\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-medium\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 6,
+      "message": "View presentation token \"font-semibold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"hover:underline\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"mb-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mermaid\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"ml-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"ml-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 6,
+      "message": "View presentation token \"opacity-50\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"radial-progress\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"stats\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/40\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"text-error\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"text-success\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 11,
+      "message": "View presentation token \"text-xs\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/audit_live.ex"
+    },
+    {
       "check": "form_usage",
       "count": 1,
       "message": "<form> missing for= attribute.",
@@ -980,6 +2168,192 @@
       "path": "lib/maestro_web/live/bookmark_import_live.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"border-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"border-base-300\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"border-dashed\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"cursor-pointer\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"font-medium\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"font-semibold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"form-control\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"list-decimal\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"list-inside\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"mt-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"mt-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"mt-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"p-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"p-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-12\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"rounded-lg\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow-xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"text-base-content/40\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"text-base-content/60\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"text-base-content/80\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-center\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 5,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-xs\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/bookmark_import_live.ex"
+    },
+    {
       "check": "missing_spec",
       "count": 1,
       "message": "handle_params/3 is a callback — @spec is unnecessary.",
@@ -995,6 +2369,108 @@
       "check": "missing_spec",
       "count": 1,
       "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"mb-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mermaid\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"opacity-50\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"opacity-80\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"p-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow-xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-3xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"text-xs\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/concepts_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"truncate\" belongs in a semantic component or shared CSS.",
       "path": "lib/maestro_web/live/concepts_live.ex"
     },
     {
@@ -1028,6 +2504,84 @@
       "path": "lib/maestro_web/live/dashboard_live.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"cursor-pointer\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-mono\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-semibold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"hover:text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/40\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/50\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/60\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-error\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"text-xs\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/dashboard_live.ex"
+    },
+    {
       "check": "missing_spec",
       "count": 1,
       "message": "handle_event/3 is a callback — @spec is unnecessary.",
@@ -1043,6 +2597,72 @@
       "check": "missing_spec",
       "count": 1,
       "message": "update/2 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"font-mono\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"p-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"rounded-box\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow-lg\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"text-xs\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/git_dropdown_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"z-[1]\" belongs in a semantic component or shared CSS.",
       "path": "lib/maestro_web/live/git_dropdown_live.ex"
     },
     {
@@ -1067,6 +2687,60 @@
       "check": "missing_spec",
       "count": 1,
       "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-12\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-6xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-center\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/home_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-primary\" belongs in a semantic component or shared CSS.",
       "path": "lib/maestro_web/live/home_live.ex"
     },
     {
@@ -1100,6 +2774,96 @@
       "path": "lib/maestro_web/live/hotkeys_live.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-300\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-mono\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"prose\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-12\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"rounded\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow-xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-4xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/hotkeys_live.ex"
+    },
+    {
       "check": "missing_spec",
       "count": 1,
       "message": "handle_event/3 is a callback — @spec is unnecessary.",
@@ -1124,6 +2888,156 @@
       "path": "lib/maestro_web/live/profile_live.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"container\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/profile_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/profile_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/profile_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"p-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/profile_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/60\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/profile_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/profile_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 5,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"font-mono\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"mb-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-12\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 5,
+      "message": "View presentation token \"shadow-xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-4xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"text-base-content/60\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"text-lg\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-xs\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_detail_live.ex"
+    },
+    {
       "check": "missing_spec",
       "count": 1,
       "message": "handle_event/3 is a callback — @spec is unnecessary.",
@@ -1148,6 +3062,36 @@
       "path": "lib/maestro_web/live/project_form_live.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"pt-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/project_form_live.ex"
+    },
+    {
       "check": "missing_spec",
       "count": 1,
       "message": "handle_event/3 is a callback — @spec is unnecessary.",
@@ -1169,6 +3113,72 @@
       "check": "missing_spec",
       "count": 1,
       "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-semibold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 8,
+      "message": "View presentation token \"form-control\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 6,
+      "message": "View presentation token \"mt-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-12\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow-xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resource_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-2xl\" belongs in a semantic component or shared CSS.",
       "path": "lib/maestro_web/live/resource_form_live.ex"
     },
     {
@@ -1187,6 +3197,72 @@
       "check": "missing_spec",
       "count": 1,
       "message": "render/1 is a callback — @spec is unnecessary.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-medium\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-12\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-4xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/40\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/60\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"truncate\" belongs in a semantic component or shared CSS.",
       "path": "lib/maestro_web/live/resources_live.ex"
     },
     {
@@ -1194,6 +3270,96 @@
       "count": 1,
       "message": "Direct timestamp formatting in web code bypasses Calvin.TimeDisplay.",
       "path": "lib/maestro_web/live/resources_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 5,
+      "message": "View presentation token \"font-mono\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 8,
+      "message": "View presentation token \"font-semibold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"hover:text-primary\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"mt-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"p-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/40\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"text-xs\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"truncate\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rule_detail_live.ex"
     },
     {
       "check": "web_time_display",
@@ -1202,6 +3368,18 @@
       "path": "lib/maestro_web/live/rule_detail_live.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"cursor-pointer\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rules_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"opacity-60\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/rules_live.ex"
+    },
+    {
       "check": "missing_spec",
       "count": 1,
       "message": "handle_event/3 is a callback — @spec is unnecessary.",
@@ -1226,10 +3404,262 @@
       "path": "lib/maestro_web/live/task_form_live.ex"
     },
     {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"bg-base-100\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 9,
+      "message": "View presentation token \"bg-base-200\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"cursor-pointer\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-medium\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 8,
+      "message": "View presentation token \"font-semibold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"form-control\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 6,
+      "message": "View presentation token \"hover:bg-base-300\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"mb-0.5\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 5,
+      "message": "View presentation token \"mb-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 5,
+      "message": "View presentation token \"mb-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mt-1\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"mt-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"mt-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"mt-6\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"p-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"p-3\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"p-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"prose\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"prose-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-4\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-2\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 5,
+      "message": "View presentation token \"rounded\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 4,
+      "message": "View presentation token \"rounded-lg\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"shadow-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"text-base-content/40\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 7,
+      "message": "View presentation token \"text-base-content/60\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"text-base-content/70\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"text-left\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-success\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 9,
+      "message": "View presentation token \"text-xs\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"tracking-wide\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 3,
+      "message": "View presentation token \"transition-colors\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 2,
+      "message": "View presentation token \"uppercase\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
       "check": "web_time_display",
       "count": 1,
       "message": "Direct timestamp formatting in web code bypasses Calvin.TimeDisplay.",
       "path": "lib/maestro_web/live/task_form_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"font-bold\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/tasks_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mb-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/tasks_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"mx-auto\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/tasks_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"px-8\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/tasks_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"py-12\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/tasks_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-4xl\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/tasks_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-base-content/60\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/tasks_live.ex"
+    },
+    {
+      "check": "semantic_ui",
+      "count": 1,
+      "message": "View presentation token \"text-sm\" belongs in a semantic component or shared CSS.",
+      "path": "lib/maestro_web/live/tasks_live.ex"
     },
     {
       "check": "web_time_display",

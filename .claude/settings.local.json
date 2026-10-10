@@ -1,5 +1,21 @@
 {
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "command": ".claude/hooks/task_hook.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ]
+  },
   "permissions": {
+    "additionalDirectories": [
+      "/Users/vince/dev"
+    ],
     "allow": [
       "mcp__Tidewave__execute_sql_query",
       "mcp__Tidewave__project_eval",
@@ -23,7 +39,10 @@
       "Skill(claude-api)",
       "Skill(claude-api:*)",
       "Skill(update-config)",
-      "Skill(update-config:*)"
+      "Skill(update-config:*)",
+      "Bash(mix usage_rules.docs:*)",
+      "Bash(mix usage_rules.list:*)",
+      "Bash(mix usage_rules.search_docs:*)"
     ],
     "deny": [
       "Bash(git push --force:*)",
@@ -42,22 +61,6 @@
       "Bash(dropdb:*)",
       "Bash(psql:*DROP TABLE:*)",
       "Bash(psql:*DROP DATABASE:*)"
-    ],
-    "additionalDirectories": [
-      "/Users/vince/dev"
-    ]
-  },
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/task_hook.sh"
-          }
-        ]
-      }
     ]
   }
 }

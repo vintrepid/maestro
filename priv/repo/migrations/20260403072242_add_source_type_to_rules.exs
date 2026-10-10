@@ -22,7 +22,9 @@ defmodule Maestro.Repo.Migrations.AddSourceTypeToRules do
 
     # Backfill source_type from existing data
     execute "UPDATE rules SET source_type = 'library_file' WHERE rule_source_id IS NOT NULL"
+
     execute "UPDATE rules SET source_type = 'consolidated' WHERE source_context LIKE 'consolidated:%'"
+
     execute "UPDATE rules SET source_type = 'article' WHERE source_context LIKE 'Extracted from http%'"
   end
 

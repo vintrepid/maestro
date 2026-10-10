@@ -5,8 +5,7 @@ defmodule Mix.Tasks.Maestro.Rules.Curate do
   ## Usage
 
       mix maestro.rules.curate              # Full pipeline
-      mix maestro.rules.curate --skip-deps  # Skip deps.update
-      mix maestro.rules.curate --skip-sync  # Skip usage_rules.sync
+      # Inspects installed dependencies; never updates deps or bulk-syncs rules
       mix maestro.rules.curate --report     # Just report, no changes
   """
 

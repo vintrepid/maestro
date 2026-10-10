@@ -80,7 +80,7 @@ defmodule Maestro.Ops.Rules.Bundler do
   """
   @spec generate_compact_json(any()) :: term()
   def generate_compact_json(bundle_name \\ :universal) do
-    rules = fetch_approved_rules() |> MaestroTool.GuidancePolicy.application_rules()
+    rules = MaestroTool.GuidancePolicy.application_rules(fetch_approved_rules())
     bundle_rules = filter_for_bundle(rules, bundle_name)
 
     sorted =
