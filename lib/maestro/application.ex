@@ -24,16 +24,25 @@ defmodule Maestro.Application do
         # This avoids the race condition where FWF tries to subscribe before PubSub is ready.
         {Task, fn -> enable_fwf_pubsub() end}
       ] ++
-        MaestroTool.DevServer.Startup.children(
+        managed_dev_children(
           Application.get_env(:maestro, :env),
-          Phoenix.Endpoint.server?(:maestro, MaestroWeb.Endpoint),
-          name: Maestro.ManagedDevBootstrap,
-          projects: Application.get_env(:maestro, :managed_dev_projects, [])
+          Phoenix.Endpoint.server?(:maestro, MaestroWeb.Endpoint)
         )
 
     opts = [strategy: :one_for_one, name: Maestro.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+  @doc false
+  @spec managed_dev_children(atom(), boolean()) :: [{module(), keyword()}]
+  def managed_dev_children(:dev, true) do
+    MaestroTool.DevServer.Startup.children(:dev, true,
+      name: Maestro.ManagedDevBootstrap,
+      projects: Application.get_env(:maestro, :managed_dev_projects, [])
+    )
+  end
+
+  def managed_dev_children(_environment, _server?), do: []
 
   defp enable_fwf_pubsub do
     # Give PubSub a moment to fully initialize
