@@ -48,36 +48,25 @@ Project orchestration and agent coordination hub.
 - Remove old Maestro-specific analysis files
 - Document web UI usage in css_linter
 
-### Access Points
+Use `mix maestro.dev_server.status` for the configured server address and status.
 
-- **Web App**: http://localhost:4004
-- **Live Debugger**: http://localhost:4012
+## Agent guidance
 
-## Managing the Agents Directory
+Maestro maintains the reviewed policy catalog. Maestro Tool owns shared
+generators, components and executable checks. Each application's AGENTS.md is
+a link to Maestro Tool's shared AGENTS, not a copy of its instructions or catalog.
 
-Maestro is responsible for managing `~/dev/agents/` - the central repository of shared knowledge for all projects.
+Run `mix precommit` for verification and `mix maestro.guidance.bootstrap --check`
+to guard against startup bloat. Adoption through `--apply` preserves exact old
+instruction bytes as inactive archives. Dependency usage rules remain searchable
+reference material; do not bulk-sync them into startup instructions.
 
-**Directory structure:**
-- The `agents/` directory is **symlinked into each project** (e.g., `maestro/agents -> ~/dev/agents`)
-- This allows all projects to share the same guidelines without duplication
-- Changes made in one project's agents directory affect all projects
-- The canonical version lives at `~/dev/agents/` and is a git repository
-
-**What Maestro manages:**
-- **Guidelines** (`bootstrap/`, `ui_work/`, `database_work/`, etc.) - Core patterns and best practices
-- **Usage Rules** (`usage_rules/`) - Package-specific guidelines from dependencies and our forks
-- **Bundles** (`bundles/`) - Consolidated guideline sets for efficient loading
-- **Sessions** (`sessions/`) - Archived learnings from agent sessions
-- **Logs** (`logs/`) - Session tracking data for optimization
-
-**Key responsibilities:**
-- Sync upstream changes from frameworks (e.g., Phoenix AGENTS.md → `bootstrap/PHOENIX_AGENTS.md`)
-- Build and maintain usage_rules bundles using `mix usage_rules.sync`
-- Extract learnings from sessions using `mix session.learn`
-- Generate concept maps and relationships between guidelines
-- Track guideline usage to optimize startup bundles
-
-**Why this matters:** Other projects consume from this directory but Maestro is the orchestrator that maintains it. This ensures all projects have access to current, well-organized knowledge without duplication.
+`mix maestro.rules.export` exports catalog reference bundles only. The retired
+CLAUDE generator refuses to write, and curation no longer updates dependencies
+or bulk-imports usage rules. Rule-cluster skill generation is retired; curation
+does not discover instructions in arbitrary project documents or agent memory.
+Existing catalogs and historical evidence are kept
+for review, not implicitly adopted as instructions.
 
 ## Orchestration Features
 
@@ -135,7 +124,7 @@ mix ecto.setup
 mix phx.server
 ```
 
-Visit: http://localhost:4004
+Use the address reported by `mix maestro.dev_server.status`.
 
 ### Database Commands
 
@@ -159,11 +148,3 @@ priv/
 │   ├── migrations/
 │   └── seeds.exs
 ```
-
-## Other Projects Tracked
-
-- **Ready**: Web 4000, Debugger 4008
-- **new_project**: Web 4001, Debugger 4009
-- **Calvin**: Web 4002, Debugger 4010
-- **SanJuan**: Web 4003, Debugger 4011
-- **Circle**: Web 4015, Debugger 4016
