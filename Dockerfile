@@ -38,7 +38,8 @@ RUN mix assets.deploy
 
 COPY config/runtime.exs config/
 COPY rel rel
-RUN mix release
+RUN mix release \
+  && test -f _build/prod/rel/maestro/lib/maestro_tool-*/ebin/Elixir.MaestroTool.DevServer.Startup.beam
 
 FROM ${RUNNER_IMAGE} AS final
 

@@ -101,7 +101,7 @@ defmodule Maestro.MixProject do
       {:ash_json_api, "~> 1.0"},
       {:maestro_tool,
        path: maestro_tool_path(),
-       runtime: false,
+       runtime: Mix.env() == :prod,
        env: if(Mix.env() == :prod, do: :maestro_prod, else: :maestro_host)},
       {:css_linter,
        github: "vintrepid/css_linter", ref: "fcd770df9c4a52c51e94ea720edbd31be6870b40"},
