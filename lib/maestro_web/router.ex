@@ -63,6 +63,7 @@ defmodule MaestroWeb.Router do
       ] do
       live "/", HomeLive, :index
       live "/concepts", ConceptsLive, :index
+      live "/dashboard", DashboardLive, :projects
       live "/projects", DashboardLive, :projects
       live "/projects/new", ProjectFormLive, :new
       live "/projects/:slug", ProjectDetailLive, :show
