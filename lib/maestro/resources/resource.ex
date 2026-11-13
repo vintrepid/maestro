@@ -29,6 +29,8 @@ defmodule Maestro.Resources.Resource do
     define :update
     define :destroy
     define :by_id, get_by: [:id], action: :read
+    define :refresh_dot_workspace
+    define :dot_work_packet
   end
 
   actions do
@@ -62,6 +64,15 @@ defmodule Maestro.Resources.Resource do
         :platform,
         :metadata
       ]
+    end
+
+    action :refresh_dot_workspace, :map do
+      argument :apply, :boolean, default: false
+      run Maestro.Ops.DotWorkspace
+    end
+
+    action :dot_work_packet, :map do
+      run Maestro.Ops.DotWorkspace
     end
   end
 

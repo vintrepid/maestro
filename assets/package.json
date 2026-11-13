@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "easymde": "^2.20.0",
-    "sortablejs": "^1.15.6"
+    "easymde": "^2.21.0",
+    "sortablejs": "^1.15.7"
   }
 }
