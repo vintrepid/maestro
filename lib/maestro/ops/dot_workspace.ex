@@ -89,7 +89,7 @@ defmodule Maestro.Ops.DotWorkspace do
                activation_state: metadata["activation_state"],
                execution_enabled: metadata["execution_enabled"] == true,
                reviewed_tasks:
-                 Enum.map(tasks, &Map.take(&1, [:id, :title, :description, :status])),
+                 Enum.map(tasks, &Map.take(&1, [:id, :title, :description, :status, :notes])),
                executable_task_ids: Enum.map(eligible_tasks(metadata, tasks), & &1.id),
                resources: Enum.map(resources, &Map.take(&1, [:id, :title, :url, :content]))
              }}
