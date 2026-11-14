@@ -85,6 +85,7 @@ defmodule MaestroWeb.Router do
       live "/settings/aliases", AliasesLive
       live "/admin/page-inventory", AdminLive.PageInventoryLive, :index
       live "/admin/component-replacement", AdminLive.ComponentReplacementLive, :index
+      live "/admin/deps", DepsLive, :index
     end
   end
 
