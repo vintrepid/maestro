@@ -23,7 +23,7 @@ defmodule Maestro.ReleaseSchemaTest do
   end
 
   test "a released host can prepare the DOT workspace without activating historical work" do
-    for {slug, port} <- [{"maestro", 9850}, {"calvin", 9852}, {"dabhand", 9854}] do
+    for {slug, port} <- [{"maestro", 4004}, {"calvin", 4000}, {"dabhand", 4008}] do
       DevServerProject.configure_startup!(%{
         name: slug,
         slug: slug,
@@ -33,7 +33,7 @@ defmodule Maestro.ReleaseSchemaTest do
       })
     end
 
-    project = Project.create!(%{name: "Maestro", slug: "maestro", web_port: 9850})
+    project = Project.create!(%{name: "Maestro", slug: "maestro", web_port: 4004})
 
     historical =
       Task.create!(%{
