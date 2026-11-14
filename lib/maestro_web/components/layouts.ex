@@ -71,6 +71,7 @@ defmodule MaestroWeb.Layouts do
             <a href="/agents" class="btn btn-ghost">
               <.icon name="hero-cpu-chip" class="w-5 h-5" /> Agents
             </a>
+            <a href={~p"/admin/deps"} class="btn btn-ghost">Dependencies</a>
           </div>
           <div class="navbar-end gap-2">
             <.git_dropdown />
@@ -137,6 +138,7 @@ defmodule MaestroWeb.Layouts do
       </div>
       <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52">
         <li class="menu-title">Tools</li>
+        <li><a href={~p"/admin/deps"}>Dependencies</a></li>
         <li><a href="/admin/tailwind-analysis">Tailwind Analysis</a></li>
         <li><a href="/admin/page-inventory">Page Inventory</a></li>
         <li><a href="/admin/component-replacement">Component Replacement</a></li>
@@ -203,6 +205,7 @@ defmodule MaestroWeb.Layouts do
                   /> Aliases</a>
                 </li>
                 <li><a href="/admin/tailwind-analysis">Tailwind Analysis</a></li>
+                <li><a href={~p"/admin/deps"}>Dependencies</a></li>
                 <li><a href="/admin/page-inventory">Page Inventory</a></li>
                 <li><a href="/admin/component-replacement">Component Replacement</a></li>
                 <li class="menu-title">Theme</li>

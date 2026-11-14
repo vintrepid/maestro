@@ -23,6 +23,7 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/maestro"
+import {hooks as cinderHooks} from "phoenix-colocated/cinder"
 import TableHooks from "../../deps/live_table/priv/static/live-table.js"
 import topbar from "../vendor/topbar"
 import Sortable from "sortablejs"
@@ -312,7 +313,7 @@ const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, ...TableHooks, SortableHook, MarkdownEditorHook, GitDropdownHook, ProjectGitInfoHook, ShiftClickHook, AgentDashboard, Mermaid},
+  hooks: {...colocatedHooks, ...cinderHooks, ...TableHooks, SortableHook, MarkdownEditorHook, GitDropdownHook, ProjectGitInfoHook, ShiftClickHook, AgentDashboard, Mermaid},
 })
 
 window.addEventListener("phx:theme-changed", (e) => {

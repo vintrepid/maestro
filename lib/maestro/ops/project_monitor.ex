@@ -9,7 +9,9 @@ defmodule Maestro.Ops.ProjectMonitor do
 
   @spec start_link(keyword()) :: term()
   def start_link(_opts) do
-    GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
+    if Application.get_env(:maestro, :project_monitor_enabled, true),
+      do: GenServer.start_link(__MODULE__, %{}, name: __MODULE__),
+      else: :ignore
   end
 
   @spec get_status(any()) :: term()

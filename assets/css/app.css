@@ -8,6 +8,23 @@
 @source "../css";
 @source "../js";
 @source "../../lib/maestro_web";
+@source "../../vendor/maestro_tool/lib/maestro_tool/dependency_update";
+
+/* Host presentation for Maestro Tool's shared dependency dashboard. */
+#dependency-admin .app-title { font-size: 1.5rem; font-weight: 700; margin-bottom: .5rem; }
+#dependency-admin .app-stack { display: grid; gap: 1.25rem; min-width: 0; }
+#dependency-admin .app-cluster,
+#dependency-admin .app-filter-bar,
+#dependency-admin .app-split { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+#dependency-admin .app-split { justify-content: space-between; }
+#dependency-admin .app-field { display: grid; gap: .35rem; font-size: .8rem; }
+#dependency-admin .app-supporting { font-size: .8rem; opacity: .7; }
+#dependency-admin .app-tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
+#dependency-admin .app-tabs > [aria-selected="true"] { font-weight: 700; color: var(--color-primary); }
+#dependency-admin .app-code { max-height: 24rem; }
+#dependency-admin .app-code[data-wrap="true"] { white-space: pre-wrap; overflow-wrap: anywhere; }
+#dependency-admin .app-code[data-resizable="true"] { resize: vertical; }
+#dependency-admin .app-disclosure > summary { cursor: pointer; font-weight: 600; padding: .5rem 0; }
 
 /* A Tailwind plugin that makes "hero-#{ICON}" classes available.
    The heroicons installation itself is managed by your mix.exs */
