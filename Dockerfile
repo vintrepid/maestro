@@ -20,7 +20,9 @@ ENV MIX_ENV="prod"
 
 COPY mix.exs mix.lock ./
 COPY vendor/maestro_tool vendor/maestro_tool
-RUN mix deps.get --only $MIX_ENV
+COPY --chmod=0755 rel/build/git-askpass.sh /tmp/git-askpass.sh
+RUN --mount=type=secret,id=github_token,required=true \
+  GIT_ASKPASS=/tmp/git-askpass.sh GIT_TERMINAL_PROMPT=0 mix deps.get --only $MIX_ENV
 RUN mkdir config
 
 COPY config/config.exs config/${MIX_ENV}.exs config/

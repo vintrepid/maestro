@@ -17,7 +17,8 @@ defmodule Maestro.MixProject do
       maestro: [
         owned_libraries: [:maestro_tool, :ash_ri],
         dependency_tags: dependency_tags(),
-        pre_deploy: ["maestro.lint --run --baseline .maestro-lint-baseline.json lib", "test"]
+        pre_deploy: ["precommit"],
+        build_secrets: [github_token: {:command, "gh", ["auth", "token", "--user", "vintrepid"]}]
       ]
     ]
   end

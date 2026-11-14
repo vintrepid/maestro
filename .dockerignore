@@ -1,4 +1,5 @@
 .dockerignore
+/vendor/maestro_tool/tmp/
 .git
 !.git/HEAD
 !.git/refs
