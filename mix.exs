@@ -15,6 +15,7 @@ defmodule Maestro.MixProject do
       consolidate_protocols: Mix.env() != :dev,
       usage_rules: usage_rules(),
       maestro: [
+        owned_libraries: [:maestro_tool, :ash_ri],
         dependency_tags: dependency_tags(),
         pre_deploy: ["maestro.lint --run --baseline .maestro-lint-baseline.json lib", "test"]
       ]
@@ -198,7 +199,8 @@ defmodule Maestro.MixProject do
         "deps.unlock --unused",
         "format",
         "maestro.lint --run --baseline .maestro-lint-baseline.json lib",
-        "test"
+        "test",
+        "assets.build"
       ]
     ]
   end
