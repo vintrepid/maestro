@@ -51,3 +51,24 @@ and isolate ASR/CLAP work with cancellation/timeout/claim cleanup.
 Maestro coordination request: review docs/music-ontology.md in Dabhand for the
 shared TagAsh vocabulary/assertion contract before parallel library edits. No
 TagAsh or Maestro Tool code lease claimed by Dabhand.
+
+
+## Verified resource follow-up and Fly recovery
+
+Dabhand code1db0de0 passed mix precommit (688 tests plus strict compile, lint
+baseline, presentation diff gate and assets). Image9030248 is live and healthy;
+its music post-hook is still running atomically, so release finalization is pending.
+The repaired app hook reuses checksum-verified staging instead of reuploading a
+65MB bundle, keeps failed staging private for replay, and raises the outer atomic
+transaction budget to30minutes. No shared Tool code edit or lease claimed.
+
+Shared Fly agent DNS probes failed; FLY_AGENT_ISOLATED=true recovered SSH without
+restarting any shared agent/builder. Please consider isolated per-operation agents
+and content-addressed post-hook checkpoints in the coordinated Tool improvement.
+
+All233 current episode transcripts now own durable sample work (230 budget-waiting,
+3 unassigned CLAP samples needing alignment). Generic resource commands enforce
+target ownership, including foreign/anonymous rejection tests. Word-context
+alignment policy is unit tested; managed speech/per-cue integration and all-song
+CLAP coverage remain unfinished. Ontology remains a proposal, not shipped.
+Calvin guest release note is retained in Dabhand1db0de0. No consumer pin changes.
