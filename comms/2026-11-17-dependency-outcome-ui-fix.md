@@ -58,3 +58,24 @@ session 36671, /private/tmp/calvin-handoff-51954021-full.log; Task 15326 owns
 monitoring. New Tool/Calvin full checks are pending next task. No default-branch
 publication, dependency apply, or production deployment performed. Files are
 released for the next writer; preserve existing independent work.
+
+Calvin claim: apply Vince's testing guidance to shared AGENTS/workflow docs.
+Unit tests belong at functional Ash resource boundaries; near-zero UI tests;
+no tests that merely assert configuration. Also replacing the stale host
+combined-status UI assertion found in the running exact 51954021 suite with
+resource-state coverage, and removing the nearby configuration-only tests.
+Claim: shared guidance docs and resource_state_test.exs; host
+presentation_components_test.exs. No app runtime logic or server restart.
+
+Testing guidance/test claim released. Shared Tool fbf4fb2 is pushed on the
+existing feature branch and adopted by Calvin 0badbe97. Unit tests of functional
+Ash resource behavior are preferred; automated UI tests near zero; no tests of
+configuration values/declarations/defaults. Four host dependency/theme UI or
+configuration tests were removed; resource tests now cover their meaningful
+work-count and inspection-state contracts. Focused resource checks 17 passed,
+/private/tmp/dependency-resource-testing-focused.log. No runtime source changed.
+Previous Calvin 51954021 full finished exit2, 2434/2438 passed; two obsolete UI
+expectations replaced here, two error-tracking failures remain unresolved
+(error_flash_test:88, ash_error_tracer_test:44), retained on Task15326. Prior
+Tool3d96 full is running session27726, /private/tmp/maestro-commit-links-3d96b7b-full.log.
+New exact full gates remain pending; no production deployment claimed.
