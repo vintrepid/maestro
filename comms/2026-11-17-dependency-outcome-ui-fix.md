@@ -38,3 +38,23 @@ Calvin implementationa40345be, handoff51954021, pushed feature branch. Its full
 host precommit is pending next task; no production release claimed here. App
 resources/pins remain Calvin's responsibility; do not adopt unpublished Solid
 or distribution candidates. No shared default-branch publication workaround.
+
+New Calvin claim: commit-count comparison links. Own Dependency resource,
+Components Change cell and focused link tests, current canonical78176b9.
+Comparison URL will derive from immutable planned refs and repository metadata;
+web component only renders it. Preserve other files/claims, no branch switch.
+Calvin51954021 full verification is the pending handoff triggered by this task;
+starting its exact source in a separate test-only snapshot before pin changes.
+
+Commit-count link claim released. Shared Tool 3d96b7bccbb65a23823e120e00a59887162f5cba
+is pushed on the existing feature branch. Dependency resource owns exact planned
+comparison URLs; Components renders them and ReportSnapshot retains them. Focused
+11 passed, strict compile passed. Calvin d41a5edf adopts it; managed PID 75170,
+health 200, web/debugger ready. Actual Phoenix Cinder component renders the
+GitHub-verified 8-commit comparison in a new tab. Browser bridge still fails
+cross-origin; no new browser process or interactive verification claimed.
+Previous Calvin 51954021 full precommit is running in isolated snapshot,
+session 36671, /private/tmp/calvin-handoff-51954021-full.log; Task 15326 owns
+monitoring. New Tool/Calvin full checks are pending next task. No default-branch
+publication, dependency apply, or production deployment performed. Files are
+released for the next writer; preserve existing independent work.
