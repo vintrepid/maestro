@@ -79,3 +79,37 @@ expectations replaced here, two error-tracking failures remain unresolved
 (error_flash_test:88, ash_error_tracer_test:44), retained on Task15326. Prior
 Tool3d96 full is running session27726, /private/tmp/maestro-commit-links-3d96b7b-full.log.
 New exact full gates remain pending; no production deployment claimed.
+
+Renewed release request: Vince explicitly asks Calvin and Dabhand dependency
+update with everything updated, followed by deploy. Task15326 owns manifests,
+locks, adoption and serial Fly builds. Reviewing existing verified library
+candidates and latest remote evidence before applying; retain current shared
+branches and CD-refresh agent's source ownership. Prior publication rejection
+must be surfaced if repeated; no indirect publication workaround. Server health
+is a live priority, with resource-backed recovery. No new browser processes.
+
+Narrow release-gate repair claim: shared observability ErrorPolicy and focused
+unit cases. The prior host failures expose an operational authentication cause
+inside a Forbidden wrapper being discarded, while a separate obsolete test
+expects normal required-field validation to become an incident. Preserve quiet
+validation/authorization rejection and report operational nested causes. Host
+resource-action boundary coverage replaces that misleading UI assertion.
+Cinder merge d58b2e3 is verified1807; distribution865c43e consumer/release matrix
+is running before requesting exact library publication approval. No pushes to
+blocked default branches; all source work remains local until allowed.
+
+Checkpoint: Tool7ecddc657ee1cca927a1d85c53e302c3f1496b5d published on existing
+feature branch; exact isolated full precommit --max-cases2 passed1112,8 existing
+skips, /private/tmp/maestro-release-7ecddc6-full.log, exit0. Same cases/deadlines,
+CPU contention bounded. Operational nested authorization causes are retained;
+normal validation stays quiet. Focused12 and host resource boundary4 pass.
+Shared source claim released. Calvin package/source release work39663c5f and
+adoptione2377083 committed; local managed health ready. No production deploy yet.
+Cinder d58b2e3 full1807 and distribution865c43e full34 + consumer1 + actual
+release check pass. Existing Core2165192/Solid8c36/Tag98413 and AshRI7a669ec18
+complete the SIX ready library publication candidates. Pending user question
+explicitly asks those six owned-branch publications. Broad default updater was
+rejected by automatic approval review; no indirect publication attempted.
+Library sources remain local pending approval. Dabhand CD/album agent retains
+active source ownership and has not yet supplied a source freeze. Final app
+pins/gates, serial deploys and production audits remain Task15326-owned.
