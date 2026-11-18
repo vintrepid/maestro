@@ -15,10 +15,21 @@ defmodule Maestro.MixProject do
       consolidate_protocols: Mix.env() != :dev,
       usage_rules: usage_rules(),
       maestro: [
-        owned_libraries: [:maestro_tool, :ash_ri],
+        owned_libraries: [:maestro_tool, :ash_ri, :ash, :ash_authentication, :cinder, :css_linter],
         dependency_tags: dependency_tags(),
         pre_deploy: ["precommit"],
-        build_secrets: [github_token: {:command, "gh", ["auth", "token", "--user", "vintrepid"]}]
+        build_secrets: [github_token: {:command, "gh", ["auth", "token", "--user", "vintrepid"]}],
+        compatibility_overrides: [
+          [
+            consumer: :swoosh,
+            consumer_version: "1.29.3",
+            dependency: :idna,
+            requirement: ">= 6.0.0 and < 8.0.0",
+            version: "8.0.0",
+            reason:
+              "Verified Swoosh internationalized recipient rendering with IDNA 8; full host gates required."
+          ]
+        ]
       ]
     ]
   end
@@ -110,14 +121,14 @@ defmodule Maestro.MixProject do
       {:fun_with_flags, "~> 1.13"},
       {:fun_with_flags_ui, "~> 1.1"},
       {:cinder,
-       github: "vintrepid/cinder", ref: "9d5bc7f5b368fd90118f19a4c469be0a176fac5f", override: true},
+       github: "vintrepid/cinder", ref: "019b58d3e5d40f878c4861061195b4fc3d8f56fb", override: true},
       {:ex_money_sql, "~> 2.2"},
       {:ex_cldr, "~> 2.47 and >= 2.47.5"},
       {:picosat_elixir, "~> 0.2.3"},
       {:sourceror, "~> 1.13"},
       {:oban, "~> 2.24 and >= 2.24.2"},
       {:usage_rules, "~> 1.3.1", only: [:dev]},
-      {:ash_ai, "~> 1.5 and >= 1.5.4"},
+      {:ash_ai, "~> 1.5 and >= 1.5.6"},
       {:ash_paper_trail, "~> 0.8.1"},
       {:tidewave, "~> 0.9.2", only: [:dev]},
       {:live_debugger, "~> 1.0.3", only: [:dev]},
@@ -131,11 +142,11 @@ defmodule Maestro.MixProject do
        github: "vintrepid/ash_authentication",
        ref: "330ea7b02ecc131c566ef55e22f65cc5ed171505",
        override: true},
-      {:ash_postgres, "~> 2.15 and >= 2.15.2"},
+      {:ash_postgres, "~> 2.16"},
       {:ash_phoenix, "~> 2.3 and >= 2.3.26"},
       {:ash,
        github: "vintrepid/ash_lotus_core",
-       ref: "7fd105a351b50d43fa68271718ef510137b2a6a1",
+       ref: "2b35f0740dea79fb30478c6135efcf3fb8773534",
        override: true},
       {:igniter, "~> 0.8.5", override: true},
       {:phoenix, "~> 1.8 and >= 1.8.16"},
@@ -159,7 +170,8 @@ defmodule Maestro.MixProject do
        compile: false,
        depth: 1},
       {:swoosh, "~> 1.29 and >= 1.29.3"},
-      {:mdex, "~> 0.14.6"},
+      {:idna, "~> 8.0", override: true},
+      {:mdex, "~> 0.14.7"},
       {:req, "~> 0.7.5"},
       {:telemetry_metrics, "~> 1.2"},
       {:telemetry_poller, "~> 1.3"},

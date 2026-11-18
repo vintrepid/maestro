@@ -1,14 +1,18 @@
-ARG ELIXIR_VERSION=1.20.3
-ARG OTP_VERSION=29.0.5
-ARG DEBIAN_VERSION=trixie-20260713-slim
+ARG ELIXIR_VERSION=1.20.5
+ARG OTP_VERSION=29.1.2
+ARG DEBIAN_VERSION=trixie-20261104-slim
 
 ARG BUILDER_IMAGE="docker.io/hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="docker.io/debian:${DEBIAN_VERSION}"
+ARG NODE_IMAGE="docker.io/node:26.13.1-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc"
+
+FROM ${NODE_IMAGE} AS node_toolchain
 
 FROM ${BUILDER_IMAGE} AS builder
+COPY --from=node_toolchain /usr/local/ /usr/local/
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends build-essential git nodejs npm \
+  && apt-get install -y --no-install-recommends build-essential git \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

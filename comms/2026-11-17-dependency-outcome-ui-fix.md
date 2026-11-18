@@ -113,3 +113,12 @@ rejected by automatic approval review; no indirect publication attempted.
 Library sources remain local pending approval. Dabhand CD/album agent retains
 active source ownership and has not yet supplied a source freeze. Final app
 pins/gates, serial deploys and production audits remain Task15326-owned.
+
+Calvin source-review repair claim on canonical7ec: DependencyUpdate Ash action,
+Checkpoint history helper, Workflow candidate-context reader and focused resource
+unit cases. Current updater retains old published/planned receipts while clean
+reviewed source commits have advanced. A reviewed-source event must require
+exact expected/ref identities, safe clean ancestry, explicit changed paths,
+retained prior evidence and replay safety, then rerun normal verification and
+publication. No hardcoded library cases or UI decisions. Root's existing
+7ec updater continues independently; apply receipt review only after it exits.

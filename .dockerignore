@@ -19,3 +19,10 @@ erl_crash.dump
 /vendor/maestro_tool/.git/
 /vendor/maestro_tool/_build/
 /vendor/maestro_tool/deps/
+/.env
+/.env.*
+/.aws/
+/.codex/
+/.agents/
+/.claude/
+/.claude_api_key*
