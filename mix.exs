@@ -29,6 +29,15 @@ defmodule Maestro.MixProject do
             reason:
               "Verified Swoosh internationalized recipient rendering with IDNA 8; full host gates required."
           ]
+        ],
+        owned_forks: [
+          ash_authentication: [
+            branch: "security/magic-link-hardening-v4",
+            repository: "https://github.com/vintrepid/ash_authentication.git",
+            update: :manual,
+            upstream_branch: "stable-4.0",
+            upstream_url: "https://github.com/team-alembic/ash_authentication.git"
+          ]
         ]
       ]
     ]
@@ -121,7 +130,7 @@ defmodule Maestro.MixProject do
       {:fun_with_flags, "~> 1.13"},
       {:fun_with_flags_ui, "~> 1.1"},
       {:cinder,
-       github: "vintrepid/cinder", ref: "019b58d3e5d40f878c4861061195b4fc3d8f56fb", override: true},
+       github: "vintrepid/cinder", ref: "43280ff34e8522e2b093414ad089a4692a3abbc5", override: true},
       {:ex_money_sql, "~> 2.2"},
       {:ex_cldr, "~> 2.47 and >= 2.47.5"},
       {:picosat_elixir, "~> 0.2.3"},
@@ -133,20 +142,20 @@ defmodule Maestro.MixProject do
       {:tidewave, "~> 0.9.2", only: [:dev]},
       {:live_debugger, "~> 1.0.3", only: [:dev]},
       {:ash_archival, "~> 2.0 and >= 2.0.5"},
-      {:ash_money, "~> 0.2.7"},
+      {:ash_money, "~> 0.2.8"},
       {:oban_web, "~> 2.13 and >= 2.13.2"},
       {:ash_oban, "~> 0.10.3"},
       {:ash_admin, "~> 1.4"},
       {:ash_authentication_phoenix, "~> 2.17 and >= 2.17.4"},
       {:ash_authentication,
        github: "vintrepid/ash_authentication",
-       ref: "330ea7b02ecc131c566ef55e22f65cc5ed171505",
+       ref: "704afa74b8401a3f231f5a20e425201254018cd4",
        override: true},
       {:ash_postgres, "~> 2.16"},
       {:ash_phoenix, "~> 2.3 and >= 2.3.26"},
       {:ash,
        github: "vintrepid/ash_lotus_core",
-       ref: "2b35f0740dea79fb30478c6135efcf3fb8773534",
+       ref: "3ba80ea825a127e63b0f546e22edd1161785d306",
        override: true},
       {:igniter, "~> 0.8.5", override: true},
       {:phoenix, "~> 1.8 and >= 1.8.16"},
@@ -169,7 +178,7 @@ defmodule Maestro.MixProject do
        app: false,
        compile: false,
        depth: 1},
-      {:swoosh, "~> 1.29 and >= 1.29.3"},
+      {:swoosh, "~> 1.30"},
       {:idna, "~> 8.0", override: true},
       {:mdex, "~> 0.14.7"},
       {:req, "~> 0.7.5"},
@@ -178,7 +187,7 @@ defmodule Maestro.MixProject do
       {:gettext, "~> 1.0 and >= 1.0.2"},
       {:jason, "~> 1.4 and >= 1.4.5"},
       {:dns_cluster, "~> 0.3.1"},
-      {:bandit, "~> 1.14 and >= 1.14.1"},
+      {:bandit, "~> 1.15"},
       {:slugify, "~> 1.3 and >= 1.3.1"}
     ]
   end
