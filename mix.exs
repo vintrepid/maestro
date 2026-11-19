@@ -155,7 +155,7 @@ defmodule Maestro.MixProject do
       {:ash_phoenix, "~> 2.3 and >= 2.3.26"},
       {:ash,
        github: "vintrepid/ash_lotus_core",
-       ref: "3ba80ea825a127e63b0f546e22edd1161785d306",
+       ref: "73b2402256c65620e12782c106311f4ee71c0c57",
        override: true},
       {:igniter, "~> 0.8.5", override: true},
       {:phoenix, "~> 1.8 and >= 1.8.16"},
